@@ -1,10 +1,14 @@
 import express from "express";
-import { setAccounts, getAccounts, importAccounts } from "../controllers/accountsController.js";
+import {
+  setAccounts,
+  getAccounts,
+  importAccounts,
+} from "../controllers/accountsController.js";
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
-router.post("/:company_id/set", setAccounts);
-router.get("/:company_id", getAccounts);
-router.post("/:company_id/import", importAccounts);
+router.post("/set", setAccounts);
+router.get("/", getAccounts);
+router.post("/import", importAccounts);
 
 export default router;

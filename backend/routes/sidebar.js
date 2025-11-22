@@ -3,6 +3,6 @@ import { getSidebar } from "../controllers/sidebarController.js";
 
 const router = express.Router();
 
-router.get("/:id", getSidebar);
+router.get("/", getSidebar);
 
 export default router;

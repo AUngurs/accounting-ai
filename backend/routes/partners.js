@@ -1,10 +1,15 @@
 import express from "express";
-import { getPartners, importPartners, deletePartner, bulkDeletePartners } from "../controllers/partnersController.js";
+import {
+  getPartners,
+  importPartners,
+  deletePartner,
+  bulkDeletePartners,
+} from "../controllers/partnersController.js";
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
-router.get("/:company_id", getPartners);
-router.post("/:company_id/import", importPartners);
+router.get("/", getPartners);
+router.post("/", importPartners);
 router.delete("/:partner_id", deletePartner);
 router.post("/bulk-delete", bulkDeletePartners);
 

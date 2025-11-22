@@ -1,97 +1,113 @@
 import React from "react";
 import { useEffect, useState, useRef } from "react";
+import axiosInstance from "../api/axiosInstance";
+import { useCompany } from "../components/CompanyContext";
 
 export default function FinancialDocs() {
-
   const [docsData, setDocsData] = useState([]);
   const [partnersData, setPartnersData] = useState([]);
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
-  const [sortConfig, setSortConfig] = useState({ key: "doc_date", direction: "desc" });
-  const [selectedDocs, setSelectedDocs] = useState(new Set());  
+  const [sortConfig, setSortConfig] = useState({
+    key: "doc_date",
+    direction: "desc",
+  });
+  const [selectedDocs, setSelectedDocs] = useState(new Set());
 
-  const companyID = 1;
+  const { currentCompany } = useCompany();
+  const companyID = currentCompany.id;
 
+  // Get Documents
   useEffect(() => {
-    fetch(`http://localhost:5000/api/docs/${companyID}`)
-      .then(res => res.json())
-      .then(data => setDocsData(data))
-      .catch(err => console.error(err));
+    axiosInstance
+      .get(`/companies/${companyID}/documents`)
+      .then((res) => setDocsData(res.data))
+      .catch((err) => console.error(err));
   }, [companyID]);
 
+  // Get Partners
   useEffect(() => {
-    fetch(`http://localhost:5000/api/partners/${companyID}`)
-      .then(res => res.json())
-      .then(data => setPartnersData(data))
-      .catch(err => console.error(err));
+    axiosInstance
+      .get(`/companies/${companyID}/partners`)
+      .then((res) => setPartnersData(res.data))
+      .catch((err) => console.error(err));
   }, [companyID]);
 
   const partnerMap = {};
-  partnersData.forEach(p => {
-    partnerMap[p.id] = `${p.partner_name}${p.partner_title ? ", " + p.partner_title : ""} `;
+  partnersData.forEach((p) => {
+    partnerMap[p.id] = `${p.partner_name}${
+      p.partner_title ? ", " + p.partner_title : ""
+    } `;
   });
 
-  const handleFileChange = e => {
+  const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
   const handleImport = async () => {
     if (!file) return alert("Izvēlieties XML datni (failu)!");
-    
     const formData = new FormData();
     formData.append("xmlFile", file);
-
     try {
-      const res = await fetch(`http://localhost:5000/api/docs/${companyID}/import`, {
-        method: "POST",
-        body: formData
-      });
-      const data = await res.json();
-      setDocsData(prev => [...prev, ...data.newDocuments]);
+      const res = await axiosInstance.post(
+        `/companies/${companyID}/documents`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      const data = res.data;
+      setDocsData((prev) => [...prev, ...data.newDocuments]);
       fileInputRef.current.value = "";
       setFile(null);
-      alert(`Veiksmīgi importēti ${data.newDocuments.length} finanšu dokumenti.`);
+      alert(
+        `Veiksmīgi importēti ${data.newDocuments.length} finanšu dokumenti.`
+      );
     } catch (err) {
       console.error(err);
-      alert("Import failed!");
+      alert(err.response?.data?.error || "Import failed!");
     }
-  }
+  };
 
   const handleDelete = async (documentID) => {
-    const confirmed = window.confirm("Vai tiešām vēlaties dzēst finanšu dokumentu?");
+    const confirmed = window.confirm(
+      "Vai tiešām vēlaties dzēst finanšu dokumentu?"
+    );
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/docs/${documentID}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Dzēšana neizdevās");
-
-      setDocsData(docsData.filter(doc => doc.id !== documentID));
+      await axiosInstance.delete(
+        `/companies/${companyID}/documents/${documentID}`
+      );
+      setDocsData(docsData.filter((doc) => doc.id !== documentID));
     } catch (err) {
       console.error(err);
-      alert("Dzēšana neizdevās!");
+      alert(err.response?.data?.error || "Dzēšana neizdevās!");
     }
   };
 
   const handleDeleteSelected = async () => {
-    if (!window.confirm("Vai tiešām vēlaties dzēst atlasītos finanšu dokumentus?")) {
+    if (
+      !window.confirm("Vai tiešām vēlaties dzēst atlasītos finanšu dokumentus?")
+    ) {
       return;
     }
 
     try {
       const idsToDelete = Array.from(selectedDocs);
-
-      await fetch(`http://localhost:5000/api/docs/bulk-delete`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: idsToDelete })
-      });
-
-      setDocsData(docsData.filter(doc => !selectedDocs.has(doc.id)));
-
+      await axiosInstance.post(
+        `/companies/${companyID}/documents/bulk-delete`,
+        {
+          ids: idsToDelete,
+        }
+      );
+      setDocsData(docsData.filter((doc) => !selectedDocs.has(doc.id)));
       setSelectedDocs(new Set());
     } catch (err) {
       console.error(err);
-      alert("Dzēšana neizdevās!");
+      alert(err.response?.data?.error || "Dzēšana neizdevās!");
     }
   };
 
@@ -149,10 +165,7 @@ export default function FinancialDocs() {
           Importēt XML
         </button>
         {selectedDocs.size > 0 && (
-          <button
-            className="btn btn-danger"
-            onClick={handleDeleteSelected}
-          >
+          <button className="btn btn-danger" onClick={handleDeleteSelected}>
             Dzēst atlasītos dokumentus
           </button>
         )}
@@ -168,40 +181,91 @@ export default function FinancialDocs() {
                 <th style={{ width: "2%" }}>
                   <input
                     type="checkbox"
-                    checked={selectedDocs.size === docsData.length && docsData.length > 0}
+                    checked={
+                      selectedDocs.size === docsData.length &&
+                      docsData.length > 0
+                    }
                     onChange={(e) => {
                       if (e.target.checked) {
-                        setSelectedDocs(new Set(docsData.map(p => p.id)));
+                        setSelectedDocs(new Set(docsData.map((p) => p.id)));
                       } else {
                         setSelectedDocs(new Set());
                       }
                     }}
                   />
                 </th>
-                <th style={{ width: "10%", cursor: "pointer" }} onClick={() => handleSort("doc_date")}>
-                  Datums {sortConfig.key === "doc_date" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+                <th
+                  style={{ width: "10%", cursor: "pointer" }}
+                  onClick={() => handleSort("doc_date")}
+                >
+                  Datums{" "}
+                  {sortConfig.key === "doc_date"
+                    ? sortConfig.direction === "asc"
+                      ? "▲"
+                      : "▼"
+                    : ""}
                 </th>
-                <th style={{ width: "8%", cursor: "pointer" }} onClick={() => handleSort("doc_id")}>
-                  Nr. {sortConfig.key === "doc_id" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+                <th
+                  style={{ width: "8%", cursor: "pointer" }}
+                  onClick={() => handleSort("doc_id")}
+                >
+                  Nr.{" "}
+                  {sortConfig.key === "doc_id"
+                    ? sortConfig.direction === "asc"
+                      ? "▲"
+                      : "▼"
+                    : ""}
                 </th>
-                <th style={{ width: "20%", cursor: "pointer" }} onClick={() => handleSort("partner_id")}>
-                  Partneris {sortConfig.key === "partner_id" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+                <th
+                  style={{ width: "20%", cursor: "pointer" }}
+                  onClick={() => handleSort("partner_id")}
+                >
+                  Partneris{" "}
+                  {sortConfig.key === "partner_id"
+                    ? sortConfig.direction === "asc"
+                      ? "▲"
+                      : "▼"
+                    : ""}
                 </th>
-                <th style={{ width: "6%", cursor: "pointer" }} onClick={() => handleSort("doc_type_abbrev")}>
-                  Dok. tips {sortConfig.key === "doc_type_abbrev" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+                <th
+                  style={{ width: "6%", cursor: "pointer" }}
+                  onClick={() => handleSort("doc_type_abbrev")}
+                >
+                  Dok. tips{" "}
+                  {sortConfig.key === "doc_type_abbrev"
+                    ? sortConfig.direction === "asc"
+                      ? "▲"
+                      : "▼"
+                    : ""}
                 </th>
-                <th style={{ width: "4%", cursor: "pointer" }} onClick={() => handleSort("doc_currency")}>
-                  Valūta {sortConfig.key === "doc_currency" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+                <th
+                  style={{ width: "4%", cursor: "pointer" }}
+                  onClick={() => handleSort("doc_currency")}
+                >
+                  Valūta{" "}
+                  {sortConfig.key === "doc_currency"
+                    ? sortConfig.direction === "asc"
+                      ? "▲"
+                      : "▼"
+                    : ""}
                 </th>
-                <th style={{ width: "10%", cursor: "pointer" }} onClick={() => handleSort("doc_amount")}>
-                  Summa {sortConfig.key === "doc_amount" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+                <th
+                  style={{ width: "10%", cursor: "pointer" }}
+                  onClick={() => handleSort("doc_amount")}
+                >
+                  Summa{" "}
+                  {sortConfig.key === "doc_amount"
+                    ? sortConfig.direction === "asc"
+                      ? "▲"
+                      : "▼"
+                    : ""}
                 </th>
                 <th style={{ width: "30%" }}>Piezīmes</th>
                 <th style={{ width: "10%" }}></th>
               </tr>
             </thead>
             <tbody>
-              {docsData.map(doc => (
+              {docsData.map((doc) => (
                 <tr key={doc.id} className="align-middle">
                   <td>
                     <input
@@ -225,11 +289,16 @@ export default function FinancialDocs() {
                   <td>{doc.doc_currency}</td>
                   <td>{doc.doc_amount}</td>
                   <td>{doc.doc_comments}</td>
-                  <td style={{ display: "flex", justifyContent: "space-evenly" }}>
+                  <td
+                    style={{ display: "flex", justifyContent: "space-evenly" }}
+                  >
                     <button className="btn btn-success btn-sm ms-2">
                       Rediģēt
                     </button>
-                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(doc.id)}>
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleDelete(doc.id)}
+                    >
                       Dzēst
                     </button>
                   </td>

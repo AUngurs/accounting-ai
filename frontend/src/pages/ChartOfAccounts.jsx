@@ -1,56 +1,71 @@
 import React, { useEffect, useState, useRef } from "react";
+import axiosInstance from "../api/axiosInstance";
 
 export default function ChartOfAccounts() {
   const [accounts, setAccounts] = useState([]);
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
 
-  const companyID = 1;
+  const companyID = localStorage.getItem("companyId");
 
+  // Get Accounts
   useEffect(() => {
-      fetch(`http://localhost:5000/api/accounts/${companyID}`)
-        .then(res => res.json())
-        .then(data => setAccounts(data))
-        .catch(err => console.error(err));
-    }, [companyID]);
-  
+    axiosInstance
+      .get(`/companies/${companyID}/accounts`)
+      .then((res) => setAccounts(res.data))
+      .catch((err) => console.error(err));
+  }, [setAccounts]);
+
+  // Set default Accounts
   const handleSet = async () => {
-    if (!window.confirm("Vai gribat iestatīt noklusējuma kontus? Tiks dzēsts pašreizējais kontu plāns")) {
+    if (
+      !window.confirm(
+        "Vai gribat iestatīt noklusējuma kontus? Tiks dzēsts pašreizējais kontu plāns"
+      )
+    ) {
       return;
     }
     const companyID = 1;
-    const res = await fetch(`http://localhost:5000/api/accounts/${companyID}/set`, {
-      method: "POST",
-    });
-    const data = await res.json();
-    setAccounts(data.accounts);
-  }
+    try {
+      const res = await axiosInstance.post(
+        `/companies/${companyID}/accounts/set`
+      );
+      setAccounts(res.data.accounts);
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Kļūda iestatot noklusējuma kontus");
+    }
+  };
 
-  const handleFileChange = e => {
+  const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
+  // Import custom Accounts from Excel file
   const handleImport = async () => {
     if (!file) return alert("Izvēlieties XLSX datni (failu)!");
-    
     const formData = new FormData();
     formData.append("xlsxFile", file);
-
     try {
-      const res = await fetch(`http://localhost:5000/api/accounts/${companyID}/import`, {
-        method: "POST",
-        body: formData
-      });
-      const data = await res.json();
-      setAccounts(prev => [...prev, ...data.accounts]);
+      const res = await axiosInstance.post(
+        `/companies/${companyID}/accounts/import`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      const data = res.data;
+      setAccounts((prev) => [...prev, ...data.accounts]);
       fileInputRef.current.value = "";
       setFile(null);
       alert(`Veiksmīgi importēti ${data.accounts.length} konti.`);
     } catch (err) {
       console.error(err);
-      alert("Importēšana neizdevās.");
+      alert(err.response?.data?.error || "Importēšana neizdevās.");
     }
-  }
+  };
 
   return (
     <React.Fragment>
@@ -72,21 +87,16 @@ export default function ChartOfAccounts() {
       </div>
 
       <div className="table-responsive rounded-1">
-        <table className="table table-striped table-bordered table-sm" style={{ tableLayout: "fixed" }}>
+        <table
+          className="table table-striped table-bordered table-sm"
+          style={{ tableLayout: "fixed" }}
+        >
           <thead className="table-dark">
             <tr className="align-middle">
-              <th style={{ width: "10%" }}>
-                Kods
-              </th>
-              <th style={{ width: "40%" }}>
-                Nosaukums
-              </th>
-              <th style={{ width: "25%" }}>
-                Analītiskais/Sintētiskais
-              </th>
-              <th style={{ width: "25%" }}>
-                Aktīva/Pasīva/Operāciju
-              </th>
+              <th style={{ width: "10%" }}>Kods</th>
+              <th style={{ width: "40%" }}>Nosaukums</th>
+              <th style={{ width: "25%" }}>Analītiskais/Sintētiskais</th>
+              <th style={{ width: "25%" }}>Aktīva/Pasīva/Operāciju</th>
             </tr>
           </thead>
           <tbody>
