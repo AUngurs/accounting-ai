@@ -1,20 +1,21 @@
 import React, { useEffect, useState, useRef } from "react";
 import axiosInstance from "../api/axiosInstance";
+import { useCompany } from "../components/CompanyContext";
 
 export default function ChartOfAccounts() {
   const [accounts, setAccounts] = useState([]);
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
 
-  const companyID = localStorage.getItem("companyId");
+  const { companyId } = useCompany();
 
   // Get Accounts
   useEffect(() => {
     axiosInstance
-      .get(`/companies/${companyID}/accounts`)
+      .get(`/companies/${companyId}/accounts`)
       .then((res) => setAccounts(res.data))
       .catch((err) => console.error(err));
-  }, [setAccounts]);
+  }, [companyId, setAccounts]);
 
   // Set default Accounts
   const handleSet = async () => {
@@ -25,10 +26,9 @@ export default function ChartOfAccounts() {
     ) {
       return;
     }
-    const companyID = 1;
     try {
       const res = await axiosInstance.post(
-        `/companies/${companyID}/accounts/set`
+        `/companies/${companyId}/accounts/set`
       );
       setAccounts(res.data.accounts);
     } catch (err) {
@@ -48,7 +48,7 @@ export default function ChartOfAccounts() {
     formData.append("xlsxFile", file);
     try {
       const res = await axiosInstance.post(
-        `/companies/${companyID}/accounts/import`,
+        `/companies/${companyId}/accounts/import`,
         formData,
         {
           headers: {

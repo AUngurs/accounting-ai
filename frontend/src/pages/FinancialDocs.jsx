@@ -14,24 +14,23 @@ export default function FinancialDocs() {
   });
   const [selectedDocs, setSelectedDocs] = useState(new Set());
 
-  const { currentCompany } = useCompany();
-  const companyID = currentCompany.id;
+  const { companyId } = useCompany();
 
   // Get Documents
   useEffect(() => {
     axiosInstance
-      .get(`/companies/${companyID}/documents`)
+      .get(`/companies/${companyId}/documents`)
       .then((res) => setDocsData(res.data))
       .catch((err) => console.error(err));
-  }, [companyID]);
+  }, [companyId]);
 
   // Get Partners
   useEffect(() => {
     axiosInstance
-      .get(`/companies/${companyID}/partners`)
+      .get(`/companies/${companyId}/partners`)
       .then((res) => setPartnersData(res.data))
       .catch((err) => console.error(err));
-  }, [companyID]);
+  }, [companyId]);
 
   const partnerMap = {};
   partnersData.forEach((p) => {
@@ -50,7 +49,7 @@ export default function FinancialDocs() {
     formData.append("xmlFile", file);
     try {
       const res = await axiosInstance.post(
-        `/companies/${companyID}/documents`,
+        `/companies/${companyId}/documents`,
         formData,
         {
           headers: {
@@ -79,7 +78,7 @@ export default function FinancialDocs() {
 
     try {
       await axiosInstance.delete(
-        `/companies/${companyID}/documents/${documentID}`
+        `/companies/${companyId}/documents/${documentID}`
       );
       setDocsData(docsData.filter((doc) => doc.id !== documentID));
     } catch (err) {
@@ -98,7 +97,7 @@ export default function FinancialDocs() {
     try {
       const idsToDelete = Array.from(selectedDocs);
       await axiosInstance.post(
-        `/companies/${companyID}/documents/bulk-delete`,
+        `/companies/${companyId}/documents/bulk-delete`,
         {
           ids: idsToDelete,
         }

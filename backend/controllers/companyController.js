@@ -13,3 +13,24 @@ export const getCompanies = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+export const addCompany = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { name } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: "Company name is required" });
+    }
+
+    const result = await pool.query(
+      "INSERT INTO companies (name, user_id) VALUES ($1, $2) RETURNING id, name",
+      [name.trim(), userId]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+};

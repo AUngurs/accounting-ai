@@ -49,7 +49,8 @@ export const importPartners = [
           : partner.PartnerFirstName || "";
         const partnerRegNr = isCompany
           ? partner.PartnerRegistrationNo || ""
-          : partner.PartnerPersonalIdentityNo || "";
+          : partner.PartnerPersonalIdentityNo ||
+            `TEMP-${partnerName}-${partnerTitle}`;
 
         const checkQuery = `
           SELECT * FROM partners

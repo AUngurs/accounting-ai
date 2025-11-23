@@ -13,16 +13,15 @@ export default function Partners() {
   });
   const [selectedPartners, setSelectedPartners] = useState(new Set());
 
-  const { currentCompany } = useCompany();
-  const companyID = currentCompany.id;
+  const { companyId } = useCompany();
 
   // Get Partners
   useEffect(() => {
     axiosInstance
-      .get(`/companies/${companyID}/partners`)
+      .get(`/companies/${companyId}/partners`)
       .then((res) => setPartnersData(res.data))
       .catch((err) => console.error(err));
-  }, [companyID]);
+  }, [companyId]);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -35,7 +34,7 @@ export default function Partners() {
     formData.append("xmlFile", file);
     try {
       const res = await axiosInstance.post(
-        `/companies/${companyID}/partners`,
+        `/companies/${companyId}/partners`,
         formData,
         {
           headers: {
@@ -60,7 +59,7 @@ export default function Partners() {
     if (!confirmed) return;
     try {
       await axiosInstance.delete(
-        `companies/${companyID}/partners/${partnerID}`
+        `companies/${companyId}/partners/${partnerID}`
       );
       setPartnersData(
         partnersData.filter((partner) => partner.id !== partnerID)
@@ -78,7 +77,7 @@ export default function Partners() {
     }
     try {
       const idsToDelete = Array.from(selectedPartners);
-      await axiosInstance.post(`/companies/${companyID}/partners/bulk-delete`, {
+      await axiosInstance.post(`/companies/${companyId}/partners/bulk-delete`, {
         ids: idsToDelete,
       });
       setPartnersData(

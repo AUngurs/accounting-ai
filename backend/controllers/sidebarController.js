@@ -4,8 +4,6 @@ export const getSidebar = async (req, res) => {
   try {
     const userID = req.user.userId;
 
-    console.log(`Gotten userID: ${userID}`);
-
     const userResult = await pool.query(
       "SELECT id, email, username FROM users WHERE id = $1",
       [userID]

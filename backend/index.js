@@ -1,8 +1,6 @@
 import express from "express";
 import cors from "cors";
 
-import pool from "./db.js";
-
 import authRoutes from "./routes/auth.js";
 import sidebarRoutes from "./routes/sidebar.js";
 import documentsRoutes from "./routes/documents.js";

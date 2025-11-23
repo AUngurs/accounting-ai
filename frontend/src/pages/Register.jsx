@@ -8,20 +8,17 @@ export default function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
-  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setError("");
 
     if (password !== repeatPassword) {
-      setError("Paroles nesakrīt");
       return;
     }
 
     try {
-      const res = await axiosInstance.post("/auth/register", {
+      await axiosInstance.post("/auth/register", {
         email,
         username,
         password,
@@ -29,14 +26,6 @@ export default function Register() {
       });
       navigate("/login");
     } catch (err) {
-      if (err.response && err.response.data) {
-        const data = err.response.data;
-        setError(
-          data.error || data.errors?.[0]?.msg || "Reģistrācija neizdevās"
-        );
-      } else {
-        setError("Servera kļūda, mēģiniet vēlreiz");
-      }
       console.error(err);
     }
   };

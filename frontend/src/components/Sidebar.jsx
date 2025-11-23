@@ -8,8 +8,6 @@ import "../styles/Sidebar.css";
 export default function Sidebar() {
   const navigate = useNavigate();
 
-  const { currentCompany } = useCompany();
-
   const placeholder = {
     user: {
       id: -1,
@@ -26,18 +24,17 @@ export default function Sidebar() {
 
   const [sidebarData, setSidebarData] = useState(placeholder);
 
-  const companyID = currentCompany.id;
+  const { companyId, company } = useCompany();
 
   useEffect(() => {
     axiosInstance
-      .get(`/companies/${companyID}/sidebar`)
+      .get(`/companies/${companyId}/sidebar`)
       .then((res) => setSidebarData(res.data))
       .catch((err) => console.error(err));
-  }, [companyID]);
+  }, [companyId]);
 
   const handleCompanyChange = () => {
     navigate("/companies");
-    localStorage.removeItem("companyId");
   };
 
   return (
@@ -53,8 +50,7 @@ export default function Sidebar() {
       </button>
 
       <div className="my-4 fw-bold text-light">
-        {sidebarData.companies.find((c) => c.id === Number(companyID))?.name ||
-          "Loading..."}
+        {company.name || "Loading..."}
       </div>
 
       <div className="card mb-4 bg-secondary text-light">

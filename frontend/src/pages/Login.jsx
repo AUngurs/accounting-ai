@@ -2,12 +2,13 @@ import React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
+import { useAuth } from "../components/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -15,14 +16,9 @@ export default function Login() {
     try {
       const res = await axiosInstance.post("/auth/login", { email, password });
       const data = res.data;
-      localStorage.setItem("token", data.token);
+      login(data.token, data.user);
       navigate("/companies");
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.error) {
-        setError(err.response.data.error);
-      } else {
-        setError("Servera kļūda");
-      }
       console.error(err);
     }
   };
