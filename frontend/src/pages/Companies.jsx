@@ -7,12 +7,7 @@ import { useAuth } from "../components/AuthContext";
 export default function Companies() {
   const navigate = useNavigate();
 
-  const {
-    companies,
-    updateCompanies,
-    selectCompany,
-    clearAll: clearCompanies,
-  } = useCompany();
+  const { companies, updateCompanies, selectCompany, clearAll: clearCompanies } = useCompany();
 
   const { logout } = useAuth();
 
@@ -52,10 +47,7 @@ export default function Companies() {
   };
 
   return (
-    <div
-      className="d-flex justify-content-center align-items-center"
-      style={{ minHeight: "100vh", backgroundColor: "#19221C" }}
-    >
+    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh", backgroundColor: "#19221C" }}>
       <div
         className="card p-4 shadow"
         style={{
@@ -79,10 +71,7 @@ export default function Companies() {
           ))}
         </ul>
 
-        <button
-          className="btn btn-primary mt-3 mb-2 w-100"
-          onClick={() => setShowModal(true)}
-        >
+        <button className="btn btn-primary mt-3 mb-2 w-100" onClick={() => setShowModal(true)}>
           Pievienot uzņēmumu
         </button>
         <button className="btn btn-danger w-100" onClick={handleLogout}>
@@ -91,20 +80,12 @@ export default function Companies() {
 
         {/* Modal */}
         {showModal && (
-          <div
-            className="modal fade show"
-            style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}
-            tabIndex="-1"
-          >
+          <div className="modal fade show" style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }} tabIndex="-1">
             <div className="modal-dialog">
               <div className="modal-content">
                 <div className="modal-header">
                   <h5 className="modal-title">Pievienot uzņēmumu</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={() => setShowModal(false)}
-                  ></button>
+                  <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
                 </div>
                 <div className="modal-body">
                   <input
@@ -116,16 +97,10 @@ export default function Companies() {
                   />
                 </div>
                 <div className="modal-footer">
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => setShowModal(false)}
-                  >
+                  <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
                     Atcelt
                   </button>
-                  <button
-                    className="btn btn-primary"
-                    onClick={handleAddCompany}
-                  >
+                  <button className="btn btn-primary" onClick={handleAddCompany}>
                     Saglabāt
                   </button>
                 </div>

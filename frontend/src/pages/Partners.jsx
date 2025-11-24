@@ -2,6 +2,7 @@ import React from "react";
 import { useEffect, useState, useRef } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { useCompany } from "../components/CompanyContext";
+import EditPartnerModal from "../components/EditPartnerModal";
 
 export default function Partners() {
   const [partnersData, setPartnersData] = useState([]);
@@ -13,7 +14,25 @@ export default function Partners() {
   });
   const [selectedPartners, setSelectedPartners] = useState(new Set());
 
+  const [selectedPartner, setSelectedPartner] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const [filters, setFilters] = useState({
+    name: "",
+    type: "",
+    regNr: "",
+    vat: "",
+  });
+
   const { companyId } = useCompany();
+
+  const filteredPartners = partnersData.filter(
+    (p) =>
+      (filters.name ? p.partner_name.toLowerCase().includes(filters.name.toLowerCase()) : true) &&
+      (filters.type ? p.partner_kind_name === filters.type : true) &&
+      (filters.regNr ? p.partner_reg_nr?.includes(filters.regNr) : true) &&
+      (filters.vat ? p.vat_nr?.includes(filters.vat) : true)
+  );
 
   // Get Partners
   useEffect(() => {
@@ -33,15 +52,11 @@ export default function Partners() {
     const formData = new FormData();
     formData.append("xmlFile", file);
     try {
-      const res = await axiosInstance.post(
-        `/companies/${companyId}/partners`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const res = await axiosInstance.post(`/companies/${companyId}/partners`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       const data = res.data;
       setPartnersData((prev) => [...prev, ...data.newPartners]);
       fileInputRef.current.value = "";
@@ -53,17 +68,29 @@ export default function Partners() {
     }
   };
 
+  const handleEditClick = (partner) => {
+    setSelectedPartner(partner);
+    setShowModal(true);
+  };
+
+  const handleSave = async (updatedPartner) => {
+    try {
+      const res = await axiosInstance.put(`/companies/${companyId}/partners/${updatedPartner.id}`, updatedPartner);
+
+      setPartnersData((prev) => prev.map((p) => (p.id === updatedPartner.id ? res.data : p)));
+      setShowModal(false);
+      setSelectedPartner(null);
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Kļūda saglabājot partneri");
+    }
+  };
+
   // Delete individual Partner
   const handleDelete = async (partnerID) => {
-    const confirmed = window.confirm("Vai tiešām vēlaties dzēst partneri?");
-    if (!confirmed) return;
     try {
-      await axiosInstance.delete(
-        `companies/${companyId}/partners/${partnerID}`
-      );
-      setPartnersData(
-        partnersData.filter((partner) => partner.id !== partnerID)
-      );
+      await axiosInstance.delete(`companies/${companyId}/partners/${partnerID}`);
+      setPartnersData(partnersData.filter((partner) => partner.id !== partnerID));
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Dzēšana neizdevās!");
@@ -80,9 +107,7 @@ export default function Partners() {
       await axiosInstance.post(`/companies/${companyId}/partners/bulk-delete`, {
         ids: idsToDelete,
       });
-      setPartnersData(
-        partnersData.filter((partner) => !selectedPartners.has(partner.id))
-      );
+      setPartnersData(partnersData.filter((partner) => !selectedPartners.has(partner.id)));
       setSelectedPartners(new Set());
     } catch (err) {
       console.error(err);
@@ -104,12 +129,8 @@ export default function Partners() {
         const aTitle = a.partner_title ? a.partner_title.trim() : "";
         const bTitle = b.partner_title ? b.partner_title.trim() : "";
 
-        aValue = aTitle
-          ? `${a.partner_name.trim()}, ${aTitle}`
-          : a.partner_name.trim();
-        bValue = bTitle
-          ? `${b.partner_name.trim()}, ${bTitle}`
-          : b.partner_name.trim();
+        aValue = aTitle ? `${a.partner_name.trim()}, ${aTitle}` : a.partner_name.trim();
+        bValue = bTitle ? `${b.partner_name.trim()}, ${bTitle}` : b.partner_name.trim();
 
         aValue = aValue.toLowerCase();
         bValue = bValue.toLowerCase();
@@ -118,9 +139,7 @@ export default function Partners() {
         bValue = (b[key] || "").toString().toLowerCase();
       }
 
-      return direction === "asc"
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
+      return direction === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
     });
 
     setPartnersData(sorted);
@@ -148,110 +167,134 @@ export default function Partners() {
         )}
       </div>
 
-      {partnersData.length === 0 ? (
-        <p></p>
-      ) : (
-        <div className="table-responsive rounded-1">
-          <table
-            className="table table-striped table-bordered"
-            style={{ tableLayout: "fixed" }}
-          >
-            <thead className="table-dark">
-              <tr className="align-middle">
-                <th style={{ width: "2%" }}>
+      <div className="table-responsive rounded-1">
+        <table className="table table-striped table-bordered table-sm" style={{ tableLayout: "fixed" }}>
+          <thead className="table-dark">
+            <tr className="align-middle">
+              <th style={{ width: "2%" }}>
+                <input
+                  type="checkbox"
+                  checked={selectedPartners.size === partnersData.length && partnersData.length > 0}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedPartners(new Set(partnersData.map((p) => p.id)));
+                    } else {
+                      setSelectedPartners(new Set());
+                    }
+                  }}
+                />
+              </th>
+              <th style={{ width: "42%", cursor: "pointer" }} onClick={() => handleSort("fullName")}>
+                Nosaukums/Uzvārds, vārds{" "}
+                {sortConfig.key === "fullName" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+              </th>
+              <th style={{ width: "10%", cursor: "pointer" }} onClick={() => handleSort("partner_kind_name")}>
+                Tips {sortConfig.key === "partner_kind_name" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+              </th>
+              <th style={{ width: "18%", cursor: "pointer" }} onClick={() => handleSort("partner_reg_nr")}>
+                Reg. Nr. {sortConfig.key === "partner_reg_nr" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+              </th>
+              <th style={{ width: "18%", cursor: "pointer" }} onClick={() => handleSort("vat_nr")}>
+                PVN Nr. {sortConfig.key === "vat_nr" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+              </th>
+              <th style={{ width: "10%" }}></th>
+            </tr>
+            <tr>
+              <td></td>
+              <td>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Meklēt nosaukumu"
+                  value={filters.name}
+                  onChange={(e) => setFilters({ ...filters, name: e.target.value })}
+                />
+              </td>
+
+              <td>
+                <select
+                  className="form-select"
+                  value={filters.type}
+                  onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+                >
+                  <option value="">Visi</option>
+                  <option value="Juridiska persona">Juridiska persona</option>
+                  <option value="Fiziska persona">Fiziska persona</option>
+                  <option value="Darbinieks">Darbinieks</option>
+                </select>
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Reģ. Nr"
+                  value={filters.regNr}
+                  onChange={(e) => setFilters({ ...filters, regNr: e.target.value })}
+                />
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="PVN Nr"
+                  value={filters.vat}
+                  onChange={(e) => setFilters({ ...filters, vat: e.target.value })}
+                />
+              </td>
+
+              <td>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => setFilters({ name: "", type: "", regNr: "", vat: "" })}
+                >
+                  Atiestatīt
+                </button>
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredPartners.map((partner) => (
+              <tr key={partner.id} className="align-middle">
+                <td>
                   <input
                     type="checkbox"
-                    checked={
-                      selectedPartners.size === partnersData.length &&
-                      partnersData.length > 0
-                    }
+                    checked={selectedPartners.has(partner.id)}
                     onChange={(e) => {
+                      const newSet = new Set(selectedPartners);
                       if (e.target.checked) {
-                        setSelectedPartners(
-                          new Set(partnersData.map((p) => p.id))
-                        );
+                        newSet.add(partner.id);
                       } else {
-                        setSelectedPartners(new Set());
+                        newSet.delete(partner.id);
                       }
+                      setSelectedPartners(newSet);
                     }}
                   />
-                </th>
-                <th
-                  style={{ width: "48%", cursor: "pointer" }}
-                  onClick={() => handleSort("fullName")}
-                >
-                  Nosaukums/Uzvārds, vārds{" "}
-                  {sortConfig.key === "fullName"
-                    ? sortConfig.direction === "asc"
-                      ? "▲"
-                      : "▼"
-                    : ""}
-                </th>
-                <th
-                  style={{ width: "20%", cursor: "pointer" }}
-                  onClick={() => handleSort("partner_reg_nr")}
-                >
-                  Reg. Nr.{" "}
-                  {sortConfig.key === "partner_reg_nr"
-                    ? sortConfig.direction === "asc"
-                      ? "▲"
-                      : "▼"
-                    : ""}
-                </th>
-                <th
-                  style={{ width: "20%", cursor: "pointer" }}
-                  onClick={() => handleSort("vat_nr")}
-                >
-                  PVN Nr.{" "}
-                  {sortConfig.key === "vat_nr"
-                    ? sortConfig.direction === "asc"
-                      ? "▲"
-                      : "▼"
-                    : ""}
-                </th>
-                <th style={{ width: "10%", cursor: "pointer" }}></th>
+                </td>
+                <td>{`${partner.partner_name}${partner.partner_title ? ", " + partner.partner_title : ""}`}</td>
+                <td>{partner.partner_kind_name}</td>
+                <td>{partner.partner_reg_nr}</td>
+                <td>{partner.vat_nr}</td>
+                <td style={{ display: "flex", justifyContent: "space-evenly" }}>
+                  <button onClick={() => handleEditClick(partner)}>
+                    <i className="bi bi-pencil-square"></i>
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {partnersData.map((partner) => (
-                <tr key={partner.id} className="align-middle">
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={selectedPartners.has(partner.id)}
-                      onChange={(e) => {
-                        const newSet = new Set(selectedPartners);
-                        if (e.target.checked) {
-                          newSet.add(partner.id);
-                        } else {
-                          newSet.delete(partner.id);
-                        }
-                        setSelectedPartners(newSet);
-                      }}
-                    />
-                  </td>
-                  <td>{`${partner.partner_name}${
-                    partner.partner_title ? ", " + partner.partner_title : ""
-                  }`}</td>
-                  <td>{partner.partner_reg_nr}</td>
-                  <td>{partner.vat_nr}</td>
-                  <td
-                    style={{ display: "flex", justifyContent: "space-evenly" }}
-                  >
-                    <button className="btn btn-success btn-sm">Rediģēt</button>
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleDelete(partner.id)}
-                    >
-                      Dzēst
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <EditPartnerModal
+        show={showModal}
+        handleClose={() => setShowModal(false)}
+        partner={selectedPartner}
+        onSave={handleSave} // function to update the partner in state
+        onDelete={handleDelete} // function to delete the partner from state
+        partners={partnersData} // full partners array for validation
+      />
     </React.Fragment>
   );
 }

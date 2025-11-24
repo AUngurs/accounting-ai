@@ -4,15 +4,9 @@ export const getSidebar = async (req, res) => {
   try {
     const userID = req.user.userId;
 
-    const userResult = await pool.query(
-      "SELECT id, email, username FROM users WHERE id = $1",
-      [userID]
-    );
+    const userResult = await pool.query("SELECT id, email, username FROM users WHERE id = $1", [userID]);
 
-    const companiesResult = await pool.query(
-      "SELECT id, name FROM companies WHERE user_id = $1",
-      [userID]
-    );
+    const companiesResult = await pool.query("SELECT id, name FROM companies WHERE user_id = $1", [userID]);
 
     res.json({
       user: userResult.rows[0],

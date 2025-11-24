@@ -106,11 +106,7 @@ export default function Register() {
               Reģistrēties
             </button>
 
-            <button
-              type="button"
-              className="btn btn-secondary w-100"
-              onClick={() => navigate("/login")}
-            >
+            <button type="button" className="btn btn-secondary w-100" onClick={() => navigate("/login")}>
               Atpakaļ
             </button>
           </form>

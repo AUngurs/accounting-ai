@@ -7,6 +7,8 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
+  const [loading, setLoading] = useState(true);
+
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
 
@@ -16,6 +18,8 @@ export function AuthProvider({ children }) {
 
     if (savedToken) setToken(savedToken);
     if (savedUser) setUser(JSON.parse(savedUser));
+
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -48,6 +52,7 @@ export function AuthProvider({ children }) {
     setToken,
     setUser,
     isAuthenticated: !!token,
+    loading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

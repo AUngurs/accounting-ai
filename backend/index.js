@@ -25,12 +25,7 @@ app.use("/api/user", authenticateToken, userRoutes);
 
 app.use("/api/companies", authenticateToken, companiesRoutes);
 
-app.use(
-  "/api/companies/:companyId",
-  authenticateToken,
-  authCompanyAccess,
-  (req, res, next) => next()
-);
+app.use("/api/companies/:companyId", authenticateToken, authCompanyAccess, (req, res, next) => next());
 
 app.use("/api/companies/:companyId/sidebar", sidebarRoutes);
 app.use("/api/companies/:companyId/documents", documentsRoutes);

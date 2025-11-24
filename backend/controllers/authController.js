@@ -16,10 +16,7 @@ export const register = async (req, res) => {
       return res.status(400).json({ error: "Passwords do not match" });
     }
 
-    const existingUser = await pool.query(
-      "SELECT * FROM users WHERE email = $1",
-      [email]
-    );
+    const existingUser = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
     if (existingUser.rows.length > 0) {
       return res.status(400).json({ error: "Email already in use" });
     }
@@ -50,10 +47,7 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const userResult = await pool.query(
-      "SELECT * FROM users WHERE email = $1",
-      [email]
-    );
+    const userResult = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
     const user = userResult.rows[0];
     if (!user) {
       return res.status(400).json({ error: "Invalid credentials" });

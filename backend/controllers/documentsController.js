@@ -8,10 +8,7 @@ const upload = multer({ dest: "uploads/" });
 export const getDocuments = async (req, res) => {
   try {
     const companyID = req.params.companyId;
-    const docsResult = await pool.query(
-      "SELECT * FROM documents WHERE company_id = $1 ORDER BY doc_date DESC",
-      [companyID]
-    );
+    const docsResult = await pool.query("SELECT * FROM documents WHERE company_id = $1 ORDER BY doc_date DESC", [companyID]);
     res.json(docsResult.rows);
   } catch (err) {
     console.error(err);
@@ -31,14 +28,9 @@ export const importDocuments = [
       });
 
       const financialDocsRaw = result.dataroot.tjResponse.FinancialDoc;
-      const financialDocs = Array.isArray(financialDocsRaw)
-        ? financialDocsRaw
-        : [financialDocsRaw];
+      const financialDocs = Array.isArray(financialDocsRaw) ? financialDocsRaw : [financialDocsRaw];
 
-      const { rows: partnerRows } = await pool.query(
-        "SELECT id, partner_reg_nr FROM partners WHERE company_id=$1",
-        [companyID]
-      );
+      const { rows: partnerRows } = await pool.query("SELECT id, partner_reg_nr FROM partners WHERE company_id=$1", [companyID]);
 
       const partnersMap = {};
       partnerRows.forEach((p) => {
@@ -72,9 +64,7 @@ export const importDocuments = [
         newDocuments.push(insertedDoc);
 
         if (doc.FinancialDocLine) {
-          const lines = Array.isArray(doc.FinancialDocLine)
-            ? doc.FinancialDocLine
-            : [doc.FinancialDocLine];
+          const lines = Array.isArray(doc.FinancialDocLine) ? doc.FinancialDocLine : [doc.FinancialDocLine];
 
           for (const line of lines) {
             const lineQuery = `
@@ -106,17 +96,25 @@ export const importDocuments = [
   },
 ];
 
+export const getLines = async (req, res) => {
+  try {
+    const documentID = req.params.document_id;
+    const linesResult = await pool.query("SELECT * FROM document_lines WHERE document_id = $1 ORDER BY line_supplementary_notice DESC", [
+      documentID,
+    ]);
+    res.json(linesResult.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 export const deleteDocument = async (req, res) => {
   const { document_id } = req.params;
   try {
-    await pool.query("DELETE FROM document_lines WHERE document_id = $1", [
-      document_id,
-    ]);
+    await pool.query("DELETE FROM document_lines WHERE document_id = $1", [document_id]);
 
-    const result = await pool.query(
-      "DELETE FROM documents WHERE id = $1 RETURNING *",
-      [document_id]
-    );
+    const result = await pool.query("DELETE FROM documents WHERE id = $1 RETURNING *", [document_id]);
 
     if (result.rowCount === 0) {
       return res.status(404).json({ message: "Finanšu dokuments nav atrasts" });
@@ -137,14 +135,9 @@ export const bulkDeleteDocuments = async (req, res) => {
   }
 
   try {
-    await pool.query("DELETE FROM document_lines WHERE document_id = ANY($1)", [
-      ids,
-    ]);
+    await pool.query("DELETE FROM document_lines WHERE document_id = ANY($1)", [ids]);
 
-    const result = await pool.query(
-      "DELETE FROM documents WHERE id = ANY($1) RETURNING *",
-      [ids]
-    );
+    const result = await pool.query("DELETE FROM documents WHERE id = ANY($1) RETURNING *", [ids]);
 
     res.status(200).json({
       message: `Veiksmīgi dzēsti ${result.rowCount} dokumenti`,

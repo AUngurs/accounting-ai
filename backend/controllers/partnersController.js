@@ -9,10 +9,9 @@ export const getPartners = async (req, res) => {
   try {
     const companyID = req.params.companyId;
 
-    const partnersResult = await pool.query(
-      "SELECT * FROM partners WHERE company_id = $1 ORDER BY partner_name",
-      [companyID]
-    );
+    const partnersResult = await pool.query("SELECT * FROM partners WHERE company_id = $1 ORDER BY partner_name", [
+      companyID,
+    ]);
 
     res.json(partnersResult.rows);
   } catch (err) {
@@ -41,26 +40,18 @@ export const importPartners = [
       for (const partner of partners) {
         const isCompany = partner.PartnerKindName === "Juridiska persona";
 
-        const partnerTitle = isCompany
-          ? partner.PartnerTitle || ""
-          : partner.PartnerSurname || "";
-        const partnerName = isCompany
-          ? partner.PartnerName || ""
-          : partner.PartnerFirstName || "";
+        const partnerTitle = isCompany ? partner.PartnerTitle || "" : partner.PartnerSurname || "";
+        const partnerName = isCompany ? partner.PartnerName || "" : partner.PartnerFirstName || "";
         const partnerRegNr = isCompany
           ? partner.PartnerRegistrationNo || ""
-          : partner.PartnerPersonalIdentityNo ||
-            `TEMP-${partnerName}-${partnerTitle}`;
+          : partner.PartnerPersonalIdentityNo || `TEMP-${partnerName}-${partnerTitle}`;
 
         const checkQuery = `
           SELECT * FROM partners
           WHERE company_id = $1 AND partner_reg_nr = $2
         `;
 
-        const { rows: existing } = await pool.query(checkQuery, [
-          companyID,
-          partnerRegNr,
-        ]);
+        const { rows: existing } = await pool.query(checkQuery, [companyID, partnerRegNr]);
 
         if (existing.length > 0) {
           skipped.push({
@@ -71,9 +62,7 @@ export const importPartners = [
         }
 
         const vatInfoRaw = partner.PartnerVatNo;
-        const vatInfo = Array.isArray(vatInfoRaw)
-          ? vatInfoRaw[0]
-          : vatInfoRaw || {};
+        const vatInfo = Array.isArray(vatInfoRaw) ? vatInfoRaw[0] : vatInfoRaw || {};
 
         const insertQuery = `
             INSERT INTO partners
@@ -112,13 +101,44 @@ export const importPartners = [
   },
 ];
 
+export const editPartner = async (req, res) => {
+  try {
+    const { partner_id } = req.params;
+    const { kind_name, title, name, reg_nr, vat_type, vat_country_code, vat_nr } = req.body;
+
+    if (!kind_name || !name || !vat_type) {
+      return res.status(400).json({ error: "Some fields are required" });
+    }
+
+    const result = await pool.query(
+      `UPDATE partners
+       SET partner_kind_name = $1,
+           partner_title = $2,
+           partner_name = $3,
+           partner_reg_nr = $4,
+           partner_vat_type = $5,
+           vat_country_code = $6,
+           vat_nr = $7
+       WHERE id = $8
+       RETURNING *`,
+      [kind_name, title, name, reg_nr, vat_type, vat_country_code, vat_nr, partner_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Partneris nav atrasts" });
+    }
+
+    res.status(200).json(result.rows[0]);
+  } catch (err) {
+    console.error("Kļūda rediģējot partneri:", err);
+    res.status(500).json({ error: "Neizdevās rediģēt partneri" });
+  }
+};
+
 export const deletePartner = async (req, res) => {
   const { partner_id } = req.params;
   try {
-    const result = await pool.query(
-      "DELETE FROM partners WHERE id = $1 RETURNING *",
-      [partner_id]
-    );
+    const result = await pool.query("DELETE FROM partners WHERE id = $1 RETURNING *", [partner_id]);
 
     if (result.rowCount === 0) {
       return res.status(404).json({ message: "Partneris nav atrasts" });
@@ -139,10 +159,7 @@ export const bulkDeletePartners = async (req, res) => {
   }
 
   try {
-    const result = await pool.query(
-      "DELETE FROM partners WHERE id = ANY($1) RETURNING *",
-      [ids]
-    );
+    const result = await pool.query("DELETE FROM partners WHERE id = ANY($1) RETURNING *", [ids]);
 
     res.status(200).json({
       message: `Veiksmīgi dzēsti ${result.rowCount} partneri`,

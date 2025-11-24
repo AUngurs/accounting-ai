@@ -22,8 +22,7 @@ export function CompanyProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (companies?.length > 0)
-      localStorage.setItem("companies", JSON.stringify(companies));
+    if (companies?.length > 0) localStorage.setItem("companies", JSON.stringify(companies));
     else localStorage.removeItem("companies");
   }, [companies]);
 
@@ -88,7 +87,5 @@ export function CompanyProvider({ children }) {
     hasCompany: !!companyId,
   };
 
-  return (
-    <CompanyContext.Provider value={value}>{children}</CompanyContext.Provider>
-  );
+  return <CompanyContext.Provider value={value}>{children}</CompanyContext.Provider>;
 }

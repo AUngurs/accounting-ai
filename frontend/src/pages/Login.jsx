@@ -71,11 +71,7 @@ export default function Login() {
               Ieiet
             </button>
 
-            <button
-              type="button"
-              className="btn btn-secondary w-100"
-              onClick={() => navigate("/register")}
-            >
+            <button type="button" className="btn btn-secondary w-100" onClick={() => navigate("/register")}>
               Reģistrēties
             </button>
           </form>
