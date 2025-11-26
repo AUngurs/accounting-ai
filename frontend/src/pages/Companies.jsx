@@ -5,6 +5,8 @@ import { useCompany } from "../components/CompanyContext";
 import { useAuth } from "../components/AuthContext";
 import EditCompanyModal from "../components/EditCompanyModal";
 import AddCompanyModal from "../components/AddCompanyModal";
+import UserCard from "../components/UserCard";
+import { notify } from "../utils/notify";
 
 export default function Companies() {
   const navigate = useNavigate();
@@ -14,7 +16,6 @@ export default function Companies() {
   const { logout } = useAuth();
 
   const [showAddModal, setShowAddModal] = useState(false);
-
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingCompany, setEditingCompany] = useState(null);
 
@@ -37,6 +38,7 @@ export default function Companies() {
       });
       updateCompanies([...companies, res.data]);
       setShowAddModal(false);
+      notify.success("Uzņēmums pievienots!");
     } catch (err) {
       console.error(err);
     }
@@ -45,10 +47,11 @@ export default function Companies() {
   const handleSave = async (updatedCompany) => {
     try {
       const res = await axiosInstance.put(`/companies/${updatedCompany.id}`, updatedCompany);
-
-      updateCompanies((prev) => prev.map((c) => (c.id === updatedCompany.id ? res.data : c)).sort((a, b) => a.name.localeCompare(b.name)));
+      const updatedList = companies.map((c) => (c.id === updatedCompany.id ? res.data : c)).sort((a, b) => a.name.localeCompare(b.name));
+      updateCompanies(updatedList);
       setShowEditModal(false);
       setEditingCompany(null);
+      notify.success("Uzņēmums veiksmīgi rediģēts!");
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Kļūda saglabājot kontu");
@@ -59,6 +62,7 @@ export default function Companies() {
     try {
       await axiosInstance.delete(`companies/${companyId}`);
       updateCompanies(companies.filter((company) => company.id !== companyId));
+      notify.success("Uzņēmums veiksmīgi dzēsts!");
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Dzēšana neizdevās!");
@@ -82,6 +86,10 @@ export default function Companies() {
           maxHeight: "90vh",
         }}
       >
+        <UserCard></UserCard>
+        <button className="btn btn-success mb-4 w-100" onClick={() => navigate("/user")}>
+          Mainīt lietotāja datus
+        </button>
         <h2>Izvēlieties uzņēmumu</h2>
         <ul className="list-group mt-3">
           {companies.map((company) => (
@@ -106,6 +114,7 @@ export default function Companies() {
         <button className="btn btn-primary mt-3 mb-2 w-100" onClick={() => setShowAddModal(true)}>
           Pievienot uzņēmumu
         </button>
+
         <button className="btn btn-danger w-100" onClick={handleLogout}>
           Iziet
         </button>

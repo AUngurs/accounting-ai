@@ -3,6 +3,7 @@ import axiosInstance from "../api/axiosInstance";
 import { useCompany } from "../components/CompanyContext";
 import DocumentLines from "../components/DocumentLines";
 import EditDocumentModal from "../components/EditDocumentModal";
+import { notify } from "../utils/notify";
 
 export default function FinancialDocs() {
   const [docsData, setDocsData] = useState([]);
@@ -102,6 +103,7 @@ export default function FinancialDocs() {
 
   const handleFileChange = (e) => setFile(e.target.files[0]);
 
+  // Import documents from XML
   const handleImport = async () => {
     if (!file) return alert("Izvēlieties XML datni (failu)!");
     const formData = new FormData();
@@ -113,13 +115,14 @@ export default function FinancialDocs() {
       setDocsData((prev) => [...prev, ...res.data.newDocuments]);
       fileInputRef.current.value = "";
       setFile(null);
-      alert(`Veiksmīgi importēti ${res.data.newDocuments.length} finanšu dokumenti.`);
+      notify.success(`Veiksmīgi importēti ${res.data.newDocuments.length} finanšu dokumenti!`);
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Import failed!");
     }
   };
 
+  // Export documents to XML
   const handleExport = async () => {};
 
   const handleEditClick = (doc) => {
@@ -127,35 +130,40 @@ export default function FinancialDocs() {
     setShowModal(true);
   };
 
+  // Edit document
   const handleSave = async (updatedDocument) => {
     try {
       const res = await axiosInstance.put(`/companies/${companyId}/documents/${updatedDocument.id}`, updatedDocument);
       setDocsData((prev) => prev.map((d) => (d.id === updatedDocument.id ? res.data : d)));
       setShowModal(false);
       setSelectedDocument(null);
+      notify.success("Finanšu dokuments veiksmīgi rediģēts!");
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Kļūda saglabājot dokumentu");
     }
   };
 
+  // Delete individual document
   const handleDelete = async (id) => {
-    if (!window.confirm("Vai tiešām vēlaties dzēst finanšu dokumentu?")) return;
     try {
       await axiosInstance.delete(`/companies/${companyId}/documents/${id}`);
       setDocsData((prev) => prev.filter((doc) => doc.id !== id));
+      notify.success("Finanšu dokuments veiksmīgi dzēsts!");
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Dzēšana neizdevās!");
     }
   };
 
+  // Delete multiple selected documents
   const handleDeleteSelected = async () => {
     if (!window.confirm("Vai tiešām vēlaties dzēst atlasītos finanšu dokumentus?")) return;
     try {
       const ids = Array.from(selectedDocs);
       await axiosInstance.post(`/companies/${companyId}/documents/bulk-delete`, { ids });
       setDocsData((prev) => prev.filter((doc) => !selectedDocs.has(doc.id)));
+      notify.success(`Veiksmīgi dzēsti ${ids.length} finanšu dokumenti!`);
       setSelectedDocs(new Set());
     } catch (err) {
       console.error(err);
@@ -177,7 +185,7 @@ export default function FinancialDocs() {
         </button>
         {selectedDocs.size > 0 && (
           <button className="btn btn-danger" onClick={handleDeleteSelected}>
-            Dzēst atlasītos dokumentus
+            Dzēst {selectedDocs.size} dokumentus
           </button>
         )}
       </div>

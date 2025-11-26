@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { useCompany } from "../components/CompanyContext";
 import EditAccountModal from "../components/EditAccountModal";
+import { notify } from "../utils/notify";
 
 export default function ChartOfAccounts() {
   const [accounts, setAccounts] = useState([]);
@@ -29,6 +30,7 @@ export default function ChartOfAccounts() {
     try {
       const res = await axiosInstance.post(`/companies/${companyId}/accounts/set`);
       setAccounts(res.data.accounts);
+      notify.success("Noklusējuma konti veiksmīgi iestatīti!");
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Kļūda iestatot noklusējuma kontus");
@@ -54,7 +56,7 @@ export default function ChartOfAccounts() {
       setAccounts(data.accounts);
       fileInputRef.current.value = "";
       setFile(null);
-      alert(`Veiksmīgi importēti ${data.accounts.length} konti.`);
+      notify.success(`Veiksmīgi importēti ${data.accounts.length} konti!`);
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Importēšana neizdevās.");
@@ -75,6 +77,7 @@ export default function ChartOfAccounts() {
       );
       setShowModal(false);
       setSelectedAccount(null);
+      notify.success("Konts veiksmīgi rediģēts!");
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Kļūda saglabājot kontu");
@@ -85,6 +88,7 @@ export default function ChartOfAccounts() {
     try {
       await axiosInstance.delete(`companies/${companyId}/accounts/${accountID}`);
       setAccounts(accounts.filter((account) => account.id !== accountID));
+      notify.success("Konts veiksmīgi dzēsts!");
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Dzēšana neizdevās!");

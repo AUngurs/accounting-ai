@@ -2,6 +2,7 @@ import React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
+import { notify } from "../utils/notify";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -24,6 +25,7 @@ export default function Register() {
         password,
         repeatPassword,
       });
+      notify.success("Reģistrācija veiksmīga!");
       navigate("/login");
     } catch (err) {
       console.error(err);
@@ -32,10 +34,7 @@ export default function Register() {
 
   return (
     <React.Fragment>
-      <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ minHeight: "100vh", backgroundColor: "#19221C" }}
-      >
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh", backgroundColor: "#19221C" }}>
         <div
           className="card p-4 shadow"
           style={{
@@ -50,14 +49,7 @@ export default function Register() {
               <label htmlFor="email" className="form-label">
                 E-pasts
               </label>
-              <input
-                type="email"
-                className="form-control"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <input type="email" className="form-control" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
 
             <div className="mb-3">

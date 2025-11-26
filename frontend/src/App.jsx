@@ -1,5 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import AppLayout from "./layouts/AppLayout";
 import Login from "./pages/Login";
 import FinancialDocs from "./pages/FinancialDocs";
@@ -8,6 +11,7 @@ import ChartOfAccounts from "./pages/ChartOfAccounts";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Companies from "./pages/Companies";
+import User from "./pages/User";
 import { CompanyProvider } from "./components/CompanyContext";
 import { AuthProvider } from "./components/AuthContext";
 
@@ -23,6 +27,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Companies />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user"
+            element={
+              <ProtectedRoute>
+                <User />
               </ProtectedRoute>
             }
           />
@@ -57,6 +69,7 @@ function App() {
             }
           />
         </Routes>
+        <ToastContainer />
       </CompanyProvider>
     </AuthProvider>
   );

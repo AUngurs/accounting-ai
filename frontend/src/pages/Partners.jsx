@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { useCompany } from "../components/CompanyContext";
 import EditPartnerModal from "../components/EditPartnerModal";
+import { notify } from "../utils/notify";
 
 export default function Partners() {
   const [partnersData, setPartnersData] = useState([]);
@@ -31,7 +32,7 @@ export default function Partners() {
       (filters.vat ? p.vat_nr?.includes(filters.vat) : true)
   );
 
-  // Get Partners
+  // Get partners
   useEffect(() => {
     axiosInstance
       .get(`/companies/${companyId}/partners`)
@@ -58,13 +59,14 @@ export default function Partners() {
       setPartnersData((prev) => [...prev, ...data.newPartners]);
       fileInputRef.current.value = "";
       setFile(null);
-      alert(`Veiksmīgi importēti ${data.newPartners.length} partneri.`);
+      notify.success(`Veiksmīgi importēti ${data.newPartners.length} partneri!`);
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Importēšana neizdevās.");
     }
   };
 
+  // Export partners to XML
   const handleExport = () => {};
 
   const handleEditClick = (partner) => {
@@ -72,6 +74,7 @@ export default function Partners() {
     setShowModal(true);
   };
 
+  // Edit partner
   const handleSave = async (updatedPartner) => {
     try {
       const res = await axiosInstance.put(`/companies/${companyId}/partners/${updatedPartner.id}`, updatedPartner);
@@ -79,24 +82,26 @@ export default function Partners() {
       setPartnersData((prev) => prev.map((p) => (p.id === updatedPartner.id ? res.data : p)));
       setShowModal(false);
       setSelectedPartner(null);
+      notify.success("Partneris veiksmīgi rediģēts!");
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Kļūda saglabājot partneri");
     }
   };
 
-  // Delete individual Partner
+  // Delete individual partner
   const handleDelete = async (partnerID) => {
     try {
       await axiosInstance.delete(`companies/${companyId}/partners/${partnerID}`);
       setPartnersData(partnersData.filter((partner) => partner.id !== partnerID));
+      notify.success("Partneris veiksmīgi dzēsts!");
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Dzēšana neizdevās!");
     }
   };
 
-  // Delete selected multiple Partners
+  // Delete selected multiple partners
   const handleDeleteSelected = async () => {
     if (!window.confirm("Vai tiešām vēlaties dzēst atlasītos partnerus?")) {
       return;
@@ -107,6 +112,7 @@ export default function Partners() {
         ids: idsToDelete,
       });
       setPartnersData(partnersData.filter((partner) => !selectedPartners.has(partner.id)));
+      notify.success(`Veiksmīgi dzēsti ${idsToDelete.length} partneri!`);
       setSelectedPartners(new Set());
     } catch (err) {
       console.error(err);
@@ -158,7 +164,7 @@ export default function Partners() {
         </button>
         {selectedPartners.size > 0 && (
           <button className="btn btn-danger" onClick={handleDeleteSelected}>
-            Dzēst atlasītos partnerus
+            Dzēst {selectedPartners.size} partnerus
           </button>
         )}
       </div>

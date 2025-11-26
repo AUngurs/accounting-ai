@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 
 import authRoutes from "./routes/auth.js";
-import sidebarRoutes from "./routes/sidebar.js";
 import documentsRoutes from "./routes/documents.js";
 import partnersRoutes from "./routes/partners.js";
 import accountsRoutes from "./routes/accounts.js";
@@ -27,7 +26,6 @@ app.use("/api/companies", authenticateToken, companiesRoutes);
 
 app.use("/api/companies/:companyId", authenticateToken, authCompanyAccess, (req, res, next) => next());
 
-app.use("/api/companies/:companyId/sidebar", sidebarRoutes);
 app.use("/api/companies/:companyId/documents", documentsRoutes);
 app.use("/api/companies/:companyId/partners", partnersRoutes);
 app.use("/api/companies/:companyId/accounts", accountsRoutes);
