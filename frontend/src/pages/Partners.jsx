@@ -13,17 +13,14 @@ export default function Partners() {
     direction: "asc",
   });
   const [selectedPartners, setSelectedPartners] = useState(new Set());
-
   const [selectedPartner, setSelectedPartner] = useState(null);
   const [showModal, setShowModal] = useState(false);
-
   const [filters, setFilters] = useState({
     name: "",
     type: "",
     regNr: "",
     vat: "",
   });
-
   const { companyId } = useCompany();
 
   const filteredPartners = partnersData.filter(
@@ -67,6 +64,8 @@ export default function Partners() {
       alert(err.response?.data?.error || "Importēšana neizdevās.");
     }
   };
+
+  const handleExport = () => {};
 
   const handleEditClick = (partner) => {
     setSelectedPartner(partner);
@@ -150,15 +149,12 @@ export default function Partners() {
     <React.Fragment>
       <h2 className="mb-3">Partneri</h2>
       <div className="mb-3 d-flex gap-2">
-        <input
-          type="file"
-          accept=".xml"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          className="form-control w-auto"
-        />
         <button className="btn btn-success" onClick={handleImport}>
           Importēt XML
+        </button>
+        <input type="file" accept=".xml" ref={fileInputRef} onChange={handleFileChange} className="form-control w-auto" />
+        <button className="btn btn-primary" onClick={handleExport}>
+          Eksportēt XML
         </button>
         {selectedPartners.size > 0 && (
           <button className="btn btn-danger" onClick={handleDeleteSelected}>
@@ -168,10 +164,18 @@ export default function Partners() {
       </div>
 
       <div className="table-responsive rounded-1">
-        <table className="table table-striped table-bordered table-sm" style={{ tableLayout: "fixed" }}>
+        <table className="table table-striped table-bordered table-sm table-hover" style={{ tableLayout: "fixed" }}>
+          <colgroup>
+            <col style={{ width: "2%" }} />
+            <col style={{ width: "45%" }} />
+            <col style={{ width: "13%" }} />
+            <col style={{ width: "20%" }} />
+            <col style={{ width: "20%" }} />
+            <col style={{ width: "38px" }} />
+          </colgroup>
           <thead className="table-dark">
             <tr className="align-middle">
-              <th style={{ width: "2%" }}>
+              <th style={{ textAlign: "center" }}>
                 <input
                   type="checkbox"
                   checked={selectedPartners.size === partnersData.length && partnersData.length > 0}
@@ -185,8 +189,7 @@ export default function Partners() {
                 />
               </th>
               <th style={{ width: "42%", cursor: "pointer" }} onClick={() => handleSort("fullName")}>
-                Nosaukums/Uzvārds, vārds{" "}
-                {sortConfig.key === "fullName" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+                Nosaukums/Uzvārds, vārds {sortConfig.key === "fullName" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
               </th>
               <th style={{ width: "10%", cursor: "pointer" }} onClick={() => handleSort("partner_kind_name")}>
                 Tips {sortConfig.key === "partner_kind_name" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
@@ -212,11 +215,7 @@ export default function Partners() {
               </td>
 
               <td>
-                <select
-                  className="form-select"
-                  value={filters.type}
-                  onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-                >
+                <select className="form-select" value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
                   <option value="">Visi</option>
                   <option value="Juridiska persona">Juridiska persona</option>
                   <option value="Fiziska persona">Fiziska persona</option>
@@ -244,14 +243,7 @@ export default function Partners() {
                 />
               </td>
 
-              <td>
-                <button
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => setFilters({ name: "", type: "", regNr: "", vat: "" })}
-                >
-                  Atiestatīt
-                </button>
-              </td>
+              <td></td>
             </tr>
           </thead>
           <tbody>
@@ -276,7 +268,7 @@ export default function Partners() {
                 <td>{partner.partner_kind_name}</td>
                 <td>{partner.partner_reg_nr}</td>
                 <td>{partner.vat_nr}</td>
-                <td style={{ display: "flex", justifyContent: "space-evenly" }}>
+                <td>
                   <button onClick={() => handleEditClick(partner)}>
                     <i className="bi bi-pencil-square"></i>
                   </button>

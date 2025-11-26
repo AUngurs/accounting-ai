@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, { createContext, useState, useContext, useEffect, useCallback } from "react";
 
 const CompanyContext = createContext();
 
@@ -36,14 +36,17 @@ export function CompanyProvider({ children }) {
     else localStorage.removeItem("company");
   }, [company]);
 
-  const updateCompanies = (companyList) => {
-    setCompanies(companyList);
+  const updateCompanies = useCallback(
+    (companyList) => {
+      setCompanies(companyList);
 
-    if (companyId && !companyList.some((c) => c.id === companyId)) {
-      setCompanyId(null);
-      setCompany(null);
-    }
-  };
+      if (companyId && !companyList.some((c) => c.id === companyId)) {
+        setCompanyId(null);
+        setCompany(null);
+      }
+    },
+    [companyId]
+  );
 
   const selectCompany = (id, companyData = null) => {
     setCompanyId(id);

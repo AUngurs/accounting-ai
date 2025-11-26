@@ -5,6 +5,9 @@ dotenv.config();
 
 const { Pool } = pg;
 
+// Gives dates as strings
+pg.types.setTypeParser(1082, (val) => val);
+
 const pool = new Pool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,

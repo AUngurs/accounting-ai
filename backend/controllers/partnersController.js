@@ -9,9 +9,7 @@ export const getPartners = async (req, res) => {
   try {
     const companyID = req.params.companyId;
 
-    const partnersResult = await pool.query("SELECT * FROM partners WHERE company_id = $1 ORDER BY partner_name", [
-      companyID,
-    ]);
+    const partnersResult = await pool.query("SELECT * FROM partners WHERE company_id = $1 ORDER BY partner_name", [companyID]);
 
     res.json(partnersResult.rows);
   } catch (err) {

@@ -96,6 +96,41 @@ export const importDocuments = [
   },
 ];
 
+export const editDocument = async (req, res) => {
+  try {
+    const { document_id } = req.params;
+    const { partner_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_currency, doc_amount, doc_comments } = req.body;
+
+    if (!doc_id || !doc_date || !doc_type_abbrev || !doc_group_abbrev || !doc_currency || !doc_amount) {
+      return res.status(400).json({ error: "Some fields are required" });
+    }
+
+    const result = await pool.query(
+      `UPDATE documents
+       SET partner_id = $1,
+           doc_id = $2,
+           doc_date = $3,
+           doc_type_abbrev = $4,
+           doc_group_abbrev = $5,
+           doc_currency = $6,
+           doc_amount = $7,
+           doc_comments = $8
+       WHERE id = $9
+       RETURNING *`,
+      [partner_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_currency, doc_amount, doc_comments, document_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Dokuments nav atrasts" });
+    }
+
+    res.status(200).json(result.rows[0]);
+  } catch (err) {
+    console.error("Kļūda rediģējot dokumentu:", err);
+    res.status(500).json({ error: "Neizdevās rediģēt dokumentu" });
+  }
+};
+
 export const getLines = async (req, res) => {
   try {
     const documentID = req.params.document_id;
@@ -106,6 +141,51 @@ export const getLines = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const editLines = async (req, res) => {
+  try {
+    const { document_id } = req.params;
+    const lines = req.body;
+
+    if (!Array.isArray(lines)) {
+      return res.status(400).json({ error: "Expected an array of lines." });
+    }
+
+    for (const line of lines) {
+      await pool.query(
+        `
+        UPDATE document_lines
+        SET
+          line_supplementary_notice = $1,
+          line_currency = $2,
+          line_amount = $3,
+          line_debet_account = $4,
+          line_credit_account = $5,
+          line_vat_rate = $6,
+          line_comments = $7
+        WHERE id = $8
+          AND document_id = $9
+        `,
+        [
+          line.line_supplementary_notice,
+          line.line_currency,
+          line.line_amount,
+          line.line_debet_account,
+          line.line_credit_account,
+          line.line_vat_rate,
+          line.line_comments,
+          line.id,
+          document_id,
+        ]
+      );
+    }
+
+    res.json({ message: "Kontējumi mainīti!" });
+  } catch (err) {
+    console.error("Kļūda rediģējot kontējumus:", err);
+    res.status(500).json({ error: "Neizdevās rediģēt kontējumus" });
   }
 };
 

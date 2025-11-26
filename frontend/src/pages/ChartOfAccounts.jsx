@@ -19,7 +19,7 @@ export default function ChartOfAccounts() {
       .get(`/companies/${companyId}/accounts`)
       .then((res) => setAccounts(res.data))
       .catch((err) => console.error(err));
-  }, [companyId, setAccounts]);
+  }, [companyId]);
 
   // Set default Accounts
   const handleSet = async () => {
@@ -95,30 +95,31 @@ export default function ChartOfAccounts() {
     <React.Fragment>
       <h2 className="mb-3">Kontu plāns</h2>
       <div className="mb-3 d-flex gap-2">
-        <input
-          type="file"
-          accept=".xlsx"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          className="form-control w-auto"
-        />
         <button className="btn btn-success" onClick={handleImport}>
           Importēt Excel
         </button>
+        <input type="file" accept=".xlsx" ref={fileInputRef} onChange={handleFileChange} className="form-control w-auto" />
         <button className="btn btn-primary" onClick={handleSet}>
           Iestatīt noklusējuma kontus
         </button>
       </div>
 
       <div className="table-responsive rounded-1">
-        <table className="table table-striped table-bordered table-sm" style={{ tableLayout: "fixed" }}>
+        <table className="table table-striped table-bordered table-sm" style={{ width: "100%", tableLayout: "fixed" }}>
+          <colgroup>
+            <col style={{ width: "8%" }} />
+            <col style={{ width: "52%" }} />
+            <col style={{ width: "20%" }} />
+            <col style={{ width: "20%" }} />
+            <col style={{ width: "38px" }} />
+          </colgroup>
           <thead className="table-dark">
             <tr className="align-middle">
-              <th style={{ width: "8%" }}>Kods</th>
-              <th style={{ width: "36%" }}>Nosaukums</th>
-              <th style={{ width: "23%" }}>Analītiskais/Sintētiskais</th>
-              <th style={{ width: "23%" }}>Aktīva/Pasīva/Operāciju</th>
-              <th style={{ width: "10%" }}></th>
+              <th>Kods</th>
+              <th>Nosaukums</th>
+              <th>Analītiskais/Sintētiskais</th>
+              <th>Aktīva/Pasīva/Operāciju</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
