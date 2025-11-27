@@ -6,6 +6,9 @@ import EditDocumentModal from "../components/EditDocumentModal";
 import { notify } from "../utils/notify";
 import { Table, Collapse } from "react-bootstrap";
 
+const ROW_HEIGHT = 24; // approximate height of each row (adjust if needed)
+const VISIBLE_ROWS = 25; // number of rows to render in the viewport
+
 export default function FinancialDocs() {
   const [docsData, setDocsData] = useState([]);
   const [partnersData, setPartnersData] = useState([]);
@@ -15,8 +18,11 @@ export default function FinancialDocs() {
   const [selectedDocs, setSelectedDocs] = useState(new Set());
   const { companyId } = useCompany();
   const [openDocId, setOpenDocId] = useState(null);
-  const [selectedDocument, setSelectedDocument] = useState(new Set());
+  const [selectedDocument, setSelectedDocument] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+  const [scrollTop, setScrollTop] = useState(0);
+  const containerRef = useRef(null);
 
   const docTypeOptions = ["Čeks", "Grām.", "Ienāk.b.dok.", "Izej.b.dok.", "Kredītrēķ.", "Rēķ"];
   const docCurrencyOptions = ["DKK", "EUR", "GBP", "LVL", "NOK", "PLN", "RUB", "SEK", "USD"];
@@ -50,6 +56,7 @@ export default function FinancialDocs() {
       console.error(err);
     }
   }, [companyId]);
+
   useEffect(() => {
     fetchDocuments();
   }, [fetchDocuments]);
@@ -102,6 +109,7 @@ export default function FinancialDocs() {
     if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
     return 0;
   });
+
   const handleSort = (key) => {
     setSortConfig((prev) => ({
       key,
@@ -111,7 +119,6 @@ export default function FinancialDocs() {
 
   const handleFileChange = (e) => setFile(e.target.files[0]);
 
-  // Import documents from XML
   const handleImport = async () => {
     if (!file) return alert("Izvēlieties XML datni (failu)!");
     const formData = new FormData();
@@ -130,15 +137,15 @@ export default function FinancialDocs() {
     }
   };
 
-  // Export documents to XML
-  const handleExport = async () => {};
+  const handleExport = async () => {
+    // Export logic (keep your original implementation)
+  };
 
   const handleEditClick = (doc) => {
     setSelectedDocument(doc);
     setShowModal(true);
   };
 
-  // Edit document
   const handleSave = async (updatedDocument) => {
     try {
       const res = await axiosInstance.put(`/companies/${companyId}/documents/${updatedDocument.id}`, updatedDocument);
@@ -152,7 +159,6 @@ export default function FinancialDocs() {
     }
   };
 
-  // Delete individual document
   const handleDelete = async (id) => {
     try {
       await axiosInstance.delete(`/companies/${companyId}/documents/${id}`);
@@ -164,7 +170,6 @@ export default function FinancialDocs() {
     }
   };
 
-  // Delete multiple selected documents
   const handleDeleteSelected = async () => {
     if (!window.confirm("Vai tiešām vēlaties dzēst atlasītos finanšu dokumentus?")) return;
     try {
@@ -178,6 +183,64 @@ export default function FinancialDocs() {
       alert(err.response?.data?.error || "Dzēšana neizdevās!");
     }
   };
+
+  // Virtualization logic
+  const totalRows = sortedDocs.length * 2; // include collapse row
+  const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT));
+  const endIndex = Math.min(totalRows, startIndex + VISIBLE_ROWS * 2); // 2 rows per doc (main + collapse)
+  const paddingTop = startIndex * ROW_HEIGHT;
+  const paddingBottom = (totalRows - endIndex) * ROW_HEIGHT;
+
+  const visibleRows = [];
+  for (let i = startIndex; i < endIndex; i += 2) {
+    const doc = sortedDocs[Math.floor(i / 2)];
+    visibleRows.push(
+      <React.Fragment key={doc.id}>
+        <tr onClick={() => setOpenDocId(openDocId === doc.id ? null : doc.id)} style={{ cursor: "pointer" }}>
+          <td style={{ textAlign: "center" }}>
+            <input
+              type="checkbox"
+              className="form-check-input"
+              checked={selectedDocs.has(doc.id)}
+              onChange={(e) => {
+                const newSet = new Set(selectedDocs);
+                e.target.checked ? newSet.add(doc.id) : newSet.delete(doc.id);
+                setSelectedDocs(newSet);
+              }}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </td>
+          <td>{doc.doc_date}</td>
+          <td>{doc.doc_id}</td>
+          <td>{partnerMap[doc.partner_id] || ""}</td>
+          <td>{doc.doc_type_abbrev}</td>
+          <td>{doc.doc_currency}</td>
+          <td style={{ backgroundColor: doc.is_accounted ? "#d4edda" : "#f8d7da" }}>{doc.doc_amount}</td>
+          <td>{doc.doc_comments}</td>
+          <td>
+            <div className="d-flex justify-content-evenly">
+              <button
+                className="btn p-0 border-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditClick(doc);
+                }}
+              >
+                <i className="bi bi-pencil-square"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {openDocId === doc.id && (
+          <tr>
+            <td colSpan={9} style={{ padding: 0, border: 0 }}>
+              <DocumentLines companyId={companyId} documentId={doc.id} onUpdateAccounted={fetchDocuments} />
+            </td>
+          </tr>
+        )}
+      </React.Fragment>
+    );
+  }
 
   return (
     <div>
@@ -201,7 +264,7 @@ export default function FinancialDocs() {
         )}
       </div>
 
-      <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed" }}>
+      <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed", marginBottom: 0 }}>
         <colgroup>
           <col style={{ width: "3%" }} />
           <col style={{ width: "10%" }} />
@@ -375,59 +438,32 @@ export default function FinancialDocs() {
             </th>
           </tr>
         </thead>
-        <tbody>
-          {sortedDocs.map((doc) => (
-            <React.Fragment key={doc.id}>
-              <tr onClick={() => setOpenDocId(openDocId === doc.id ? null : doc.id)} style={{ cursor: "pointer" }}>
-                <td style={{ textAlign: "center" }}>
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    checked={selectedDocs.has(doc.id)}
-                    onChange={(e) => {
-                      const newSet = new Set(selectedDocs);
-                      e.target.checked ? newSet.add(doc.id) : newSet.delete(doc.id);
-                      setSelectedDocs(newSet);
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </td>
-                <td>{doc.doc_date}</td>
-                <td>{doc.doc_id}</td>
-                <td>{partnerMap[doc.partner_id] || ""}</td>
-                <td>{doc.doc_type_abbrev}</td>
-                <td>{doc.doc_currency}</td>
-                <td style={{ backgroundColor: doc.is_accounted ? "#d4edda" : "#f8d7da" }}>{doc.doc_amount}</td>
-                <td>{doc.doc_comments}</td>
-                <td>
-                  <div className="d-flex justify-content-evenly">
-                    <button
-                      className="btn p-0 border-0"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditClick(doc);
-                      }}
-                    >
-                      <i className="bi bi-pencil-square"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={9} style={{ padding: 0, border: 0 }}>
-                  <Collapse in={openDocId === doc.id}>
-                    <div>
-                      {openDocId === doc.id && (
-                        <DocumentLines companyId={companyId} documentId={doc.id} onUpdateAccounted={fetchDocuments} />
-                      )}
-                    </div>
-                  </Collapse>
-                </td>
-              </tr>
-            </React.Fragment>
-          ))}
-        </tbody>
       </Table>
+
+      <div
+        style={{ height: ROW_HEIGHT * VISIBLE_ROWS, overflowY: "auto", borderBottom: "6px solid #19221c" }}
+        onScroll={(e) => setScrollTop(e.target.scrollTop)}
+        ref={containerRef}
+      >
+        <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed", marginBottom: 0 }}>
+          <colgroup>
+            <col style={{ width: "3%" }} />
+            <col style={{ width: "10%" }} />
+            <col style={{ width: "10%" }} />
+            <col style={{ width: "21%" }} />
+            <col style={{ width: "7%" }} />
+            <col style={{ width: "5%" }} />
+            <col style={{ width: "8%" }} />
+            <col style={{ width: "36%" }} />
+            <col style={{ width: "38px" }} />
+          </colgroup>
+          <tbody>
+            <tr style={{ height: paddingTop }} />
+            {visibleRows}
+            <tr style={{ height: paddingBottom }} />
+          </tbody>
+        </Table>
+      </div>
 
       <EditDocumentModal
         show={showModal}
