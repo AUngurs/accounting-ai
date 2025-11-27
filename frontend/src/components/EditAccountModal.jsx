@@ -57,24 +57,12 @@ export default function EditAccountModal({ show, handleClose, account, onSave, o
         <Form>
           <Form.Group className="mb-2">
             <Form.Label>Kods</Form.Label>
-            <Form.Control
-              type="text"
-              name="code"
-              value={formData.code}
-              onChange={handleChange}
-              isInvalid={!!formErrors.code}
-            />
+            <Form.Control type="text" name="code" value={formData.code} onChange={handleChange} isInvalid={!!formErrors.code} />
             <Form.Control.Feedback type="invalid">{formErrors.code}</Form.Control.Feedback>
           </Form.Group>
           <Form.Group className="mb-2">
             <Form.Label>Nosaukums</Form.Label>
-            <Form.Control
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              isInvalid={!!formErrors.name}
-            />
+            <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} isInvalid={!!formErrors.name} />
             <Form.Control.Feedback type="invalid">{formErrors.name}</Form.Control.Feedback>
           </Form.Group>
           <Form.Group className="mb-2">
@@ -90,12 +78,7 @@ export default function EditAccountModal({ show, handleClose, account, onSave, o
           </Form.Group>
           <Form.Group className="mb-2">
             <Form.Label>Aktīva/Pasīva/Operāciju</Form.Label>
-            <Form.Select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              isInvalid={!!formErrors.category}
-            >
+            <Form.Select name="category" value={formData.category} onChange={handleChange} isInvalid={!!formErrors.category}>
               {categoryOptions.map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
@@ -107,13 +90,13 @@ export default function EditAccountModal({ show, handleClose, account, onSave, o
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="danger" onClick={handleDelete}>
+        <Button className="custom-red-hover" onClick={handleDelete}>
           Dzēst
         </Button>
-        <Button variant="secondary" onClick={handleClose}>
+        <Button className="custom-dark-hover" onClick={handleClose}>
           Atcelt
         </Button>
-        <Button variant="primary" onClick={handleSubmit}>
+        <Button className="custom-dark-hover" onClick={handleSubmit}>
           Saglabāt
         </Button>
       </Modal.Footer>

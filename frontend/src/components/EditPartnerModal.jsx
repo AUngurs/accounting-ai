@@ -115,12 +115,7 @@ export default function EditPartnerModal({ show, handleClose, partner, onSave, o
         <Form>
           <Form.Group className="mb-2">
             <Form.Label>Juridiska persona/Fiziska persona/Darbinieks</Form.Label>
-            <Form.Select
-              name="kind_name"
-              value={formData.kind_name}
-              onChange={handleChange}
-              isInvalid={!!formErrors.kind_name}
-            >
+            <Form.Select name="kind_name" value={formData.kind_name} onChange={handleChange} isInvalid={!!formErrors.kind_name}>
               {kindNameOptions.map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
@@ -132,48 +127,25 @@ export default function EditPartnerModal({ show, handleClose, partner, onSave, o
 
           <Form.Group className="mb-2">
             <Form.Label>Tiesiskā forma</Form.Label>
-            <Form.Control
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              isInvalid={!!formErrors.title}
-            />
+            <Form.Control type="text" name="title" value={formData.title} onChange={handleChange} isInvalid={!!formErrors.title} />
             <Form.Control.Feedback type="invalid">{formErrors.title}</Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group className="mb-2">
             <Form.Label>Nosaukums</Form.Label>
-            <Form.Control
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              isInvalid={!!formErrors.name}
-            />
+            <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} isInvalid={!!formErrors.name} />
             <Form.Control.Feedback type="invalid">{formErrors.name}</Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group className="mb-2">
             <Form.Label>Reģistrācijas nr.</Form.Label>
-            <Form.Control
-              type="text"
-              name="reg_nr"
-              value={formData.reg_nr}
-              onChange={handleChange}
-              isInvalid={!!formErrors.reg_nr}
-            />
+            <Form.Control type="text" name="reg_nr" value={formData.reg_nr} onChange={handleChange} isInvalid={!!formErrors.reg_nr} />
             <Form.Control.Feedback type="invalid">{formErrors.reg_nr}</Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group className="mb-2">
             <Form.Label>Nodokļu maksātāja statuss</Form.Label>
-            <Form.Select
-              name="vat_type"
-              value={formData.vat_type}
-              onChange={handleChange}
-              isInvalid={!!formErrors.vat_type}
-            >
+            <Form.Select name="vat_type" value={formData.vat_type} onChange={handleChange} isInvalid={!!formErrors.vat_type}>
               {vatTypeOptions.map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
@@ -216,13 +188,13 @@ export default function EditPartnerModal({ show, handleClose, partner, onSave, o
       </Modal.Body>
 
       <Modal.Footer>
-        <Button variant="danger" onClick={handleDelete}>
+        <Button className="custom-red-hover" onClick={handleDelete}>
           Dzēst
         </Button>
-        <Button variant="secondary" onClick={handleClose}>
+        <Button className="custom-dark-hover" onClick={handleClose}>
           Atcelt
         </Button>
-        <Button variant="primary" onClick={handleSubmit}>
+        <Button className="custom-dark-hover" onClick={handleSubmit}>
           Saglabāt
         </Button>
       </Modal.Footer>

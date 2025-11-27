@@ -109,7 +109,7 @@ export default function ChartOfAccounts() {
           Importēt Excel
         </button>
         <input type="file" accept=".xlsx" ref={fileInputRef} onChange={handleFileChange} className="form-control w-auto" />
-        <button className="btn custom-dark-hover" onClick={handleSet}>
+        <button className="btn custom-red-hover" onClick={handleSet}>
           Iestatīt noklusējuma kontus
         </button>
       </div>

@@ -72,13 +72,13 @@ export default function EditCompanyModal({ show, handleClose, company, onSave, o
       </Modal.Body>
 
       <Modal.Footer>
-        <Button variant="danger" onClick={handleDelete}>
+        <Button className="custom-red-hover" onClick={handleDelete}>
           Dzēst
         </Button>
-        <Button variant="secondary" onClick={handleClose}>
+        <Button className="custom-dark-hover" onClick={handleClose}>
           Atcelt
         </Button>
-        <Button variant="primary" onClick={handleSubmit}>
+        <Button className="custom-dark-hover" onClick={handleSubmit}>
           Saglabāt
         </Button>
       </Modal.Footer>

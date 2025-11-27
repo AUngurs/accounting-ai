@@ -59,11 +59,11 @@ export default function Login() {
               />
             </div>
 
-            <button type="submit" className="btn btn-primary w-100 mb-2">
+            <button type="submit" className="btn custom-light-hover w-100 mb-2">
               Pieslēgties
             </button>
 
-            <button type="button" className="btn btn-secondary w-100" onClick={() => navigate("/register")}>
+            <button type="button" className="btn custom-light-hover w-100" onClick={() => navigate("/register")}>
               Reģistrēties
             </button>
           </form>

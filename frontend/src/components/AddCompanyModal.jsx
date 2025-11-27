@@ -65,10 +65,10 @@ export default function AddCompanyModal({ show, handleClose, company, onSave, co
       </Modal.Body>
 
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
+        <Button className="custom-dark-hover" onClick={handleClose}>
           Atcelt
         </Button>
-        <Button variant="primary" onClick={handleSubmit}>
+        <Button className="custom-dark-hover" onClick={handleSubmit}>
           Saglabāt
         </Button>
       </Modal.Footer>

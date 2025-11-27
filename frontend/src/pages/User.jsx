@@ -160,13 +160,13 @@ export default function User() {
             </Form.Group>
           </Form>
           <div className="d-flex justify-content-end gap-2 mt-3">
-            <Button variant="danger" onClick={handleDelete}>
+            <Button className="custom-red-hover" onClick={handleDelete}>
               Dzēst
             </Button>
-            <Button variant="secondary" onClick={() => navigate("/companies")}>
+            <Button className="custom-dark-hover" onClick={() => navigate("/companies")}>
               Atcelt
             </Button>
-            <Button variant="primary" onClick={handleSubmit}>
+            <Button className="custom-dark-hover" onClick={handleSubmit}>
               Saglabāt
             </Button>
           </div>

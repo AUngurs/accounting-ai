@@ -4,7 +4,7 @@ import { useCompany } from "../components/CompanyContext";
 import DocumentLines from "../components/DocumentLines";
 import EditDocumentModal from "../components/EditDocumentModal";
 import { notify } from "../utils/notify";
-import { Table, Collapse } from "react-bootstrap";
+import { Table } from "react-bootstrap";
 
 const ROW_HEIGHT = 24; // approximate height of each row (adjust if needed)
 const VISIBLE_ROWS = 25; // number of rows to render in the viewport

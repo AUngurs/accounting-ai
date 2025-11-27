@@ -87,7 +87,7 @@ export default function Companies() {
         }}
       >
         <UserCard></UserCard>
-        <button className="btn btn-success mb-4 w-100" onClick={() => navigate("/user")}>
+        <button className="btn custom-dark-hover mb-4 w-100" onClick={() => navigate("/user")}>
           Mainīt lietotāja datus
         </button>
         <h2>Izvēlieties uzņēmumu</h2>
@@ -99,7 +99,7 @@ export default function Companies() {
               </span>
 
               <button
-                className="btn btn-sm btn-outline-secondary"
+                className="btn btn-sm custom-light-hover"
                 onClick={() => {
                   setEditingCompany(company);
                   setShowEditModal(true);
@@ -111,11 +111,10 @@ export default function Companies() {
           ))}
         </ul>
 
-        <button className="btn btn-primary mt-3 mb-2 w-100" onClick={() => setShowAddModal(true)}>
+        <button className="btn custom-dark-hover mt-3 mb-1 w-100" onClick={() => setShowAddModal(true)}>
           Pievienot uzņēmumu
         </button>
-
-        <button className="btn btn-danger w-100" onClick={handleLogout}>
+        <button className="btn custom-red-hover w-100" onClick={handleLogout}>
           Iziet
         </button>
       </div>
