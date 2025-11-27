@@ -18,6 +18,7 @@ export default function EditDocumentModal({
     doc_currency: "EUR",
     doc_amount: "",
     doc_comments: "",
+    is_accounted: false,
     partner_id: "",
   });
 
@@ -41,6 +42,7 @@ export default function EditDocumentModal({
         doc_currency: documentData.doc_currency || "EUR",
         doc_amount: documentData.doc_amount || "",
         doc_comments: documentData.doc_comments || "",
+        is_accounted: documentData.is_accounted || false,
         partner_id: documentData.partner_id || "",
       };
       setFormData(initialData);

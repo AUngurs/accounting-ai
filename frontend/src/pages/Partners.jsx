@@ -4,6 +4,7 @@ import axiosInstance from "../api/axiosInstance";
 import { useCompany } from "../components/CompanyContext";
 import EditPartnerModal from "../components/EditPartnerModal";
 import { notify } from "../utils/notify";
+import { Table } from "react-bootstrap";
 
 export default function Partners() {
   const [partnersData, setPartnersData] = useState([]);
@@ -64,6 +65,18 @@ export default function Partners() {
       console.error(err);
       alert(err.response?.data?.error || "Importēšana neizdevās.");
     }
+  };
+
+  const togglePartnerSelection = (id, checked) => {
+    setSelectedPartners((prev) => {
+      const updated = new Set(prev);
+      if (checked) {
+        updated.add(id);
+      } else {
+        updated.delete(id);
+      }
+      return updated;
+    });
   };
 
   // Export partners to XML
@@ -155,135 +168,147 @@ export default function Partners() {
     <React.Fragment>
       <h2 className="mb-3">Partneri</h2>
       <div className="mb-3 d-flex gap-2">
-        <button className="btn btn-success" onClick={handleImport}>
+        <button className="btn custom-dark-hover" onClick={handleImport}>
           Importēt XML
         </button>
         <input type="file" accept=".xml" ref={fileInputRef} onChange={handleFileChange} className="form-control w-auto" />
-        <button className="btn btn-primary" onClick={handleExport}>
-          Eksportēt XML
-        </button>
         {selectedPartners.size > 0 && (
-          <button className="btn btn-danger" onClick={handleDeleteSelected}>
-            Dzēst {selectedPartners.size} partnerus
-          </button>
+          <React.Fragment>
+            <button className="btn custom-dark-hover" onClick={handleExport}>
+              Eksportēt XML
+            </button>
+            <button className="btn custom-red-hover" onClick={handleDeleteSelected}>
+              Dzēst {selectedPartners.size} partnerus
+            </button>
+          </React.Fragment>
         )}
       </div>
 
-      <div className="table-responsive rounded-1">
-        <table className="table table-striped table-bordered table-sm table-hover" style={{ tableLayout: "fixed" }}>
-          <colgroup>
-            <col style={{ width: "2%" }} />
-            <col style={{ width: "45%" }} />
-            <col style={{ width: "13%" }} />
-            <col style={{ width: "20%" }} />
-            <col style={{ width: "20%" }} />
-            <col style={{ width: "38px" }} />
-          </colgroup>
-          <thead className="table-dark">
-            <tr className="align-middle">
-              <th style={{ textAlign: "center" }}>
+      <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed" }}>
+        <colgroup>
+          <col style={{ width: "3%" }} />
+          <col style={{ width: "44%" }} />
+          <col style={{ width: "13%" }} />
+          <col style={{ width: "20%" }} />
+          <col style={{ width: "20%" }} />
+          <col style={{ width: "38px" }} />
+        </colgroup>
+        <thead>
+          <tr className="align-middle">
+            <th style={{ textAlign: "center", borderBottom: "none" }}>
+              <input
+                type="checkbox"
+                className="form-check-input"
+                checked={selectedPartners.size === partnersData.length && partnersData.length > 0}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSelectedPartners(new Set(partnersData.map((p) => p.id)));
+                  } else {
+                    setSelectedPartners(new Set());
+                  }
+                }}
+              />
+            </th>
+            <th style={{ width: "42%", cursor: "pointer", borderBottom: "none" }} onClick={() => handleSort("fullName")}>
+              Nosaukums/Uzvārds, vārds {sortConfig.key === "fullName" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+            </th>
+            <th style={{ width: "10%", cursor: "pointer", borderBottom: "none" }} onClick={() => handleSort("partner_kind_name")}>
+              Tips {sortConfig.key === "partner_kind_name" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+            </th>
+            <th style={{ width: "18%", cursor: "pointer", borderBottom: "none" }} onClick={() => handleSort("partner_reg_nr")}>
+              Reģ. Nr. {sortConfig.key === "partner_reg_nr" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+            </th>
+            <th style={{ width: "18%", cursor: "pointer", borderBottom: "none" }} onClick={() => handleSort("vat_nr")}>
+              PVN Nr. {sortConfig.key === "vat_nr" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+            </th>
+            <th style={{ width: "10%", borderBottom: "none" }}></th>
+          </tr>
+          <tr>
+            <th></th>
+            <th>
+              <input
+                type="text"
+                className="form-control form-control-sm"
+                placeholder="Meklēt nosaukumu"
+                value={filters.name}
+                onChange={(e) => setFilters({ ...filters, name: e.target.value })}
+              />
+            </th>
+            <th>
+              <select
+                className="form-select form-select-sm"
+                value={filters.type}
+                onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+              >
+                <option value="">Visi</option>
+                <option value="Juridiska persona">Juridiska persona</option>
+                <option value="Fiziska persona">Fiziska persona</option>
+                <option value="Darbinieks">Darbinieks</option>
+              </select>
+            </th>
+            <th>
+              <input
+                type="text"
+                className="form-control form-control-sm"
+                placeholder="Reģ. Nr"
+                value={filters.regNr}
+                onChange={(e) => setFilters({ ...filters, regNr: e.target.value })}
+              />
+            </th>
+            <th>
+              <input
+                type="text"
+                className="form-control form-control-sm"
+                placeholder="PVN Nr"
+                value={filters.vat}
+                onChange={(e) => setFilters({ ...filters, vat: e.target.value })}
+              />
+            </th>
+            <th className="text-center align-middle p-0">
+              <button
+                type="button"
+                className="btn btn-sm custom-red-hover"
+                style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
+                onClick={() =>
+                  setFilters({
+                    name: "",
+                    type: "",
+                    regNr: "",
+                    vat: "",
+                  })
+                }
+              >
+                <i className="bi bi-x-square" style={{ fontSize: "1rem" }}></i>
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredPartners.map((partner) => (
+            <tr key={partner.id}>
+              <td style={{ textAlign: "center" }}>
                 <input
                   type="checkbox"
-                  checked={selectedPartners.size === partnersData.length && partnersData.length > 0}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedPartners(new Set(partnersData.map((p) => p.id)));
-                    } else {
-                      setSelectedPartners(new Set());
-                    }
-                  }}
-                />
-              </th>
-              <th style={{ width: "42%", cursor: "pointer" }} onClick={() => handleSort("fullName")}>
-                Nosaukums/Uzvārds, vārds {sortConfig.key === "fullName" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
-              </th>
-              <th style={{ width: "10%", cursor: "pointer" }} onClick={() => handleSort("partner_kind_name")}>
-                Tips {sortConfig.key === "partner_kind_name" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
-              </th>
-              <th style={{ width: "18%", cursor: "pointer" }} onClick={() => handleSort("partner_reg_nr")}>
-                Reg. Nr. {sortConfig.key === "partner_reg_nr" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
-              </th>
-              <th style={{ width: "18%", cursor: "pointer" }} onClick={() => handleSort("vat_nr")}>
-                PVN Nr. {sortConfig.key === "vat_nr" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
-              </th>
-              <th style={{ width: "10%" }}></th>
-            </tr>
-            <tr>
-              <td></td>
-              <td>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Meklēt nosaukumu"
-                  value={filters.name}
-                  onChange={(e) => setFilters({ ...filters, name: e.target.value })}
+                  className="form-check-input"
+                  checked={selectedPartners.has(partner.id)}
+                  onChange={(e) => togglePartnerSelection(partner.id, e.target.checked)}
                 />
               </td>
-
+              <td>{`${partner.partner_name}${partner.partner_title ? ", " + partner.partner_title : ""}`}</td>
+              <td>{partner.partner_kind_name}</td>
+              <td>{partner.partner_reg_nr}</td>
+              <td>{partner.vat_nr}</td>
               <td>
-                <select className="form-select" value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
-                  <option value="">Visi</option>
-                  <option value="Juridiska persona">Juridiska persona</option>
-                  <option value="Fiziska persona">Fiziska persona</option>
-                  <option value="Darbinieks">Darbinieks</option>
-                </select>
-              </td>
-
-              <td>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Reģ. Nr"
-                  value={filters.regNr}
-                  onChange={(e) => setFilters({ ...filters, regNr: e.target.value })}
-                />
-              </td>
-
-              <td>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="PVN Nr"
-                  value={filters.vat}
-                  onChange={(e) => setFilters({ ...filters, vat: e.target.value })}
-                />
-              </td>
-
-              <td></td>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredPartners.map((partner) => (
-              <tr key={partner.id} className="align-middle">
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={selectedPartners.has(partner.id)}
-                    onChange={(e) => {
-                      const newSet = new Set(selectedPartners);
-                      if (e.target.checked) {
-                        newSet.add(partner.id);
-                      } else {
-                        newSet.delete(partner.id);
-                      }
-                      setSelectedPartners(newSet);
-                    }}
-                  />
-                </td>
-                <td>{`${partner.partner_name}${partner.partner_title ? ", " + partner.partner_title : ""}`}</td>
-                <td>{partner.partner_kind_name}</td>
-                <td>{partner.partner_reg_nr}</td>
-                <td>{partner.vat_nr}</td>
-                <td>
-                  <button onClick={() => handleEditClick(partner)}>
+                <div className="d-flex justify-content-evenly">
+                  <button className="btn p-0 border-0" onClick={() => handleEditClick(partner)}>
                     <i className="bi bi-pencil-square"></i>
                   </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
 
       <EditPartnerModal
         show={showModal}

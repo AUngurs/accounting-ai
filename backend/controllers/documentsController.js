@@ -5,6 +5,14 @@ import multer from "multer";
 
 const upload = multer({ dest: "uploads/" });
 
+const calculateIsAccounted = (lines, docAmount) => {
+  const totalCents = lines
+    .filter((l) => l.line_supplementary_notice === "1")
+    .reduce((sum, l) => sum + Math.round(Number(l.line_amount || 0) * 100), 0);
+  const docAmountCents = Math.round(Number(docAmount) * 100);
+  return totalCents === docAmountCents;
+};
+
 export const getDocuments = async (req, res) => {
   try {
     const companyID = req.params.companyId;
@@ -23,9 +31,7 @@ export const importDocuments = [
     try {
       const companyID = req.params.companyId;
       const xmlData = fs.readFileSync(req.file.path, "utf-8");
-      const result = await parseStringPromise(xmlData, {
-        explicitArray: false,
-      });
+      const result = await parseStringPromise(xmlData, { explicitArray: false });
 
       const financialDocsRaw = result.dataroot.tjResponse.FinancialDoc;
       const financialDocs = Array.isArray(financialDocsRaw) ? financialDocsRaw : [financialDocsRaw];
@@ -43,10 +49,10 @@ export const importDocuments = [
         const partner_id = partnersMap[doc.DocPartnerRegistrationNo] || null;
 
         const docQuery = `
-            INSERT INTO documents
-            (company_id, partner_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_currency, doc_amount, doc_comments)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            RETURNING *;
+          INSERT INTO documents
+          (company_id, partner_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_currency, doc_amount, doc_comments, is_accounted)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, FALSE)
+          RETURNING *;
         `;
         const { rows: docRows } = await pool.query(docQuery, [
           companyID,
@@ -63,17 +69,19 @@ export const importDocuments = [
         const insertedDoc = docRows[0];
         newDocuments.push(insertedDoc);
 
+        let insertedLines = [];
+
         if (doc.FinancialDocLine) {
           const lines = Array.isArray(doc.FinancialDocLine) ? doc.FinancialDocLine : [doc.FinancialDocLine];
 
           for (const line of lines) {
             const lineQuery = `
-                INSERT INTO document_lines
-                (document_id, line_supplementary_notice, line_currency, line_amount, line_debet_account, line_credit_account, line_vat_rate, line_comments)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+              INSERT INTO document_lines
+              (document_id, line_supplementary_notice, line_currency, line_amount, line_debet_account, line_credit_account, line_vat_rate, line_comments)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+              RETURNING *;
             `;
-
-            await pool.query(lineQuery, [
+            const { rows: lineRows } = await pool.query(lineQuery, [
               insertedDoc.id,
               line.LineSupplementaryNoticeID,
               line.LineCurrency,
@@ -83,7 +91,12 @@ export const importDocuments = [
               line.LineVatRate || null,
               line.LineComments || null,
             ]);
+
+            insertedLines.push(...lineRows);
           }
+
+          const isFullyAccounted = calculateIsAccounted(insertedLines, insertedDoc.doc_amount);
+          await pool.query("UPDATE documents SET is_accounted=$1 WHERE id=$2", [isFullyAccounted, insertedDoc.id]);
         }
       }
 
@@ -96,10 +109,39 @@ export const importDocuments = [
   },
 ];
 
+export const getDocument = async (req, res) => {
+  try {
+    const companyID = req.params.companyId;
+    const { document_id } = req.params;
+    const docResult = await pool.query("SELECT * FROM documents WHERE company_id = $1 AND id = $2", [companyID, document_id]);
+    res.json(docResult.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const updateDocumentAccounted = async (req, res) => {
+  try {
+    const { document_id } = req.params;
+    const { is_accounted } = req.body;
+
+    const result = await pool.query("UPDATE documents SET is_accounted=$1 WHERE id=$2 RETURNING *", [is_accounted, document_id]);
+
+    if (result.rowCount === 0) return res.status(404).json({ error: "Dokuments nav atrasts" });
+
+    res.status(200).json(result.rows[0]);
+  } catch (err) {
+    console.error("Kļūda atjauninot is_accounted:", err);
+    res.status(500).json({ error: "Neizdevās atjaunināt is_accounted" });
+  }
+};
+
 export const editDocument = async (req, res) => {
   try {
     const { document_id } = req.params;
-    const { partner_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_currency, doc_amount, doc_comments } = req.body;
+    const { partner_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_currency, doc_amount, doc_comments, is_accounted } =
+      req.body;
 
     if (!doc_id || !doc_date || !doc_type_abbrev || !doc_group_abbrev || !doc_currency || !doc_amount) {
       return res.status(400).json({ error: "Some fields are required" });
@@ -114,15 +156,29 @@ export const editDocument = async (req, res) => {
            doc_group_abbrev = $5,
            doc_currency = $6,
            doc_amount = $7,
-           doc_comments = $8
-       WHERE id = $9
+           doc_comments = $8,
+           is_accounted = $9
+       WHERE id = $10
        RETURNING *`,
-      [partner_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_currency, doc_amount, doc_comments, document_id]
+      [
+        partner_id ? partner_id : null,
+        doc_id,
+        doc_date,
+        doc_type_abbrev,
+        doc_group_abbrev,
+        doc_currency,
+        doc_amount,
+        doc_comments,
+        is_accounted,
+        document_id,
+      ]
     );
 
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Dokuments nav atrasts" });
-    }
+    if (result.rowCount === 0) return res.status(404).json({ error: "Dokuments nav atrasts" });
+
+    const { rows: lines } = await pool.query("SELECT * FROM document_lines WHERE document_id=$1", [document_id]);
+    const isFullyPosted = calculateIsAccounted(lines, doc_amount);
+    await pool.query("UPDATE documents SET is_accounted=$1 WHERE id=$2", [isFullyPosted, document_id]);
 
     res.status(200).json(result.rows[0]);
   } catch (err) {
@@ -149,9 +205,7 @@ export const editLines = async (req, res) => {
     const { document_id } = req.params;
     const lines = req.body;
 
-    if (!Array.isArray(lines)) {
-      return res.status(400).json({ error: "Expected an array of lines." });
-    }
+    if (!Array.isArray(lines)) return res.status(400).json({ error: "Expected an array of lines." });
 
     for (const line of lines) {
       await pool.query(
@@ -193,12 +247,9 @@ export const deleteDocument = async (req, res) => {
   const { document_id } = req.params;
   try {
     await pool.query("DELETE FROM document_lines WHERE document_id = $1", [document_id]);
-
     const result = await pool.query("DELETE FROM documents WHERE id = $1 RETURNING *", [document_id]);
 
-    if (result.rowCount === 0) {
-      return res.status(404).json({ message: "Finanšu dokuments nav atrasts" });
-    }
+    if (result.rowCount === 0) return res.status(404).json({ message: "Finanšu dokuments nav atrasts" });
 
     res.status(200).json({ message: "Finanšu dokuments veiksmīgi dzēsts" });
   } catch (err) {
@@ -210,13 +261,10 @@ export const deleteDocument = async (req, res) => {
 export const bulkDeleteDocuments = async (req, res) => {
   const { ids } = req.body;
 
-  if (!Array.isArray(ids) || ids.length === 0) {
-    return res.status(400).json({ message: "Nav norādīti dokumentu ID" });
-  }
+  if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ message: "Nav norādīti dokumentu ID" });
 
   try {
     await pool.query("DELETE FROM document_lines WHERE document_id = ANY($1)", [ids]);
-
     const result = await pool.query("DELETE FROM documents WHERE id = ANY($1) RETURNING *", [ids]);
 
     res.status(200).json({

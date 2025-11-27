@@ -6,10 +6,40 @@
 .app-content {
   flex: 1;
   padding: 16px;
-  background-color: #19221C;
+  background-color: #19221c;
   color: #e0e0e0;
 }
 
 .content {
   background-color: #efefef;
+}
+
+.btn.custom-dark-hover {
+  color: #19221c;
+  background-color: #f8f9fa;
+  border: 2px solid #19221c;
+  transition: all 0.2s ease;
+  font-weight: 500; /* makes text bold */
+}
+
+.btn.custom-dark-hover:hover {
+  color: #fff;
+  background-color: #19221c;
+  border-color: #19221c;
+  font-weight: 500; /* makes text bold */
+}
+
+.btn.custom-red-hover {
+  color: #7a0404;
+  background-color: #f8f9fa;
+  border: 2px solid #7a0404;
+  transition: all 0.2s ease;
+  font-weight: 500; /* makes text bold */
+}
+
+.btn.custom-red-hover:hover {
+  color: #fff;
+  background-color: #7a0404;
+  border-color: #7a0404;
+  font-weight: 500; /* makes text bold */
 }

@@ -64,6 +64,8 @@ CREATE TABLE documents (
     doc_currency VARCHAR(3),           -- <DocCurrency> EUR
     doc_amount NUMERIC(12,2),                  -- <DocAmount> 685
     doc_comments VARCHAR(255),         -- <DocComments> Durvis
+    
+    is_accounted BOOLEAN DEFAULT FALSE,
 
     CONSTRAINT fk_documents_company
         FOREIGN KEY (company_id)
@@ -81,12 +83,12 @@ CREATE TABLE document_lines (
     document_id INT NOT NULL,
 
     -- ATBILST JUMIS SPECIFIKACIJAI
-    line_supplementary_notice VARCHAR(1),          -- <LineSupplementaryNoticeID> 1
+    line_supplementary_notice VARCHAR(1),   -- <LineSupplementaryNoticeID> 1
     line_currency VARCHAR(3),               -- <LineCurrency> EUR
-    line_amount NUMERIC(12,2),                      -- <LineAmount> 685
+    line_amount NUMERIC(12,2),              -- <LineAmount> 685
     line_debet_account VARCHAR(21),         -- <LineDebetAccountCode> 7160
     line_credit_account VARCHAR(21),        -- <LineCreditAccountCode> 7160
-    line_vat_rate NUMERIC(12,2),                    -- <LineVatRate> 21
+    line_vat_rate INTEGER,                  -- <LineVatRate> 21
     line_comments VARCHAR(255),             -- <LineComments> Durvis
 
     CONSTRAINT fk_doc_lines_document
