@@ -1,6 +1,6 @@
 import pool from "../db.js";
 import fs from "fs";
-import { parseStringPromise } from "xml2js";
+import { parseStringPromise, Builder } from "xml2js";
 import multer from "multer";
 
 const upload = multer({ dest: "uploads/" });
@@ -98,6 +98,87 @@ export const importPartners = [
     }
   },
 ];
+
+export const exportPartners = async (req, res) => {
+  try {
+    const companyID = req.params.companyId;
+    const { ids } = req.body;
+
+    if (!ids?.length) {
+      return res.status(400).json({ error: "Nav atlasītu partneru" });
+    }
+
+    const { rows: partners } = await pool.query(`SELECT * FROM partners WHERE company_id = $1 AND id = ANY($2::int[])`, [companyID, ids]);
+
+    const partnerXmlArray = partners.map((p) => {
+      const isCompany = p.partner_kind_name === "Juridiska persona";
+      const isPerson = p.partner_kind_name === "Fiziska persona";
+
+      const partnerBlock = {
+        PartnerKindName: p.partner_kind_name,
+
+        ...(isCompany && {
+          PartnerTitle: p.partner_title || "",
+          PartnerName: p.partner_name || "",
+          PartnerRegistrationNo: p.partner_reg_nr || "",
+        }),
+
+        ...(isPerson && {
+          PartnerFirstName: p.partner_name || "",
+          PartnerSurname: p.partner_title || "",
+          PartnerPersonalIdentityNo: p.partner_reg_nr || "",
+          ...(p.birth_date && {
+            PhysicalPersonBirthDate: p.birth_date.toISOString(),
+          }),
+        }),
+
+        PartnerTaxpayerType: p.partner_vat_type || "",
+        PartnerLockedNoticeID: "0",
+        PartnerProductWarehouseNoticeID: "0",
+        PartnerTimberForwarderNoticeID: "0",
+        PartnerCreditStatussBlocked: "",
+
+        ...(p.vat_nr && {
+          PartnerVatNo: {
+            VatNo: p.vat_nr,
+            VatNoCountryCode: p.vat_country_code || "",
+            VatNoDefaultNoticeID: p.vat_nr_default_notice || "",
+          },
+        }),
+      };
+
+      return partnerBlock;
+    });
+
+    const xmlObj = {
+      dataroot: {
+        tjDocument: {
+          $: { Version: "TJ5.5.101" },
+        },
+        tjResponse: {
+          $: {
+            Name: "Partner",
+            Operation: "Insert",
+            Version: "TJ7.0.112",
+            Structure: "Tree",
+          },
+          Partner: partnerXmlArray,
+        },
+      },
+    };
+
+    const builder = new Builder({ xmldec: { version: "1.0", encoding: "utf-8" } });
+    const xml = builder.buildObject(xmlObj);
+
+    res.setHeader("Content-Type", "application/xml");
+    res.setHeader("Content-Disposition", `attachment; filename=partners_selected_${companyID}.xml`);
+
+    res.send(xml);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to export selected partners" });
+  }
+};
 
 export const editPartner = async (req, res) => {
   try {

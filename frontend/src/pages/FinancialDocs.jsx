@@ -7,7 +7,7 @@ import { notify } from "../utils/notify";
 import { Table } from "react-bootstrap";
 
 const ROW_HEIGHT = 24; // approximate height of each row (adjust if needed)
-const VISIBLE_ROWS = 25; // number of rows to render in the viewport
+const VISIBLE_ROWS = 27; // number of rows to render in the viewport
 
 export default function FinancialDocs() {
   const [docsData, setDocsData] = useState([]);
@@ -138,7 +138,20 @@ export default function FinancialDocs() {
   };
 
   const handleExport = async () => {
-    // Export logic (keep your original implementation)
+    try {
+      const idsToExport = Array.from(selectedDocs);
+      const res = await axiosInstance.post(`/companies/${companyId}/documents/export`, { ids: idsToExport }, { responseType: "blob" });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `documents_selected_${companyId}.xml`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error(err);
+      alert("Eksports neizdevās");
+    }
   };
 
   const handleEditClick = (doc) => {
@@ -220,7 +233,8 @@ export default function FinancialDocs() {
           <td>
             <div className="d-flex justify-content-evenly">
               <button
-                className="btn p-0 border-0"
+                className="btn btn-sm custom-dark-hover"
+                style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleEditClick(doc);
@@ -416,10 +430,9 @@ export default function FinancialDocs() {
             </th>
             <th className="text-center align-middle">
               <button
-                type="button"
-                className="btn btn-sm custom-red-hover  "
+                className="btn btn-sm custom-red-hover"
                 style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
-                onClick={() =>
+                onClick={() => {
                   setFilters({
                     dateFrom: "",
                     dateTo: "",
@@ -430,8 +443,9 @@ export default function FinancialDocs() {
                     amountMin: "",
                     amountMax: "",
                     comments: "",
-                  })
-                }
+                  });
+                  setSelectedDocs(new Set());
+                }}
               >
                 <i className="bi bi-x-square"></i>
               </button>

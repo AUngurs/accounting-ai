@@ -18,7 +18,7 @@ export default function Partners() {
   const { companyId } = useCompany();
 
   const ROW_HEIGHT = 24;
-  const VISIBLE_ROWS = 25;
+  const VISIBLE_ROWS = 29;
   const [scrollTop, setScrollTop] = useState(0);
   const containerRef = useRef(null);
 
@@ -117,6 +117,23 @@ export default function Partners() {
     }
   };
 
+  const handleExport = async () => {
+    try {
+      const idsToExport = Array.from(selectedPartners);
+      const res = await axiosInstance.post(`/companies/${companyId}/partners/export`, { ids: idsToExport }, { responseType: "blob" });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `partners_selected_${companyId}.xml`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error(err);
+      alert("Eksports neizdevās");
+    }
+  };
+
   const handleSort = (key) => {
     let direction = "asc";
     if (sortConfig.key === key && sortConfig.direction === "asc") direction = "desc";
@@ -149,7 +166,9 @@ export default function Partners() {
         <input type="file" accept=".xml" ref={fileInputRef} onChange={handleFileChange} className="form-control w-auto" />
         {selectedPartners.size > 0 && (
           <>
-            <button className="btn custom-dark-hover">Eksportēt XML</button>
+            <button className="btn custom-dark-hover" onClick={handleExport}>
+              Eksportēt XML
+            </button>
             <button className="btn custom-red-hover" onClick={handleDeleteSelected}>
               Dzēst {selectedPartners.size} partnerus
             </button>
@@ -240,7 +259,10 @@ export default function Partners() {
                 type="button"
                 className="btn btn-sm custom-red-hover"
                 style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
-                onClick={() => setFilters({ name: "", type: "", regNr: "", vat: "" })}
+                onClick={() => {
+                  setFilters({ name: "", type: "", regNr: "", vat: "" });
+                  setSelectedPartners(new Set());
+                }}
               >
                 <i className="bi bi-x-square" style={{ fontSize: "1rem" }}></i>
               </button>

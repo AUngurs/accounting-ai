@@ -9,6 +9,7 @@ import {
   bulkDeleteDocuments,
   getLines,
   editLines,
+  exportDocuments,
 } from "../controllers/documentsController.js";
 
 const router = express.Router({ mergeParams: true });
@@ -22,5 +23,6 @@ router.get("/:document_id/lines", getLines);
 router.put("/:document_id/lines", editLines);
 router.delete("/:document_id", deleteDocument);
 router.post("/bulk-delete", bulkDeleteDocuments);
+router.post("/export", exportDocuments);
 
 export default router;

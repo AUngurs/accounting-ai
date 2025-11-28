@@ -91,34 +91,50 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
           </colgroup>
           <thead className="table-light">
             <tr>
-              <th className="text-center">#</th>
+              <th className="text-center">
+                {!isEditing ? (
+                  <div className="d-flex justify-content-evenly">
+                    <button
+                      className="btn btn-sm custom-light-hover"
+                      style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
+                      onClick={() => {
+                        setIsEditing(true);
+                        setEditedLines(
+                          lines.map((line) => ({
+                            ...line,
+                            line_debet_account: line.line_debet_account ? line.line_debet_account.toString() : "",
+                            line_credit_account: line.line_credit_account ? line.line_credit_account.toString() : "",
+                            line_currency: line.line_currency || "EUR",
+                            line_amount: line.line_amount,
+                            line_vat_rate: line.line_vat_rate || null,
+                            line_comments: line.line_comments || "",
+                            line_supplementary_notice: line.line_supplementary_notice || "0",
+                          }))
+                        );
+                      }}
+                    >
+                      <i className="bi bi-pencil-square"></i>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="d-flex justify-content-evenly">
+                    <button
+                      className="btn btn-sm custom-light-hover"
+                      style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
+                      onClick={handleSave}
+                    >
+                      <i className="bi bi-check-square"></i>
+                    </button>
+                  </div>
+                )}
+              </th>
               <th>Valūta</th>
               <th>Summa</th>
               <th>Debets</th>
               <th>Kredīts</th>
               <th>PVN</th>
               <th>Kontējuma piezīmes</th>
-              <th className="text-center">
-                {!isEditing ? (
-                  <div className="d-flex justify-content-evenly">
-                    <button
-                      className="btn p-0 border-0"
-                      onClick={() => {
-                        setIsEditing(true);
-                        setEditedLines([...lines]);
-                      }}
-                    >
-                      <i className="bi bi-pencil-square" style={{ color: "white" }}></i>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="d-flex justify-content-evenly">
-                    <button className="btn p-0 border-0" onClick={handleSave}>
-                      <i className="bi bi-check-square" style={{ color: "white" }}></i>
-                    </button>
-                  </div>
-                )}
-              </th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -171,7 +187,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     >
                       <option value="">--</option>
                       {accounts.map((acc) => (
-                        <option key={acc.code} value={acc.code}>
+                        <option key={acc.code} value={acc.code.toString()}>
                           {acc.code} — {acc.name}
                         </option>
                       ))}
@@ -189,7 +205,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     >
                       <option value="">--</option>
                       {accounts.map((acc) => (
-                        <option key={acc.code} value={acc.code}>
+                        <option key={acc.code} value={acc.code.toString()}>
                           {acc.code} — {acc.name}
                         </option>
                       ))}

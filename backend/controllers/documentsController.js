@@ -1,6 +1,6 @@
 import pool from "../db.js";
 import fs from "fs";
-import { parseStringPromise } from "xml2js";
+import { parseStringPromise, Builder } from "xml2js";
 import multer from "multer";
 
 const upload = multer({ dest: "uploads/" });
@@ -274,5 +274,124 @@ export const bulkDeleteDocuments = async (req, res) => {
   } catch (err) {
     console.error("Bulk delete error:", err);
     res.status(500).json({ message: "Neizdevās dzēst dokumentus" });
+  }
+};
+
+export const exportDocuments = async (req, res) => {
+  try {
+    const companyId = req.params.companyId;
+    const { ids } = req.body;
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: "No document IDs provided" });
+    }
+
+    const docQuery = `
+      SELECT d.*, 
+             p.partner_title,
+             p.partner_name,
+             p.partner_reg_nr,
+             p.partner_kind_name,
+             p.vat_nr,
+             p.vat_country_code
+      FROM documents d
+      LEFT JOIN partners p ON d.partner_id = p.id
+      WHERE d.company_id = $1 AND d.id = ANY($2)
+      ORDER BY d.doc_id;
+    `;
+
+    const { rows: docs } = await pool.query(docQuery, [companyId, ids]);
+
+    if (docs.length === 0) {
+      return res.status(404).json({ error: "No documents found" });
+    }
+
+    const lineQuery = `
+      SELECT *
+      FROM document_lines
+      WHERE document_id = ANY($1)
+      ORDER BY id;
+    `;
+
+    const { rows: allLines } = await pool.query(lineQuery, [ids]);
+
+    const linesMap = {};
+    allLines.forEach((line) => {
+      if (!linesMap[line.document_id]) linesMap[line.document_id] = [];
+      linesMap[line.document_id].push(line);
+    });
+
+    const financialDocsXml = docs.map((doc) => {
+      let DocPartnerName = "";
+      let DocPartnerRegistrationNo = doc.partner_reg_nr || "";
+
+      if (doc.partner_kind_name === "Fiziska persona") {
+        DocPartnerName = `${doc.partner_title} ${doc.partner_name}`;
+      } else {
+        DocPartnerName = `${doc.partner_name}, ${doc.partner_title}`;
+      }
+
+      const lineBlocks = (linesMap[doc.id] || []).map((line) => ({
+        LineSupplementaryNoticeID: line.line_supplementary_notice || 1,
+        LineCurrency: line.line_currency || "EUR",
+        LineAmount: line.line_amount?.toString() || "0",
+        LineDebetAccountCode: line.line_debet_account || "",
+        LineCreditAccountCode: line.line_credit_account || "",
+        ...(line.line_vat_rate ? { LineVatRate: line.line_vat_rate.toString() } : {}),
+        ...(line.line_comments ? { LineComments: line.line_comments } : {}),
+      }));
+
+      return {
+        FinancialDoc: {
+          DocNo: doc.doc_id,
+          DocDate: doc.doc_date,
+          DocTypeAbbreviation: doc.doc_type_abbrev,
+          DocGroupAbbreviation: doc.doc_group_abbrev || "-",
+          DocCurrency: doc.doc_currency || "EUR",
+          DocAmount: doc.doc_amount?.toString() || "0",
+          DocAmountLockedNoticeID: "0",
+          DocPartnerName,
+          DocPartnerRegistrationNo,
+          ...(doc.vat_nr ? { DocPartnerVatNo: doc.vat_nr } : {}),
+          ...(doc.vat_country_code ? { DocPartnerVatNoCountryCode: doc.vat_country_code } : {}),
+          DocDisbursementNoticeID: "0",
+          ...(doc.doc_comments ? { DocComments: doc.doc_comments } : {}),
+          FinancialDocLine: lineBlocks,
+        },
+      };
+    });
+
+    const xmlObj = {
+      dataroot: {
+        tjDocument: {
+          $: { Version: "TJ5.5.101" },
+        },
+
+        tjResponse: {
+          $: {
+            Name: "FinancialDoc",
+            Operation: "Insert",
+            Version: "TJ7.0.112",
+            Structure: "Tree",
+          },
+          ...financialDocsXml.reduce((acc, item) => {
+            if (!acc.FinancialDoc) acc.FinancialDoc = [];
+            acc.FinancialDoc.push(item.FinancialDoc);
+            return acc;
+          }, {}),
+        },
+      },
+    };
+
+    const builder = new Builder({ headless: false, xmldec: { version: "1.0", encoding: "UTF-8" } });
+    const xml = builder.buildObject(xmlObj);
+
+    res.setHeader("Content-Disposition", "attachment; filename=financial_documents.xml");
+    res.setHeader("Content-Type", "application/xml");
+
+    return res.send(xml);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to export documents" });
   }
 };
