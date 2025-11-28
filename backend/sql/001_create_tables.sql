@@ -43,7 +43,9 @@ CREATE TABLE partners (
     partner_vat_type VARCHAR(50),       -- <PartnerTaxpayerType> Apliekama persona, LV
     vat_country_code VARCHAR(3),        -- <VatNoCountryCode> LV
     vat_nr VARCHAR(50),                 -- <VatNo> LV46603001941
-    vat_nr_default_notice VARCHAR(1),          -- <VatNoDefaultNoticeID> 1
+    vat_nr_default_notice VARCHAR(1),   -- <VatNoDefaultNoticeID> 1
+
+    formatted_name VARCHAR(307),
 
     CONSTRAINT fk_partners_company
         FOREIGN KEY (company_id)

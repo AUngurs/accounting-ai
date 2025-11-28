@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { useCompany } from "../components/CompanyContext";
-import EditPartnerModal from "../components/EditPartnerModal";
+import PartnerModal from "../components/PartnerModal";
 import { notify } from "../utils/notify";
 import { Table } from "react-bootstrap";
 import "react-virtualized/styles.css"; // default styles
@@ -36,13 +36,33 @@ export default function Partners() {
   const endIndex = Math.min(filteredPartners.length, startIndex + VISIBLE_ROWS);
   const visibleRows = filteredPartners.slice(startIndex, endIndex);
 
-  // Fetch partners
+  // Fetch sorted partners
   useEffect(() => {
-    axiosInstance
-      .get(`/companies/${companyId}/partners`)
-      .then((res) => setPartnersData(res.data))
-      .catch((err) => console.error(err));
+    const fetchPartners = async () => {
+      try {
+        const res = await axiosInstance.get(`/companies/${companyId}/partners`);
+        const sortedData = res.data.sort((a, b) => {
+          const formatPartner = (p) =>
+            p.partner_kind_name === "Juridiska persona"
+              ? `${p.partner_name}${p.partner_title ? ", " + p.partner_title : ""}`
+              : `${p.partner_title} ${p.partner_name}`; // Fiziskas personas: surname first
+
+          return formatPartner(a).toLowerCase().localeCompare(formatPartner(b).toLowerCase());
+        });
+
+        setPartnersData(sortedData);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchPartners();
   }, [companyId]);
+
+  const handleCreateClick = () => {
+    setSelectedPartner(null);
+    setShowModal(true);
+  };
 
   const handleFileChange = (e) => setFile(e.target.files[0]);
 
@@ -51,7 +71,7 @@ export default function Partners() {
     const formData = new FormData();
     formData.append("xmlFile", file);
     try {
-      const res = await axiosInstance.post(`/companies/${companyId}/partners`, formData, {
+      const res = await axiosInstance.post(`/companies/${companyId}/partners/import`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       const data = res.data;
@@ -77,6 +97,22 @@ export default function Partners() {
   const handleEditClick = (partner) => {
     setSelectedPartner(partner);
     setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setSelectedPartner(null);
+    setShowModal(false);
+  };
+
+  const handleCreate = async (newPartner) => {
+    try {
+      const res = await axiosInstance.post(`/companies/${companyId}/partners`, newPartner);
+      setPartnersData((prev) => [...prev, res.data]);
+      notify.success("Partneris veiksmīgi pievienots!");
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Kļūda pievienojot partneri");
+    }
   };
 
   const handleSave = async (updatedPartner) => {
@@ -140,15 +176,20 @@ export default function Partners() {
 
     const sorted = [...partnersData].sort((a, b) => {
       let aValue, bValue;
+
       if (key === "fullName") {
-        const aTitle = a.partner_title?.trim() || "";
-        const bTitle = b.partner_title?.trim() || "";
-        aValue = (a.partner_name.trim() + (aTitle ? ", " + aTitle : "")).toLowerCase();
-        bValue = (b.partner_name.trim() + (bTitle ? ", " + bTitle : "")).toLowerCase();
+        const formatPartner = (p) =>
+          p.partner_kind_name === "Juridiska persona"
+            ? `${p.partner_name}${p.partner_title ? ", " + p.partner_title : ""}`
+            : `${p.partner_title} ${p.partner_name}`;
+
+        aValue = formatPartner(a).toLowerCase();
+        bValue = formatPartner(b).toLowerCase();
       } else {
         aValue = (a[key] || "").toString().toLowerCase();
         bValue = (b[key] || "").toString().toLowerCase();
       }
+
       return direction === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
     });
 
@@ -160,6 +201,9 @@ export default function Partners() {
     <React.Fragment>
       <h2 className="mb-3">Partneri</h2>
       <div className="mb-3 d-flex gap-2">
+        <button className="btn custom-dark-hover" onClick={handleCreateClick}>
+          Jauns
+        </button>
         <button className="btn custom-dark-hover" onClick={handleImport}>
           Importēt XML
         </button>
@@ -175,7 +219,6 @@ export default function Partners() {
           </>
         )}
       </div>
-
       <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed", marginBottom: 0 }}>
         <colgroup>
           <col style={{ width: "3%" }} />
@@ -270,7 +313,6 @@ export default function Partners() {
           </tr>
         </thead>
       </Table>
-
       <div
         style={{ height: ROW_HEIGHT * VISIBLE_ROWS, overflowY: "auto", borderBottom: "6px solid #19221c" }}
         onScroll={(e) => setScrollTop(e.target.scrollTop)}
@@ -302,7 +344,11 @@ export default function Partners() {
                     onChange={(e) => togglePartnerSelection(partner.id, e.target.checked)}
                   />
                 </td>
-                <td>{`${partner.partner_name}${partner.partner_title ? ", " + partner.partner_title : ""}`}</td>
+                <td>
+                  {partner.partner_kind_name === "Juridiska persona"
+                    ? `${partner.partner_name}${partner.partner_title ? ", " + partner.partner_title : ""}`
+                    : `${partner.partner_title} ${partner.partner_name}`}
+                </td>
                 <td>{partner.partner_kind_name}</td>
                 <td>{partner.partner_reg_nr}</td>
                 <td>{partner.vat_nr}</td>
@@ -325,11 +371,11 @@ export default function Partners() {
         </Table>
       </div>
 
-      <EditPartnerModal
+      <PartnerModal
         show={showModal}
-        handleClose={() => setShowModal(false)}
+        handleClose={closeModal}
         partner={selectedPartner}
-        onSave={handleSave}
+        onSave={selectedPartner ? handleSave : handleCreate}
         onDelete={handleDelete}
         partners={partnersData}
       />

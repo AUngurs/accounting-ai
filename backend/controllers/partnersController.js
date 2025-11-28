@@ -18,16 +18,48 @@ export const getPartners = async (req, res) => {
   }
 };
 
+export const createPartner = async (req, res) => {
+  try {
+    const company_id = req.params.companyId;
+    const { kind_name, title, name, reg_nr, vat_type, vat_country_code, vat_nr } = req.body;
+
+    if (!kind_name || !name || !company_id) {
+      return res.status(400).json({ error: "Some fields are required" });
+    }
+
+    // Build formatted_name
+    let formatted_name = "";
+    if (kind_name === "Juridiska persona") {
+      formatted_name = title ? `${name}, ${title}` : name;
+    } else {
+      formatted_name = `${title || ""} ${name}`.trim();
+    }
+
+    const result = await pool.query(
+      `INSERT INTO partners
+        (partner_kind_name, partner_title, partner_name, partner_reg_nr,
+         partner_vat_type, vat_country_code, vat_nr, company_id, formatted_name)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING *`,
+      [kind_name, title || "", name, reg_nr || "", vat_type || "", vat_country_code || "", vat_nr || "", company_id, formatted_name]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error("Kļūda pievienojot partneri:", err);
+    res.status(500).json({ error: "Neizdevās pievienot partneri" });
+  }
+};
+
 export const importPartners = [
   upload.single("xmlFile"),
   async (req, res) => {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
     try {
       const companyID = req.params.companyId;
       const xmlData = fs.readFileSync(req.file.path, "utf-8");
-      const result = await parseStringPromise(xmlData, {
-        explicitArray: false,
-      });
+      const result = await parseStringPromise(xmlData, { explicitArray: false });
 
       const partnersRaw = result.dataroot.tjResponse.Partner;
       const partners = Array.isArray(partnersRaw) ? partnersRaw : [partnersRaw];
@@ -38,23 +70,40 @@ export const importPartners = [
       for (const partner of partners) {
         const isCompany = partner.PartnerKindName === "Juridiska persona";
 
-        const partnerTitle = isCompany ? partner.PartnerTitle || "" : partner.PartnerSurname || "";
-        const partnerName = isCompany ? partner.PartnerName || "" : partner.PartnerFirstName || "";
-        const partnerRegNr = isCompany
-          ? partner.PartnerRegistrationNo || ""
-          : partner.PartnerPersonalIdentityNo || `TEMP-${partnerName}-${partnerTitle}`;
+        const partnerTitle = isCompany ? (partner.PartnerTitle || "").trim() : (partner.PartnerSurname || "").trim();
+        const partnerName = isCompany ? (partner.PartnerName || "").trim() : (partner.PartnerFirstName || "").trim();
+        const partnerRegNr = isCompany ? (partner.PartnerRegistrationNo || "").trim() : (partner.PartnerPersonalIdentityNo || "").trim();
 
-        const checkQuery = `
-          SELECT * FROM partners
-          WHERE company_id = $1 AND partner_reg_nr = $2
-        `;
+        // Build formatted_name for sorting/display
+        let formattedName = "";
+        if (isCompany) {
+          formattedName = partnerTitle ? `${partnerName}, ${partnerTitle}` : partnerName;
+        } else {
+          formattedName = `${partnerTitle} ${partnerName}`.trim();
+        }
 
-        const { rows: existing } = await pool.query(checkQuery, [companyID, partnerRegNr]);
+        let existing;
+        if (partnerRegNr !== "") {
+          const regQuery = `
+            SELECT * FROM partners
+            WHERE company_id=$1 AND partner_reg_nr=$2
+          `;
+          existing = (await pool.query(regQuery, [companyID, partnerRegNr])).rows;
+        } else {
+          const nameQuery = `
+            SELECT * FROM partners
+            WHERE company_id=$1 
+              AND LOWER(partner_name)=LOWER($2)
+              AND LOWER(partner_title)=LOWER($3)
+          `;
+          existing = (await pool.query(nameQuery, [companyID, partnerName, partnerTitle])).rows;
+        }
 
         if (existing.length > 0) {
           skipped.push({
-            partnerRegNr,
-            reason: "Partneris jau reģistrēts",
+            partnerRegNr: partnerRegNr || "(empty)",
+            partnerName,
+            reason: "Partner already exists",
           });
           continue;
         }
@@ -63,10 +112,11 @@ export const importPartners = [
         const vatInfo = Array.isArray(vatInfoRaw) ? vatInfoRaw[0] : vatInfoRaw || {};
 
         const insertQuery = `
-            INSERT INTO partners
-            (company_id, partner_kind_name, partner_title, partner_name, partner_reg_nr, partner_vat_type, vat_country_code, vat_nr, vat_nr_default_notice)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            RETURNING *;
+          INSERT INTO partners
+          (company_id, partner_kind_name, partner_title, partner_name, partner_reg_nr,
+           partner_vat_type, vat_country_code, vat_nr, vat_nr_default_notice, formatted_name)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          RETURNING *;
         `;
 
         const { rows: partnerRows } = await pool.query(insertQuery, [
@@ -79,12 +129,14 @@ export const importPartners = [
           vatInfo.VatNoCountryCode || "",
           vatInfo.VatNo || "",
           vatInfo.VatNoDefaultNoticeID || "",
+          formattedName,
         ]);
 
         newPartners.push(partnerRows[0]);
       }
 
       fs.unlinkSync(req.file.path);
+
       res.json({
         message: "Import completed",
         imported: newPartners.length,
@@ -189,6 +241,14 @@ export const editPartner = async (req, res) => {
       return res.status(400).json({ error: "Some fields are required" });
     }
 
+    // Recalculate formatted_name
+    let formatted_name = "";
+    if (kind_name === "Juridiska persona") {
+      formatted_name = title ? `${name}, ${title}` : name;
+    } else {
+      formatted_name = `${title || ""} ${name}`.trim();
+    }
+
     const result = await pool.query(
       `UPDATE partners
        SET partner_kind_name = $1,
@@ -197,10 +257,11 @@ export const editPartner = async (req, res) => {
            partner_reg_nr = $4,
            partner_vat_type = $5,
            vat_country_code = $6,
-           vat_nr = $7
-       WHERE id = $8
+           vat_nr = $7,
+           formatted_name = $8
+       WHERE id = $9
        RETURNING *`,
-      [kind_name, title, name, reg_nr, vat_type, vat_country_code, vat_nr, partner_id]
+      [kind_name, title || "", name, reg_nr || "", vat_type || "", vat_country_code || "", vat_nr || "", formatted_name, partner_id]
     );
 
     if (result.rowCount === 0) {

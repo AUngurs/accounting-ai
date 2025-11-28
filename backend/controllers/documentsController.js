@@ -24,10 +24,34 @@ export const getDocuments = async (req, res) => {
   }
 };
 
+function parseXMLPartnerName(xmlName, xmlKindName) {
+  if (!xmlName) return { name: "", title: "" };
+
+  xmlName = xmlName.trim();
+
+  if (xmlKindName === "Juridiska persona") {
+    if (xmlName.includes(",")) {
+      const [name, title] = xmlName.split(",").map((s) => s.trim());
+      return { name, title };
+    }
+    return { name: xmlName, title: "" };
+  }
+
+  const parts = xmlName.split(" ").filter(Boolean);
+  if (parts.length >= 2) {
+    const title = parts[0];
+    const name = parts.slice(1).join(" ");
+    return { name, title };
+  }
+
+  return { name: xmlName, title: "" };
+}
+
 export const importDocuments = [
   upload.single("xmlFile"),
   async (req, res) => {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
     try {
       const companyID = req.params.companyId;
       const xmlData = fs.readFileSync(req.file.path, "utf-8");
@@ -36,17 +60,52 @@ export const importDocuments = [
       const financialDocsRaw = result.dataroot.tjResponse.FinancialDoc;
       const financialDocs = Array.isArray(financialDocsRaw) ? financialDocsRaw : [financialDocsRaw];
 
-      const { rows: partnerRows } = await pool.query("SELECT id, partner_reg_nr FROM partners WHERE company_id=$1", [companyID]);
+      const { rows: partnerRows } = await pool.query(
+        "SELECT id, partner_reg_nr, partner_name, partner_title, partner_kind_name FROM partners WHERE company_id=$1",
+        [companyID]
+      );
 
-      const partnersMap = {};
+      const partnersByRegNr = {};
+      const partnersByName = {};
+
       partnerRows.forEach((p) => {
-        partnersMap[p.partner_reg_nr] = p.id;
+        if (p.partner_reg_nr) {
+          partnersByRegNr[p.partner_reg_nr.trim()] = p.id;
+        }
+        let key;
+        if (p.partner_kind_name === "Juridiska persona") {
+          key = `${p.partner_name}${p.partner_title ? ", " + p.partner_title : ""}`.trim().toLowerCase();
+        } else {
+          key = `${p.partner_title} ${p.partner_name}`.trim().toLowerCase();
+        }
+        partnersByName[key] = p.id;
       });
 
       const newDocuments = [];
 
       for (const doc of financialDocs) {
-        const partner_id = partnersMap[doc.DocPartnerRegistrationNo] || null;
+        let partner_id = null;
+
+        const regNr = doc.DocPartnerRegistrationNo?.trim();
+        if (regNr && partnersByRegNr[regNr]) {
+          partner_id = partnersByRegNr[regNr];
+        } else {
+          const xmlName = doc.DocPartnerName || "";
+          const xmlKind = doc.DocPartnerKindName;
+
+          const { name, title } = parseXMLPartnerName(xmlName, xmlKind);
+
+          let key;
+          if (xmlKind === "Juridiska persona") {
+            key = `${name}${title ? ", " + title : ""}`.trim().toLowerCase();
+          } else {
+            key = `${title} ${name}`.trim().toLowerCase();
+          }
+
+          if (partnersByName[key]) {
+            partner_id = partnersByName[key];
+          }
+        }
 
         const docQuery = `
           INSERT INTO documents
@@ -69,10 +128,9 @@ export const importDocuments = [
         const insertedDoc = docRows[0];
         newDocuments.push(insertedDoc);
 
-        let insertedLines = [];
-
         if (doc.FinancialDocLine) {
           const lines = Array.isArray(doc.FinancialDocLine) ? doc.FinancialDocLine : [doc.FinancialDocLine];
+          const insertedLines = [];
 
           for (const line of lines) {
             const lineQuery = `
@@ -91,7 +149,6 @@ export const importDocuments = [
               line.LineVatRate || null,
               line.LineComments || null,
             ]);
-
             insertedLines.push(...lineRows);
           }
 

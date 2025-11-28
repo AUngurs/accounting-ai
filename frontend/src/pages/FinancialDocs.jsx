@@ -65,7 +65,7 @@ export default function FinancialDocs() {
   const partnerMap = {};
   partnersData.forEach((p) => {
     if (!p) return;
-    partnerMap[p.id] = `${p.partner_name ?? ""}${p.partner_title ? ", " + p.partner_title : ""}`;
+    partnerMap[p.id] = p.formatted_name || "";
   });
 
   // Filter documents
@@ -90,8 +90,8 @@ export default function FinancialDocs() {
     let bValue = b[sortConfig.key];
 
     if (sortConfig.key === "partner_id") {
-      aValue = partnerMap[aValue] || "";
-      bValue = partnerMap[bValue] || "";
+      aValue = partnersData.find((p) => p.id === aValue)?.formatted_name || "";
+      bValue = partnersData.find((p) => p.id === bValue)?.formatted_name || "";
     } else if (sortConfig.key === "doc_date") {
       aValue = new Date(aValue);
       bValue = new Date(bValue);
@@ -375,11 +375,14 @@ export default function FinancialDocs() {
                 onChange={(e) => setFilters({ ...filters, partnerId: e.target.value })}
               >
                 <option value="">Visi</option>
-                {partnersData.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {partnerMap[p.id] || ""}
-                  </option>
-                ))}
+                {partnersData
+                  .slice()
+                  .sort((a, b) => (a.formatted_name || "").localeCompare(b.formatted_name || "", "lv", { sensitivity: "base" }))
+                  .map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.formatted_name}
+                    </option>
+                  ))}
               </select>
             </th>
             <th>

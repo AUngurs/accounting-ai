@@ -163,11 +163,14 @@ export default function EditDocumentModal({
             <Form.Label>Partneris</Form.Label>
             <Form.Select name="partner_id" value={formData.partner_id || ""} onChange={handleChange} isInvalid={!!formErrors.partner_id}>
               <option value=""></option>
-              {partners?.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.partner_name} ({p.partner_reg_nr})
-                </option>
-              ))}
+              {partners
+                ?.slice()
+                .sort((a, b) => (a.formatted_name || "").localeCompare(b.formatted_name || "", "lv", { sensitivity: "base" }))
+                .map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.formatted_name}
+                  </option>
+                ))}
             </Form.Select>
             <Form.Control.Feedback type="invalid">{formErrors.partner_id}</Form.Control.Feedback>
           </Form.Group>
