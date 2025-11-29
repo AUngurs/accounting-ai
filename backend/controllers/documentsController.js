@@ -24,6 +24,52 @@ export const getDocuments = async (req, res) => {
   }
 };
 
+export const createDocument = async (req, res) => {
+  try {
+    const companyID = req.params.companyId;
+    const { partner_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_currency, doc_amount, doc_comments, is_accounted } =
+      req.body;
+
+    if (!doc_id || !doc_date || !doc_type_abbrev || !doc_group_abbrev || !doc_currency || !doc_amount) {
+      return res.status(400).json({ error: "Some fields are required" });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO documents
+        (company_id, partner_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_currency, doc_amount, doc_comments, is_accounted)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       RETURNING *`,
+      [
+        companyID,
+        partner_id ? partner_id : null,
+        doc_id,
+        doc_date,
+        doc_type_abbrev,
+        doc_group_abbrev,
+        doc_currency,
+        doc_amount,
+        doc_comments,
+        is_accounted || false,
+      ]
+    );
+
+    const newDocument = result.rows[0];
+
+    const { rows: lines } = await pool.query("SELECT * FROM document_lines WHERE document_id=$1", [newDocument.id]);
+    const isFullyPosted = calculateIsAccounted(lines, doc_amount);
+
+    if (isFullyPosted !== newDocument.is_accounted) {
+      await pool.query("UPDATE documents SET is_accounted=$1 WHERE id=$2", [isFullyPosted, newDocument.id]);
+      newDocument.is_accounted = isFullyPosted;
+    }
+
+    res.status(201).json(newDocument);
+  } catch (err) {
+    console.error("Kļūda pievienojot dokumentu:", err);
+    res.status(500).json({ error: "Neizdevās pievienot dokumentu" });
+  }
+};
+
 function parseXMLPartnerName(xmlName, xmlKindName) {
   if (!xmlName) return { name: "", title: "" };
 
@@ -69,9 +115,8 @@ export const importDocuments = [
       const partnersByName = {};
 
       partnerRows.forEach((p) => {
-        if (p.partner_reg_nr) {
-          partnersByRegNr[p.partner_reg_nr.trim()] = p.id;
-        }
+        if (p.partner_reg_nr) partnersByRegNr[p.partner_reg_nr.trim()] = p.id;
+
         let key;
         if (p.partner_kind_name === "Juridiska persona") {
           key = `${p.partner_name}${p.partner_title ? ", " + p.partner_title : ""}`.trim().toLowerCase();
@@ -92,7 +137,6 @@ export const importDocuments = [
         } else {
           const xmlName = doc.DocPartnerName || "";
           const xmlKind = doc.DocPartnerKindName;
-
           const { name, title } = parseXMLPartnerName(xmlName, xmlKind);
 
           let key;
@@ -102,11 +146,10 @@ export const importDocuments = [
             key = `${title} ${name}`.trim().toLowerCase();
           }
 
-          if (partnersByName[key]) {
-            partner_id = partnersByName[key];
-          }
+          if (partnersByName[key]) partner_id = partnersByName[key];
         }
 
+        // Insert document with temporary is_accounted=false
         const docQuery = `
           INSERT INTO documents
           (company_id, partner_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_currency, doc_amount, doc_comments, is_accounted)
@@ -125,12 +168,11 @@ export const importDocuments = [
           doc.DocComments,
         ]);
 
-        const insertedDoc = docRows[0];
-        newDocuments.push(insertedDoc);
+        let insertedDoc = docRows[0];
 
+        let insertedLines = [];
         if (doc.FinancialDocLine) {
           const lines = Array.isArray(doc.FinancialDocLine) ? doc.FinancialDocLine : [doc.FinancialDocLine];
-          const insertedLines = [];
 
           for (const line of lines) {
             const lineQuery = `
@@ -151,10 +193,18 @@ export const importDocuments = [
             ]);
             insertedLines.push(...lineRows);
           }
-
-          const isFullyAccounted = calculateIsAccounted(insertedLines, insertedDoc.doc_amount);
-          await pool.query("UPDATE documents SET is_accounted=$1 WHERE id=$2", [isFullyAccounted, insertedDoc.id]);
         }
+
+        // Calculate correct is_accounted
+        const isFullyAccounted = calculateIsAccounted(insertedLines, insertedDoc.doc_amount);
+
+        // Update the document and return the updated row
+        const { rows: updatedDocRows } = await pool.query("UPDATE documents SET is_accounted=$1 WHERE id=$2 RETURNING *", [
+          isFullyAccounted,
+          insertedDoc.id,
+        ]);
+
+        newDocuments.push(updatedDocRows[0]);
       }
 
       fs.unlinkSync(req.file.path);
@@ -197,12 +247,22 @@ export const updateDocumentAccounted = async (req, res) => {
 export const editDocument = async (req, res) => {
   try {
     const { document_id } = req.params;
-    const { partner_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_currency, doc_amount, doc_comments, is_accounted } =
-      req.body;
+    const { partner_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_currency, doc_amount, doc_comments } = req.body;
 
     if (!doc_id || !doc_date || !doc_type_abbrev || !doc_group_abbrev || !doc_currency || !doc_amount) {
       return res.status(400).json({ error: "Some fields are required" });
     }
+
+    const { rows: lines } = await pool.query("SELECT line_amount, line_supplementary_notice FROM document_lines WHERE document_id=$1", [
+      document_id,
+    ]);
+
+    const totalCents = lines
+      .filter((l) => l.line_supplementary_notice === "1")
+      .reduce((sum, l) => sum + Math.round(Number(l.line_amount || 0) * 100), 0);
+
+    const docAmountCents = Math.round(Number(doc_amount) * 100);
+    const isFullyPosted = totalCents === docAmountCents;
 
     const result = await pool.query(
       `UPDATE documents
@@ -218,7 +278,7 @@ export const editDocument = async (req, res) => {
        WHERE id = $10
        RETURNING *`,
       [
-        partner_id ? partner_id : null,
+        partner_id || null,
         doc_id,
         doc_date,
         doc_type_abbrev,
@@ -226,16 +286,12 @@ export const editDocument = async (req, res) => {
         doc_currency,
         doc_amount,
         doc_comments,
-        is_accounted,
+        isFullyPosted,
         document_id,
       ]
     );
 
     if (result.rowCount === 0) return res.status(404).json({ error: "Dokuments nav atrasts" });
-
-    const { rows: lines } = await pool.query("SELECT * FROM document_lines WHERE document_id=$1", [document_id]);
-    const isFullyPosted = calculateIsAccounted(lines, doc_amount);
-    await pool.query("UPDATE documents SET is_accounted=$1 WHERE id=$2", [isFullyPosted, document_id]);
 
     res.status(200).json(result.rows[0]);
   } catch (err) {
@@ -260,12 +316,14 @@ export const getLines = async (req, res) => {
 export const editLines = async (req, res) => {
   try {
     const { document_id } = req.params;
-    const lines = req.body;
+    const { updated = [], inserted = [], deleted = [] } = req.body;
 
-    if (!Array.isArray(lines)) return res.status(400).json({ error: "Expected an array of lines." });
+    const updatedLines = [];
+    const insertedLines = [];
 
-    for (const line of lines) {
-      await pool.query(
+    for (const line of updated) {
+      const vatRate = line.line_vat_rate === "" ? null : line.line_vat_rate;
+      const result = await pool.query(
         `
         UPDATE document_lines
         SET
@@ -278,6 +336,7 @@ export const editLines = async (req, res) => {
           line_comments = $7
         WHERE id = $8
           AND document_id = $9
+        RETURNING *
         `,
         [
           line.line_supplementary_notice,
@@ -285,15 +344,52 @@ export const editLines = async (req, res) => {
           line.line_amount,
           line.line_debet_account,
           line.line_credit_account,
-          line.line_vat_rate,
+          vatRate,
           line.line_comments,
           line.id,
           document_id,
         ]
       );
+      if (result.rows[0]) updatedLines.push(result.rows[0]);
     }
 
-    res.json({ message: "Kontējumi mainīti!" });
+    for (const line of inserted) {
+      const vatRate = line.line_vat_rate === "" ? null : line.line_vat_rate;
+      const result = await pool.query(
+        `
+        INSERT INTO document_lines (
+          document_id,
+          line_supplementary_notice,
+          line_currency,
+          line_amount,
+          line_debet_account,
+          line_credit_account,
+          line_vat_rate,
+          line_comments
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+        RETURNING *
+        `,
+        [
+          document_id,
+          line.line_supplementary_notice,
+          line.line_currency,
+          line.line_amount,
+          line.line_debet_account,
+          line.line_credit_account,
+          vatRate,
+          line.line_comments,
+        ]
+      );
+      insertedLines.push(result.rows[0]);
+    }
+
+    if (deleted.length > 0) {
+      await pool.query(`DELETE FROM document_lines WHERE id = ANY($1::int[]) AND document_id = $2`, [deleted, document_id]);
+    }
+
+    const { rows: allLines } = await pool.query(`SELECT * FROM document_lines WHERE document_id = $1 ORDER BY id`, [document_id]);
+
+    res.json({ updated: updatedLines, inserted: insertedLines, deleted, allLines });
   } catch (err) {
     console.error("Kļūda rediģējot kontējumus:", err);
     res.status(500).json({ error: "Neizdevās rediģēt kontējumus" });
@@ -380,13 +476,14 @@ export const exportDocuments = async (req, res) => {
 
     const financialDocsXml = docs.map((doc) => {
       let DocPartnerName = "";
-      let DocPartnerRegistrationNo = doc.partner_reg_nr || "";
 
       if (doc.partner_kind_name === "Fiziska persona") {
-        DocPartnerName = `${doc.partner_title} ${doc.partner_name}`;
+        DocPartnerName = [doc.partner_title, doc.partner_name].filter(Boolean).join(" ");
       } else {
-        DocPartnerName = `${doc.partner_name}, ${doc.partner_title}`;
+        DocPartnerName = [doc.partner_name, doc.partner_title].filter(Boolean).join(", ");
       }
+
+      const DocPartnerRegistrationNo = doc.partner_reg_nr || "";
 
       const lineBlocks = (linesMap[doc.id] || []).map((line) => ({
         LineSupplementaryNoticeID: line.line_supplementary_notice || 1,

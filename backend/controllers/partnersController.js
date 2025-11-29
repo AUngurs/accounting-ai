@@ -170,21 +170,20 @@ export const exportPartners = async (req, res) => {
         PartnerKindName: p.partner_kind_name,
 
         ...(isCompany && {
-          PartnerTitle: p.partner_title || "",
-          PartnerName: p.partner_name || "",
-          PartnerRegistrationNo: p.partner_reg_nr || "",
+          ...(p.partner_title && { PartnerTitle: p.partner_title }),
+          ...(p.partner_name && { PartnerName: p.partner_name }),
+          ...(p.partner_reg_nr && { PartnerRegistrationNo: p.partner_reg_nr }),
         }),
 
         ...(isPerson && {
-          PartnerFirstName: p.partner_name || "",
-          PartnerSurname: p.partner_title || "",
-          PartnerPersonalIdentityNo: p.partner_reg_nr || "",
-          ...(p.birth_date && {
-            PhysicalPersonBirthDate: p.birth_date.toISOString(),
-          }),
+          ...(p.partner_name && { PartnerFirstName: p.partner_name }),
+          ...(p.partner_title && { PartnerSurname: p.partner_title }),
+          ...(p.partner_reg_nr && { PartnerPersonalIdentityNo: p.partner_reg_nr }),
+          ...(p.birth_date && { PhysicalPersonBirthDate: p.birth_date.toISOString() }),
         }),
 
-        PartnerTaxpayerType: p.partner_vat_type || "",
+        ...(p.partner_vat_type && { PartnerTaxpayerType: p.partner_vat_type }),
+
         PartnerLockedNoticeID: "0",
         PartnerProductWarehouseNoticeID: "0",
         PartnerTimberForwarderNoticeID: "0",
@@ -193,8 +192,8 @@ export const exportPartners = async (req, res) => {
         ...(p.vat_nr && {
           PartnerVatNo: {
             VatNo: p.vat_nr,
-            VatNoCountryCode: p.vat_country_code || "",
-            VatNoDefaultNoticeID: p.vat_nr_default_notice || "",
+            ...(p.vat_country_code && { VatNoCountryCode: p.vat_country_code }),
+            ...(p.vat_nr_default_notice && { VatNoDefaultNoticeID: p.vat_nr_default_notice }),
           },
         }),
       };

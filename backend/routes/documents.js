@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getDocuments,
+  createDocument,
   importDocuments,
   getDocument,
   editDocument,
@@ -15,7 +16,8 @@ import {
 const router = express.Router({ mergeParams: true });
 
 router.get("/", getDocuments);
-router.post("/", importDocuments);
+router.post("/", createDocument);
+router.post("/import", importDocuments);
 router.get("/:document_id", getDocument);
 router.put("/:document_id", editDocument);
 router.put("/:document_id/accounted", updateDocumentAccounted);

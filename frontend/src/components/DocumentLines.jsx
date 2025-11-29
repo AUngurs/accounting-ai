@@ -9,8 +9,19 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
   const [accounts, setAccounts] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editedLines, setEditedLines] = useState([]);
+  const [placeholderActive, setPlaceholderActive] = useState(false);
+  const [newLineDraft, setNewLineDraft] = useState({
+    id: null,
+    line_currency: "EUR",
+    line_amount: "0.00",
+    line_debet_account: "",
+    line_credit_account: "",
+    line_vat_rate: "",
+    line_comments: "",
+    line_supplementary_notice: "0",
+  });
 
-  const lineCurrencyOptions = ["DKK", "EUR", "GBP", "LVL", "NOK", "PLN", "RUB", "SEK", "USD"];
+  const lineCurrencyOptions = ["EUR", "DKK", "GBP", "LVL", "NOK", "PLN", "RUB", "SEK", "USD"];
 
   // Fetch accounts
   useEffect(() => {
@@ -43,14 +54,38 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
     });
   }
 
+  function deleteLine(index) {
+    setEditedLines((prev) => prev.filter((_, i) => i !== index));
+  }
+
   const handleSave = async () => {
     try {
-      await axiosInstance.put(`/companies/${companyId}/documents/${documentId}/lines`, editedLines);
+      const defaultAccount = accounts.length > 0 ? accounts[0].code : "11";
 
-      const totalCents = editedLines
+      const linesToSave = editedLines.map((line) => ({
+        ...line,
+        line_debet_account: line.line_debet_account || defaultAccount,
+        line_credit_account: line.line_credit_account || defaultAccount,
+        line_vat_rate: line.line_vat_rate ? Number(line.line_vat_rate) : null,
+      }));
+
+      const deletedLineIds = lines.filter((line) => !linesToSave.find((l) => l.id === line.id)).map((l) => l.id);
+      const updatedLines = linesToSave.filter((l) => l.id && !l.id.toString().startsWith("new-"));
+      const newLines = linesToSave.filter((l) => !l.id || l.id.toString().startsWith("new-"));
+
+      const payload = {
+        updated: updatedLines,
+        inserted: newLines,
+        deleted: deletedLineIds,
+      };
+
+      const { data } = await axiosInstance.put(`/companies/${companyId}/documents/${documentId}/lines`, payload);
+
+      const allLines = data.allLines;
+
+      const totalCents = allLines
         .filter((l) => l.line_supplementary_notice === "1")
         .reduce((sum, l) => sum + Math.round(Number(l.line_amount || 0) * 100), 0);
-
       const { data: docs } = await axiosInstance.get(`/companies/${companyId}/documents/${documentId}`);
       const doc = docs[0];
       const docAmountCents = Math.round(Number(doc.doc_amount) * 100);
@@ -60,7 +95,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
 
       if (onUpdateAccounted) onUpdateAccounted(updatedDoc);
 
-      setLines([...editedLines]);
+      setLines(allLines);
       setIsEditing(false);
       setEditedLines([]);
     } catch (err) {
@@ -71,7 +106,6 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
 
   if (loading) return <div>Notiek ielāde...</div>;
   if (error) return <div className="text-danger">{error}</div>;
-  if (lines.length === 0) return <div>Nav kontējumu rindiņu.</div>;
 
   const displayLines = isEditing ? editedLines : lines;
 
@@ -139,7 +173,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
           </thead>
           <tbody>
             {displayLines.map((line, index) => (
-              <tr key={line.id} className="align-middle">
+              <tr key={line.id || `placeholder-${index}`} className="align-middle">
                 <td className="text-center">
                   <input
                     type="checkbox"
@@ -149,6 +183,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     readOnly={!isEditing}
                   />
                 </td>
+
                 <td>
                   {isEditing ? (
                     <select
@@ -166,6 +201,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     line.line_currency
                   )}
                 </td>
+
                 <td>
                   {isEditing ? (
                     <input
@@ -178,6 +214,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     line.line_amount
                   )}
                 </td>
+
                 <td>
                   {isEditing ? (
                     <select
@@ -185,10 +222,9 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                       value={line.line_debet_account || ""}
                       onChange={(e) => updateLine(index, "line_debet_account", e.target.value)}
                     >
-                      <option value="">--</option>
                       {accounts.map((acc) => (
                         <option key={acc.code} value={acc.code.toString()}>
-                          {acc.code} — {acc.name}
+                          {acc.code} - {acc.name}
                         </option>
                       ))}
                     </select>
@@ -196,6 +232,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     line.line_debet_account
                   )}
                 </td>
+
                 <td>
                   {isEditing ? (
                     <select
@@ -203,10 +240,9 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                       value={line.line_credit_account || ""}
                       onChange={(e) => updateLine(index, "line_credit_account", e.target.value)}
                     >
-                      <option value="">--</option>
                       {accounts.map((acc) => (
                         <option key={acc.code} value={acc.code.toString()}>
-                          {acc.code} — {acc.name}
+                          {acc.code} - {acc.name}
                         </option>
                       ))}
                     </select>
@@ -214,6 +250,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     line.line_credit_account
                   )}
                 </td>
+
                 <td>
                   {isEditing ? (
                     <input
@@ -229,6 +266,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     ""
                   )}
                 </td>
+
                 <td>
                   {isEditing ? (
                     <input
@@ -241,9 +279,124 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     line.line_comments
                   )}
                 </td>
-                <td></td>
+
+                <td>
+                  {isEditing && (
+                    <button className="btn custom-red-hover btn-sm" onClick={() => deleteLine(index)}>
+                      <i className="bi bi-x-lg"></i>
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
+
+            {isEditing && (
+              <tr className="align-middle">
+                <td className="text-center">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    checked={newLineDraft.line_supplementary_notice === "1"}
+                    onChange={(e) => setNewLineDraft((prev) => ({ ...prev, line_supplementary_notice: e.target.checked ? "1" : "0" }))}
+                    disabled={!placeholderActive}
+                  />
+                </td>
+                <td>
+                  <select
+                    className="form-select form-select-sm"
+                    value={placeholderActive ? newLineDraft.line_currency : ""}
+                    onChange={(e) => setNewLineDraft((prev) => ({ ...prev, line_currency: e.target.value }))}
+                    disabled={!placeholderActive}
+                  >
+                    <option value=""></option>
+                    {lineCurrencyOptions.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    className="form-control form-control-sm"
+                    value={placeholderActive ? newLineDraft.line_amount : ""}
+                    onChange={(e) => setNewLineDraft((prev) => ({ ...prev, line_amount: e.target.value }))}
+                    disabled={!placeholderActive}
+                  />
+                </td>
+                <td>
+                  <select
+                    className="form-select form-select-sm"
+                    value={placeholderActive ? newLineDraft.line_debet_account : ""}
+                    onChange={(e) => setNewLineDraft((prev) => ({ ...prev, line_debet_account: e.target.value }))}
+                    disabled={!placeholderActive}
+                  >
+                    <option value=""></option>
+                    {accounts.map((acc) => (
+                      <option key={acc.code} value={acc.code}>
+                        {acc.code} - {acc.name}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <select
+                    className="form-select form-select-sm"
+                    value={placeholderActive ? newLineDraft.line_credit_account : ""}
+                    onChange={(e) => setNewLineDraft((prev) => ({ ...prev, line_credit_account: e.target.value }))}
+                    disabled={!placeholderActive}
+                  >
+                    <option value=""></option>
+                    {accounts.map((acc) => (
+                      <option key={acc.code} value={acc.code}>
+                        {acc.code} - {acc.name}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    className="form-control form-control-sm"
+                    value={placeholderActive ? newLineDraft.line_vat_rate : ""}
+                    onChange={(e) => setNewLineDraft((prev) => ({ ...prev, line_vat_rate: e.target.value }))}
+                    disabled={!placeholderActive}
+                  />
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    className="form-control form-control-sm"
+                    value={placeholderActive ? newLineDraft.line_comments : ""}
+                    onChange={(e) => setNewLineDraft((prev) => ({ ...prev, line_comments: e.target.value }))}
+                    disabled={!placeholderActive}
+                  />
+                </td>
+                <td className="text-center">
+                  <button
+                    className="btn custom-dark-hover btn-sm"
+                    onClick={() => {
+                      setPlaceholderActive(true);
+                      setEditedLines((prev) => [...prev, { ...newLineDraft, id: `new-${Date.now()}` }]);
+                      setNewLineDraft({
+                        id: null,
+                        line_currency: "EUR",
+                        line_amount: "0.00",
+                        line_debet_account: "",
+                        line_credit_account: "",
+                        line_vat_rate: "",
+                        line_comments: "",
+                        line_supplementary_notice: "0",
+                      });
+                      setPlaceholderActive(false);
+                    }}
+                  >
+                    <i className="bi bi-plus-lg"></i>
+                  </button>
+                </td>
+              </tr>
+            )}
           </tbody>
         </Table>
       </Card.Body>

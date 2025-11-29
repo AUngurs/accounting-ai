@@ -1,15 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 
-export default function EditDocumentModal({
-  show,
-  handleClose,
-  documentData,
-  onSave,
-  onDelete,
-  partners, // partner list for dropdown
-}) {
-  // formData will always store the current form state
+const docTypeOptions = [
+  { value: "Čeks", label: "Čeks" },
+  { value: "Grām.", label: "Grāmatojums" },
+  { value: "Ienāk.b.dok.", label: "Ienākošais bankas dokuments" },
+  { value: "Izej.b.dok.", label: "Izejošais bankas dokuments" },
+  { value: "Rēķ", label: "Rēķins" },
+];
+const docGroupOptions = [
+  { value: "-", label: "-" },
+  { value: "D", label: "Debeta parāds" },
+  { value: "DA", label: "Debeta apmaksa" },
+  { value: "K", label: "Kredīta parāds" },
+  { value: "KA", label: "Kredīta apmaksa" },
+];
+const docCurrencyOptions = ["EUR", "DKK", "GBP", "LVL", "NOK", "PLN", "RUB", "SEK", "USD"];
+
+export default function DocumentModal({ show, handleClose, documentData, onSave, onDelete, partners }) {
+  const isEditMode = !!documentData;
+
   const [formData, setFormData] = useState({
     doc_id: "",
     doc_date: "",
@@ -24,16 +34,8 @@ export default function EditDocumentModal({
 
   const [formErrors, setFormErrors] = useState({});
 
-  // Store the original document to reset if needed
-  const [originalFormData, setOriginalFormData] = useState(null);
-
-  const docTypeOptions = ["Čeks", "Grām.", "Ienāk.b.dok.", "Izej.b.dok.", "Kredītrēķ.", "Rēķ"];
-  const docGroupOptions = ["-", "D", "DA", "K", "KA"];
-  const docCurrencyOptions = ["DKK", "EUR", "GBP", "LVL", "NOK", "PLN", "RUB", "SEK", "USD"];
-
-  // Whenever a new document is opened, populate the form and store original
   useEffect(() => {
-    if (documentData && show) {
+    if (isEditMode && show) {
       const initialData = {
         doc_id: documentData.doc_id || "",
         doc_date: documentData.doc_date || "",
@@ -46,10 +48,23 @@ export default function EditDocumentModal({
         partner_id: documentData.partner_id || "",
       };
       setFormData(initialData);
-      setOriginalFormData(initialData); // store original
+      setFormErrors({});
+    } else if (!isEditMode && show) {
+      // Reset for creation
+      setFormData({
+        doc_id: "",
+        doc_date: "",
+        doc_type_abbrev: docTypeOptions[0].value || "",
+        doc_group_abbrev: docGroupOptions[0].value || "",
+        doc_currency: "EUR",
+        doc_amount: "",
+        doc_comments: "",
+        is_accounted: false,
+        partner_id: "",
+      });
       setFormErrors({});
     }
-  }, [documentData, show]);
+  }, [isEditMode, documentData, show]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -58,13 +73,12 @@ export default function EditDocumentModal({
   };
 
   const handleSubmit = () => {
+    // TODO: add validation logic here if needed
     onSave({ ...documentData, ...formData });
     handleClose();
   };
 
   const handleCancel = () => {
-    // Reset formData to original before closing
-    if (originalFormData) setFormData(originalFormData);
     handleClose();
   };
 
@@ -77,7 +91,7 @@ export default function EditDocumentModal({
   return (
     <Modal show={show} onHide={handleCancel}>
       <Modal.Header closeButton>
-        <Modal.Title>Rediģēt dokumentu</Modal.Title>
+        <Modal.Title>{isEditMode ? "Rediģēt dokumentu" : "Pievienot jaunu dokumentu"}</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
@@ -93,7 +107,7 @@ export default function EditDocumentModal({
             <Form.Control
               type="date"
               name="doc_date"
-              value={formData.doc_date.slice(0, 10)} // YYYY-MM-DD
+              value={formData.doc_date.slice(0, 10)}
               onChange={handleChange}
               isInvalid={!!formErrors.doc_date}
             />
@@ -101,7 +115,7 @@ export default function EditDocumentModal({
           </Form.Group>
 
           <Form.Group className="mb-2">
-            <Form.Label>Tipa abreviatūra</Form.Label>
+            <Form.Label>Dokumenta tips</Form.Label>
             <Form.Select
               name="doc_type_abbrev"
               value={formData.doc_type_abbrev}
@@ -109,8 +123,8 @@ export default function EditDocumentModal({
               isInvalid={!!formErrors.doc_type_abbrev}
             >
               {docTypeOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
                 </option>
               ))}
             </Form.Select>
@@ -118,7 +132,7 @@ export default function EditDocumentModal({
           </Form.Group>
 
           <Form.Group className="mb-2">
-            <Form.Label>Grupas abreviatūra</Form.Label>
+            <Form.Label>Dokumenta grupa</Form.Label>
             <Form.Select
               name="doc_group_abbrev"
               value={formData.doc_group_abbrev}
@@ -126,8 +140,8 @@ export default function EditDocumentModal({
               isInvalid={!!formErrors.doc_group_abbrev}
             >
               {docGroupOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
                 </option>
               ))}
             </Form.Select>
@@ -191,14 +205,16 @@ export default function EditDocumentModal({
       </Modal.Body>
 
       <Modal.Footer>
-        <Button className="custom-red-hover" onClick={handleDelete}>
-          Dzēst
-        </Button>
+        {isEditMode && (
+          <Button className="custom-red-hover" onClick={handleDelete}>
+            Dzēst
+          </Button>
+        )}
         <Button className="custom-dark-hover" onClick={handleCancel}>
           Atcelt
         </Button>
         <Button className="custom-dark-hover" onClick={handleSubmit}>
-          Saglabāt
+          {isEditMode ? "Saglabāt" : "Pievienot"}
         </Button>
       </Modal.Footer>
     </Modal>

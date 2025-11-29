@@ -2,9 +2,10 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { useCompany } from "../components/CompanyContext";
 import DocumentLines from "../components/DocumentLines";
-import EditDocumentModal from "../components/EditDocumentModal";
+import DocumentModal from "../components/DocumentModal";
 import { notify } from "../utils/notify";
 import { Table } from "react-bootstrap";
+import { Collapse } from "react-bootstrap";
 
 const ROW_HEIGHT = 24; // approximate height of each row (adjust if needed)
 const VISIBLE_ROWS = 27; // number of rows to render in the viewport
@@ -124,7 +125,7 @@ export default function FinancialDocs() {
     const formData = new FormData();
     formData.append("xmlFile", file);
     try {
-      const res = await axiosInstance.post(`/companies/${companyId}/documents`, formData, {
+      const res = await axiosInstance.post(`/companies/${companyId}/documents/import`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setDocsData((prev) => [...prev, ...res.data.newDocuments]);
@@ -154,6 +155,29 @@ export default function FinancialDocs() {
     }
   };
 
+  const closeModal = () => {
+    setSelectedDocument(null);
+    setShowModal(false);
+  };
+
+  const handleCreateClick = () => {
+    setSelectedDocument(null);
+    setShowModal(true);
+  };
+
+  const handleCreate = async (newDocument) => {
+    try {
+      const res = await axiosInstance.post(`/companies/${companyId}/documents`, newDocument);
+      setDocsData((prev) => [...prev, res.data]);
+      setShowModal(false);
+      setSelectedDocument(null);
+      notify.success("Finanšu dokuments veiksmīgi pievienots!");
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Kļūda pievienojot dokumentu");
+    }
+  };
+
   const handleEditClick = (doc) => {
     setSelectedDocument(doc);
     setShowModal(true);
@@ -170,6 +194,10 @@ export default function FinancialDocs() {
       console.error(err);
       alert(err.response?.data?.error || "Kļūda saglabājot dokumentu");
     }
+  };
+
+  const handleUpdateAccounted = (updatedDoc) => {
+    setDocsData((prev) => prev.map((d) => (d.id === updatedDoc.id ? updatedDoc : d)));
   };
 
   const handleDelete = async (id) => {
@@ -207,9 +235,11 @@ export default function FinancialDocs() {
   const visibleRows = [];
   for (let i = startIndex; i < endIndex; i += 2) {
     const doc = sortedDocs[Math.floor(i / 2)];
+    const isOpen = openDocId === doc.id;
+
     visibleRows.push(
       <React.Fragment key={doc.id}>
-        <tr onClick={() => setOpenDocId(openDocId === doc.id ? null : doc.id)} style={{ cursor: "pointer" }}>
+        <tr onClick={() => setOpenDocId(isOpen ? null : doc.id)} style={{ cursor: "pointer" }}>
           <td style={{ textAlign: "center" }}>
             <input
               type="checkbox"
@@ -245,13 +275,15 @@ export default function FinancialDocs() {
             </div>
           </td>
         </tr>
-        {openDocId === doc.id && (
-          <tr>
-            <td colSpan={9} style={{ padding: 0, border: 0 }}>
-              <DocumentLines companyId={companyId} documentId={doc.id} onUpdateAccounted={fetchDocuments} />
-            </td>
-          </tr>
-        )}
+        <tr>
+          <td colSpan={9} style={{ padding: 0, border: 0 }}>
+            <Collapse in={isOpen}>
+              <div>
+                <DocumentLines companyId={companyId} documentId={doc.id} onUpdateAccounted={handleUpdateAccounted} />
+              </div>
+            </Collapse>
+          </td>
+        </tr>
       </React.Fragment>
     );
   }
@@ -261,6 +293,9 @@ export default function FinancialDocs() {
       <h2 className="mb-3">Finanšu dokumenti</h2>
 
       <div className="mb-3 d-flex gap-2">
+        <button className="btn custom-dark-hover" onClick={handleCreateClick}>
+          Jauns
+        </button>
         <button className="btn custom-dark-hover" onClick={handleImport}>
           Importēt XML
         </button>
@@ -450,7 +485,7 @@ export default function FinancialDocs() {
                   setSelectedDocs(new Set());
                 }}
               >
-                <i className="bi bi-x-square"></i>
+                <i className="bi bi-x"></i>
               </button>
             </th>
           </tr>
@@ -482,11 +517,11 @@ export default function FinancialDocs() {
         </Table>
       </div>
 
-      <EditDocumentModal
+      <DocumentModal
         show={showModal}
-        handleClose={() => setShowModal(false)}
+        handleClose={closeModal}
         documentData={selectedDocument}
-        onSave={handleSave}
+        onSave={selectedDocument ? handleSave : handleCreate}
         onDelete={handleDelete}
         partners={partnersData}
       />
