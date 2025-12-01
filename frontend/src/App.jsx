@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import AppLayout from "./layouts/AppLayout";
 import Login from "./pages/Login";
-import FinancialDocs from "./pages/FinancialDocs";
+import Documents from "./pages/Documents";
 import Partners from "./pages/Partners";
 import ChartOfAccounts from "./pages/ChartOfAccounts";
 import Register from "./pages/Register";
@@ -43,7 +43,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <AppLayout>
-                  <FinancialDocs />
+                  <Documents />
                 </AppLayout>
               </ProtectedRoute>
             }

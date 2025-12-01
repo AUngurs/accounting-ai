@@ -62,17 +62,23 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
           }}
         >
           <Form.Group className="mb-2">
-            <Form.Label>Kods</Form.Label>
+            <Form.Label>
+              Kods <span style={{ color: "red" }}>*</span>
+            </Form.Label>
             <Form.Control type="text" name="code" value={formData.code} onChange={handleChange} isInvalid={!!formErrors.code} />
             <Form.Control.Feedback type="invalid">{formErrors.code}</Form.Control.Feedback>
           </Form.Group>
           <Form.Group className="mb-2">
-            <Form.Label>Nosaukums</Form.Label>
+            <Form.Label>
+              Nosaukums <span style={{ color: "red" }}>*</span>
+            </Form.Label>
             <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} isInvalid={!!formErrors.name} />
             <Form.Control.Feedback type="invalid">{formErrors.name}</Form.Control.Feedback>
           </Form.Group>
           <Form.Group className="mb-2">
-            <Form.Label>Analītiskais/Sintētiskais</Form.Label>
+            <Form.Label>
+              Analītiskais/Sintētiskais <span style={{ color: "red" }}>*</span>
+            </Form.Label>
             <Form.Select name="type" value={formData.type} onChange={handleChange} isInvalid={!!formErrors.type}>
               {typeOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -83,7 +89,9 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
             <Form.Control.Feedback type="invalid">{formErrors.type}</Form.Control.Feedback>
           </Form.Group>
           <Form.Group className="mb-2">
-            <Form.Label>Aktīva/Pasīva/Operāciju</Form.Label>
+            <Form.Label>
+              Aktīva/Pasīva/Operāciju <span style={{ color: "red" }}>*</span>
+            </Form.Label>
             <Form.Select name="category" value={formData.category} onChange={handleChange} isInvalid={!!formErrors.category}>
               {categoryOptions.map((opt) => (
                 <option key={opt} value={opt}>
