@@ -1,84 +1,75 @@
 import React, { useState } from "react";
 import { useCompany } from "../../components/CompanyContext";
-import DocumentsControls from "./DocumentsControls";
-import DocumentsTableHeader from "./DocumentsTableHeader";
-import DocumentsTableBody from "./DocumentsTableBody";
-import { useDocuments } from "./useDocuments";
-import DocumentModal from "../../components/DocumentModal";
+import PartnersControls from "./PartnersControls";
+import PartnersTableHeader from "./PartnersTableHeader";
+import PartnersTableBody from "./PartnersTableBody";
+import PartnerModal from "../../components/PartnerModal";
+import { usePartners } from "./usePartners";
 import { Table } from "react-bootstrap";
 
 const ROW_HEIGHT = 24;
-const VISIBLE_ROWS = 27;
+const VISIBLE_ROWS = 29;
 
-export default function Documents() {
+export default function Partners() {
   const { companyId } = useCompany();
   const [scrollTop, setScrollTop] = useState(0);
-  const [openDocId, setOpenDocId] = useState(null);
+  const [selectedPartner, setSelectedPartner] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState(null);
 
   const {
-    docCurrencyOptions,
-    docsData,
-    docTypeOptions,
     partnersData,
-    selectedDocs,
-    setSelectedDocs,
-    filteredDocs,
+    filteredPartners,
+    visibleRows,
+    selectedPartners,
+    setSelectedPartners,
     filters,
     setFilters,
     sortConfig,
-    sortedDocs,
     handleSort,
-    partnerMap,
     handleCreate,
     handleSave,
     handleDelete,
-    handleExport,
     handleImport,
+    handleExport,
     handleDeleteSelected,
-    handleUpdateAccounted,
-  } = useDocuments(companyId);
+  } = usePartners(companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop);
 
   const handleCreateClick = () => {
-    setSelectedDocument(null);
+    setSelectedPartner(null);
     setShowModal(true);
   };
 
-  const handleEditClick = (doc) => {
-    setSelectedDocument(doc);
+  const handleEditClick = (partner) => {
+    setSelectedPartner(partner);
     setShowModal(true);
   };
 
   const closeModal = () => {
-    setSelectedDocument(null);
+    setSelectedPartner(null);
     setShowModal(false);
   };
 
   return (
     <div>
-      <h2 className="mb-3">Finanšu dokumenti</h2>
+      <h2 className="mb-3">Partneri</h2>
 
-      <DocumentsControls
+      <PartnersControls
+        selectedPartners={selectedPartners}
         handleCreateClick={handleCreateClick}
         handleImport={handleImport}
         handleExport={handleExport}
         handleDeleteSelected={handleDeleteSelected}
-        selectedDocs={selectedDocs}
       />
 
       <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed", marginBottom: 0 }}>
-        <DocumentsTableHeader
+        <PartnersTableHeader
           filters={filters}
           setFilters={setFilters}
           sortConfig={sortConfig}
           handleSort={handleSort}
+          selectedPartners={selectedPartners}
+          setSelectedPartners={setSelectedPartners}
           partnersData={partnersData}
-          selectedDocs={selectedDocs}
-          setSelectedDocs={setSelectedDocs}
-          filteredDocs={filteredDocs}
-          docTypeOptions={docTypeOptions}
-          docCurrencyOptions={docCurrencyOptions}
         />
       </Table>
 
@@ -87,30 +78,26 @@ export default function Documents() {
         onScroll={(e) => setScrollTop(e.target.scrollTop)}
       >
         <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed", marginBottom: 0 }}>
-          <DocumentsTableBody
-            docsData={docsData}
-            partnerMap={partnerMap}
-            openDocId={openDocId}
-            setOpenDocId={setOpenDocId}
-            selectedDocs={selectedDocs}
-            setSelectedDocs={setSelectedDocs}
+          <PartnersTableBody
+            visibleRows={visibleRows}
+            filteredPartners={filteredPartners}
+            ROW_HEIGHT={ROW_HEIGHT}
+            VISIBLE_ROWS={VISIBLE_ROWS}
             scrollTop={scrollTop}
-            companyId={companyId}
+            selectedPartners={selectedPartners}
+            setSelectedPartners={setSelectedPartners}
             handleEditClick={handleEditClick}
-            sortedDocs={sortedDocs}
-            handleUpdateAccounted={handleUpdateAccounted}
           />
         </Table>
       </div>
 
-      <DocumentModal
+      <PartnerModal
         show={showModal}
         handleClose={closeModal}
-        documentData={selectedDocument}
-        onSave={selectedDocument ? handleSave : handleCreate}
+        partner={selectedPartner}
+        onSave={selectedPartner ? handleSave : handleCreate}
         onDelete={handleDelete}
         partners={partnersData}
-        documents={docsData}
       />
     </div>
   );
