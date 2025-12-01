@@ -1,23 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
+import { documentRules } from "../utils/validators";
+import AmountInput from "./AmountInput";
 
 const docTypeOptions = [
+  { value: "Rēķ", label: "Rēķins" },
+  { value: "Kredītrēķ.", label: "Kredītrēķins" },
   { value: "Čeks", label: "Čeks" },
   { value: "Grām.", label: "Grāmatojums" },
   { value: "Ienāk.b.dok.", label: "Ienākošais bankas dokuments" },
   { value: "Izej.b.dok.", label: "Izejošais bankas dokuments" },
-  { value: "Rēķ", label: "Rēķins" },
 ];
 const docGroupOptions = [
-  { value: "-", label: "-" },
-  { value: "D", label: "Debeta parāds" },
-  { value: "DA", label: "Debeta apmaksa" },
   { value: "K", label: "Kredīta parāds" },
   { value: "KA", label: "Kredīta apmaksa" },
+  { value: "D", label: "Debeta parāds" },
+  { value: "DA", label: "Debeta apmaksa" },
+  { value: "-", label: "-" },
 ];
 const docCurrencyOptions = ["EUR", "DKK", "GBP", "LVL", "NOK", "PLN", "RUB", "SEK", "USD"];
 
-export default function DocumentModal({ show, handleClose, documentData, onSave, onDelete, partners }) {
+export default function DocumentModal({ show, handleClose, documentData, onSave, onDelete, partners, documents }) {
   const isEditMode = !!documentData;
 
   const [formData, setFormData] = useState({
@@ -50,7 +53,6 @@ export default function DocumentModal({ show, handleClose, documentData, onSave,
       setFormData(initialData);
       setFormErrors({});
     } else if (!isEditMode && show) {
-      // Reset for creation
       setFormData({
         doc_id: "",
         doc_date: "",
@@ -73,7 +75,19 @@ export default function DocumentModal({ show, handleClose, documentData, onSave,
   };
 
   const handleSubmit = () => {
-    // TODO: add validation logic here if needed
+    const errors = documentRules(documents, {
+      ...formData,
+      id: documentData?.id || null,
+      doc_type: formData.doc_type_abbrev,
+      doc_abbrev: formData.doc_group_abbrev,
+      doc_partner: formData.partner_id,
+    });
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+
     onSave({ ...documentData, ...formData });
     handleClose();
   };
@@ -97,13 +111,17 @@ export default function DocumentModal({ show, handleClose, documentData, onSave,
       <Modal.Body>
         <Form>
           <Form.Group className="mb-2">
-            <Form.Label>Dokumenta numurs</Form.Label>
+            <Form.Label>
+              Dokumenta numurs <span style={{ color: "red" }}>*</span>
+            </Form.Label>
             <Form.Control type="text" name="doc_id" value={formData.doc_id} onChange={handleChange} isInvalid={!!formErrors.doc_id} />
             <Form.Control.Feedback type="invalid">{formErrors.doc_id}</Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group className="mb-2">
-            <Form.Label>Datums</Form.Label>
+            <Form.Label>
+              Datums <span style={{ color: "red" }}>*</span>
+            </Form.Label>
             <Form.Control
               type="date"
               name="doc_date"
@@ -115,7 +133,9 @@ export default function DocumentModal({ show, handleClose, documentData, onSave,
           </Form.Group>
 
           <Form.Group className="mb-2">
-            <Form.Label>Dokumenta tips</Form.Label>
+            <Form.Label>
+              Dokumenta tips <span style={{ color: "red" }}>*</span>
+            </Form.Label>
             <Form.Select
               name="doc_type_abbrev"
               value={formData.doc_type_abbrev}
@@ -132,7 +152,9 @@ export default function DocumentModal({ show, handleClose, documentData, onSave,
           </Form.Group>
 
           <Form.Group className="mb-2">
-            <Form.Label>Dokumenta grupa</Form.Label>
+            <Form.Label>
+              Dokumenta grupa <span style={{ color: "red" }}>*</span>
+            </Form.Label>
             <Form.Select
               name="doc_group_abbrev"
               value={formData.doc_group_abbrev}
@@ -149,7 +171,9 @@ export default function DocumentModal({ show, handleClose, documentData, onSave,
           </Form.Group>
 
           <Form.Group className="mb-2">
-            <Form.Label>Valūta</Form.Label>
+            <Form.Label>
+              Valūta <span style={{ color: "red" }}>*</span>
+            </Form.Label>
             <Form.Select name="doc_currency" value={formData.doc_currency} onChange={handleChange} isInvalid={!!formErrors.doc_currency}>
               {docCurrencyOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -161,13 +185,13 @@ export default function DocumentModal({ show, handleClose, documentData, onSave,
           </Form.Group>
 
           <Form.Group className="mb-2">
-            <Form.Label>Summa</Form.Label>
-            <Form.Control
-              type="number"
-              step="0.01"
+            <Form.Label>
+              Summa <span style={{ color: "red" }}>*</span>
+            </Form.Label>
+            <AmountInput
               name="doc_amount"
               value={formData.doc_amount}
-              onChange={handleChange}
+              onChange={(val) => setFormData({ ...formData, doc_amount: val })}
               isInvalid={!!formErrors.doc_amount}
             />
             <Form.Control.Feedback type="invalid">{formErrors.doc_amount}</Form.Control.Feedback>

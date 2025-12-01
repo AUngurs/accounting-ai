@@ -50,9 +50,9 @@ export default function User() {
   };
 
   const handleSubmit = async () => {
-    if (formData.password !== formData.repeatPassword) {
-      return;
-    }
+    const errors = userRules(formData, allowPasswordEdit);
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     const payload = { username: formData.username };
 
@@ -60,18 +60,9 @@ export default function User() {
       payload.password = formData.password;
     }
 
-    const errors = userRules(payload, payload);
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return;
-    }
-
     try {
       const res = await axiosInstance.put(`/user/${user.id}`, payload);
-      setUser((prev) => ({
-        ...prev,
-        username: res.data.username,
-      }));
+      setUser((prev) => ({ ...prev, username: res.data.username }));
       notify.success("Lietotāja dati veiksmīgi rediģēti!");
       navigate("/companies");
     } catch (err) {
@@ -106,7 +97,7 @@ export default function User() {
             maxHeight: "90vh",
           }}
         >
-          <Form>
+          <Form noValidate>
             <Form.Group className="mb-2">
               <Form.Label>E-pasts</Form.Label>
               <Form.Control name="email" value={formData.email} disabled></Form.Control>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { accountRules } from "../utils/validators";
 
-export default function EditAccountModal({ show, handleClose, account, onSave, onDelete, accounts }) {
+export default function AccountModal({ show, handleClose, account, onSave, onDelete, accounts }) {
   const [formData, setFormData] = useState({
     code: "",
     name: "",
@@ -23,7 +23,7 @@ export default function EditAccountModal({ show, handleClose, account, onSave, o
         category: account.category,
       });
     }
-  }, [account]);
+  }, [account, show]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,7 +38,7 @@ export default function EditAccountModal({ show, handleClose, account, onSave, o
       return;
     }
 
-    onSave({ ...account, ...formData });
+    onSave({ ...account, ...formData, code: formData.code.trim(), name: formData.name.trim() });
     handleClose();
   };
 
@@ -54,7 +54,13 @@ export default function EditAccountModal({ show, handleClose, account, onSave, o
         <Modal.Title>Rediģēt kontu</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Form>
+        <Form
+          noValidate
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
           <Form.Group className="mb-2">
             <Form.Label>Kods</Form.Label>
             <Form.Control type="text" name="code" value={formData.code} onChange={handleChange} isInvalid={!!formErrors.code} />
@@ -96,7 +102,7 @@ export default function EditAccountModal({ show, handleClose, account, onSave, o
         <Button className="custom-dark-hover" onClick={handleClose}>
           Atcelt
         </Button>
-        <Button className="custom-dark-hover" onClick={handleSubmit}>
+        <Button type="submit" className="custom-dark-hover" onClick={handleSubmit}>
           Saglabāt
         </Button>
       </Modal.Footer>

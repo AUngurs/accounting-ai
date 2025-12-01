@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
+import { companyRules } from "../utils/validators";
 
 export default function EditCompanyModal({ show, handleClose, company, onSave, onDelete, companies }) {
+  const isEditMode = !!company;
+
   const [formData, setFormData] = useState({
     name: "",
   });
@@ -10,26 +13,12 @@ export default function EditCompanyModal({ show, handleClose, company, onSave, o
 
   useEffect(() => {
     if (company) {
-      setFormData({
-        name: company.name,
-      });
+      setFormData({ name: company.name });
+    } else {
+      setFormData({ name: "" });
     }
-  }, [company]);
-
-  const validate = () => {
-    const errors = {};
-
-    if (!formData.name.trim()) {
-      errors.name = "Nosaukums nedrīkst būt tukšs";
-    }
-
-    const exists = companies.some((c) => c.name.trim().toLowerCase() === formData.name.trim().toLowerCase() && c.id !== company.id);
-    if (exists) {
-      errors.name = "Uzņēmums ar šādu nosaukumu jau eksistē";
-    }
-
-    return errors;
-  };
+    setFormErrors({});
+  }, [company, show]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,19 +27,18 @@ export default function EditCompanyModal({ show, handleClose, company, onSave, o
   };
 
   const handleSubmit = () => {
-    const errors = validate();
+    const errors = companyRules(companies, formData);
+
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
-
-    onSave({ ...company, ...formData });
+    onSave({ ...company, ...formData, name: formData.name.trim() });
     handleClose();
   };
 
   const handleDelete = () => {
     if (!window.confirm("Vai tiešām vēlaties dzēst šo uzņēmumu?")) return;
-
     onDelete(company.id);
     handleClose();
   };
@@ -58,28 +46,43 @@ export default function EditCompanyModal({ show, handleClose, company, onSave, o
   return (
     <Modal show={show} onHide={handleClose}>
       <Modal.Header closeButton>
-        <Modal.Title>Rediģēt uzņēmumu</Modal.Title>
+        <Modal.Title>{isEditMode ? "Rediģēt uzņēmumu" : "Pievienot uzņēmumu"}</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
-        <Form>
+        <Form
+          noValidate
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
           <Form.Group className="mb-2">
             <Form.Label>Uzņēmuma nosaukums</Form.Label>
-            <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} isInvalid={!!formErrors.name} />
+            <Form.Control
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              isInvalid={!!formErrors.name}
+              placeholder="Ievadiet uzņēmuma nosaukumu"
+            />
             <Form.Control.Feedback type="invalid">{formErrors.name}</Form.Control.Feedback>
           </Form.Group>
         </Form>
       </Modal.Body>
 
       <Modal.Footer>
-        <Button className="custom-red-hover" onClick={handleDelete}>
-          Dzēst
-        </Button>
+        {isEditMode && (
+          <Button className="custom-red-hover" onClick={handleDelete}>
+            Dzēst
+          </Button>
+        )}
         <Button className="custom-dark-hover" onClick={handleClose}>
           Atcelt
         </Button>
-        <Button className="custom-dark-hover" onClick={handleSubmit}>
-          Saglabāt
+        <Button type="submit" className="custom-dark-hover" onClick={handleSubmit}>
+          {isEditMode ? "Saglabāt" : "Pievienot"}
         </Button>
       </Modal.Footer>
     </Modal>

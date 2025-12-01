@@ -60,11 +60,11 @@ CREATE TABLE documents (
 
     -- ATBILST JUMIS SPECIFIKACIJAI
     doc_id VARCHAR(50),                -- <DocNo> 00290
-    doc_date DATE,                -- <DocDate> 2015-12-07T00:00:00
+    doc_date DATE,                     -- <DocDate> 2015-12-07T00:00:00
     doc_type_abbrev VARCHAR(25),       -- <DocTypeAbbreviation> Rēķ
     doc_group_abbrev VARCHAR(25),      -- <DocGroupAbbreviation> K
     doc_currency VARCHAR(3),           -- <DocCurrency> EUR
-    doc_amount NUMERIC(12,2),                  -- <DocAmount> 685
+    doc_amount NUMERIC(12,2),          -- <DocAmount> 685
     doc_comments VARCHAR(255),         -- <DocComments> Durvis
     
     is_accounted BOOLEAN DEFAULT FALSE,

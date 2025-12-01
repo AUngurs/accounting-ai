@@ -4,8 +4,8 @@ import { useCompany } from "../components/CompanyContext";
 import DocumentLines from "../components/DocumentLines";
 import DocumentModal from "../components/DocumentModal";
 import { notify } from "../utils/notify";
-import { Table } from "react-bootstrap";
-import { Collapse } from "react-bootstrap";
+import { Table, Collapse } from "react-bootstrap";
+import AmountInput from "../components/AmountInput";
 
 const ROW_HEIGHT = 24; // approximate height of each row (adjust if needed)
 const VISIBLE_ROWS = 27; // number of rows to render in the viewport
@@ -373,12 +373,11 @@ export default function FinancialDocs() {
             <th style={{ borderBottom: "none" }}></th>
             <th style={{ borderBottom: "none" }}></th>
             <th style={{ borderBottom: "none" }}>
-              <input
-                type="number"
-                className="form-control form-control-sm"
+              <AmountInput
+                size="sm"
                 placeholder="No"
                 value={filters.amountMin}
-                onChange={(e) => setFilters({ ...filters, amountMin: e.target.value })}
+                onChange={(val) => setFilters({ ...filters, amountMin: val })}
               />
             </th>
             <th style={{ borderBottom: "none" }}></th>
@@ -449,12 +448,11 @@ export default function FinancialDocs() {
               </select>
             </th>
             <th>
-              <input
-                type="number"
-                className="form-control form-control-sm"
+              <AmountInput
+                size="sm"
                 placeholder="Līdz"
                 value={filters.amountMax}
-                onChange={(e) => setFilters({ ...filters, amountMax: e.target.value })}
+                onChange={(val) => setFilters({ ...filters, amountMax: val })}
               />
             </th>
             <th>
@@ -466,10 +464,10 @@ export default function FinancialDocs() {
                 onChange={(e) => setFilters({ ...filters, comments: e.target.value })}
               />
             </th>
-            <th className="text-center align-middle">
+            <th className="text-center align-middle p-0">
               <button
-                className="btn btn-sm custom-red-hover"
-                style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
+                type="button"
+                className="btn custom-red-hover btn-sm"
                 onClick={() => {
                   setFilters({
                     dateFrom: "",
@@ -485,7 +483,7 @@ export default function FinancialDocs() {
                   setSelectedDocs(new Set());
                 }}
               >
-                <i className="bi bi-x"></i>
+                <i className="bi bi-x-square" style={{ fontSize: "1rem" }}></i>
               </button>
             </th>
           </tr>
@@ -524,6 +522,7 @@ export default function FinancialDocs() {
         onSave={selectedDocument ? handleSave : handleCreate}
         onDelete={handleDelete}
         partners={partnersData}
+        documents={docsData}
       />
     </div>
   );

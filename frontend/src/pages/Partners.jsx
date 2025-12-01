@@ -4,7 +4,6 @@ import { useCompany } from "../components/CompanyContext";
 import PartnerModal from "../components/PartnerModal";
 import { notify } from "../utils/notify";
 import { Table } from "react-bootstrap";
-import "react-virtualized/styles.css"; // default styles
 
 export default function Partners() {
   const [partnersData, setPartnersData] = useState([]);
@@ -25,7 +24,7 @@ export default function Partners() {
   // Filtering
   const filteredPartners = partnersData.filter(
     (p) =>
-      (filters.name ? p.partner_name.toLowerCase().includes(filters.name.toLowerCase()) : true) &&
+      (filters.name ? p.formatted_name.toLowerCase().includes(filters.name.toLowerCase()) : true) &&
       (filters.type ? p.partner_kind_name === filters.type : true) &&
       (filters.regNr ? p.partner_reg_nr?.includes(filters.regNr) : true) &&
       (filters.vat ? p.vat_nr?.includes(filters.vat) : true)
@@ -255,7 +254,6 @@ export default function Partners() {
             </th>
             <th style={{ borderBottom: "none" }}></th>
           </tr>
-          {/* Filter row */}
           <tr>
             <th></th>
             <th>
@@ -301,7 +299,6 @@ export default function Partners() {
               <button
                 type="button"
                 className="btn btn-sm custom-red-hover"
-                style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
                 onClick={() => {
                   setFilters({ name: "", type: "", regNr: "", vat: "" });
                   setSelectedPartners(new Set());
@@ -354,7 +351,11 @@ export default function Partners() {
                 <td>{partner.vat_nr}</td>
                 <td>
                   <div className="d-flex justify-content-evenly">
-                    <button className="btn p-0 border-0" onClick={() => handleEditClick(partner)}>
+                    <button
+                      className="btn btn-sm custom-dark-hover"
+                      style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
+                      onClick={() => handleEditClick(partner)}
+                    >
                       <i className="bi bi-pencil-square"></i>
                     </button>
                   </div>

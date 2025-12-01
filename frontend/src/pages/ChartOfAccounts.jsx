@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { useCompany } from "../components/CompanyContext";
-import EditAccountModal from "../components/EditAccountModal";
+import AccountModal from "../components/AccountModal";
 import { notify } from "../utils/notify";
 import { Table } from "react-bootstrap";
 
@@ -150,7 +150,7 @@ export default function ChartOfAccounts() {
         </tbody>
       </Table>
 
-      <EditAccountModal
+      <AccountModal
         show={showModal}
         handleClose={() => setShowModal(false)}
         account={selectedAccount}
