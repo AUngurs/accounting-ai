@@ -6,20 +6,22 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
   const isEditMode = !!partner;
 
   const [formData, setFormData] = useState({
-    kind_name: "",
+    kind_name: "Juridiska persona",
     title: "",
     name: "",
     reg_nr: "",
     vat_type: "",
-    vat_country_code: "",
+    vat_country_code: "LV",
   });
 
   const [vatNrInput, setVatNrInput] = useState("");
   const [formErrors, setFormErrors] = useState({});
+  const [isVatEditable, setIsVatEditable] = useState(false);
 
   const kindNameOptions = ["Juridiska persona", "Fiziska persona", "Darbinieks"];
   const vatTypeOptions = ["Apliekama persona, LV", "Apliekama persona, EU"];
   const vatCountryOptions = [
+    "LV",
     "AT",
     "AU",
     "BE",
@@ -45,7 +47,6 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
     "JP",
     "LT",
     "LU",
-    "LV",
     "MY",
     "NL",
     "NO",
@@ -58,40 +59,72 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
     "US",
   ];
 
-  // Initialize form
+  const isVatCountryDisabled = formData.vat_type === "Apliekama persona, LV";
+  const vatCountryValue = isVatCountryDisabled ? "LV" : formData.vat_country_code;
+
   useEffect(() => {
-    if (isEditMode) {
+    if (isEditMode && partner) {
       const countryCode = partner.vat_country_code || "";
       const vatFull = partner.vat_nr || "";
       const vatNum = vatFull.startsWith(countryCode) ? vatFull.slice(countryCode.length) : vatFull;
 
       setFormData({
         kind_name: partner.partner_kind_name,
-        title: partner.partner_title,
-        name: partner.partner_name,
-        reg_nr: partner.partner_reg_nr,
-        vat_type: partner.partner_vat_type,
-        vat_country_code: countryCode,
+        title: partner.partner_title || "",
+        name: partner.partner_name || "",
+        reg_nr: partner.partner_reg_nr || "",
+        vat_type: partner.partner_vat_type || "",
+        vat_country_code: countryCode || "LV",
       });
       setVatNrInput(vatNum);
+      setIsVatEditable(!!partner.partner_vat_type && !!vatFull);
     } else {
-      // Reset for create mode
       setFormData({
-        kind_name: "Fiziska persona",
+        kind_name: "Juridiska persona",
         title: "",
         name: "",
         reg_nr: "",
-        vat_type: "",
-        vat_country_code: "",
+        vat_type: "Apliekama persona, LV",
+        vat_country_code: "LV",
       });
       setVatNrInput("");
+      setIsVatEditable(false);
     }
     setFormErrors({});
   }, [isEditMode, partner, show]);
 
+  const toggleVatEdit = (checked) => {
+    setIsVatEditable(checked);
+    if (!checked) {
+      setFormData((prev) => ({
+        ...prev,
+        vat_type: "",
+        vat_country_code: "LV",
+      }));
+      setVatNrInput("");
+      setFormErrors((prev) => ({
+        ...prev,
+        vat_type: undefined,
+        vat_country_code: undefined,
+        vat_nr: undefined,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        vat_type: "Apliekama persona, LV",
+        vat_country_code: "LV",
+      }));
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      if (name === "vat_type" && value === "Apliekama persona, LV") {
+        return { ...prev, [name]: value, vat_country_code: "LV" };
+      }
+      return { ...prev, [name]: value };
+    });
     setFormErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
@@ -101,8 +134,9 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
   };
 
   const handleSubmit = () => {
-    const combinedVatNr = formData.vat_country_code + vatNrInput;
-    const dataToValidate = { ...partner, ...formData, vat_nr: combinedVatNr };
+    const combinedVatNr = isVatEditable ? formData.vat_country_code + vatNrInput.trim() : "";
+
+    const dataToValidate = { ...partner, ...formData, vat_nr: combinedVatNr, isVatEditable };
     const errors = partnerRules(partners, dataToValidate);
 
     if (Object.keys(errors).length > 0) {
@@ -110,7 +144,15 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
       return;
     }
 
-    onSave({ ...partner, ...formData, vat_nr: combinedVatNr });
+    onSave({
+      ...partner,
+      ...formData,
+      vat_nr: combinedVatNr,
+      partner_name: formData.name.trim(),
+      partner_title: formData.title.trim(),
+      partner_reg_nr: formData.reg_nr.trim(),
+    });
+
     handleClose();
   };
 
@@ -125,7 +167,8 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
   const labels = {
     title: isCompany ? "Tiesiskā forma" : "Uzvārds",
     name: isCompany ? "Nosaukums" : "Vārds",
-    reg_nr: isCompany ? "Reģistrācijas nr." : "Personas kods",
+    reg_nr: isCompany ? "Reģistrācijas numurs" : "Personas kods",
+    placeholder: isCompany ? "SIA, AS, ZS u.c." : "",
   };
 
   return (
@@ -134,9 +177,16 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
         <Modal.Title>{isEditMode ? "Rediģēt partneri" : "Pievienot jaunu partneri"}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Form>
+        <Form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
           <Form.Group className="mb-2">
-            <Form.Label>Juridiska persona/Fiziska persona/Darbinieks</Form.Label>
+            <Form.Label>
+              Juridiska persona/Fiziska persona/Darbinieks <span style={{ color: "red" }}>*</span>
+            </Form.Label>
             <Form.Select name="kind_name" value={formData.kind_name} onChange={handleChange} isInvalid={!!formErrors.kind_name}>
               {kindNameOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -148,13 +198,24 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
           </Form.Group>
 
           <Form.Group className="mb-2">
-            <Form.Label>{labels.title}</Form.Label>
-            <Form.Control type="text" name="title" value={formData.title} onChange={handleChange} isInvalid={!!formErrors.title} />
+            <Form.Label>
+              {labels.title} {!isCompany && <span style={{ color: "red" }}>*</span>}
+            </Form.Label>
+            <Form.Control
+              type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              isInvalid={!!formErrors.title}
+              placeholder={labels.placeholder}
+            />
             <Form.Control.Feedback type="invalid">{formErrors.title}</Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group className="mb-2">
-            <Form.Label>{labels.name}</Form.Label>
+            <Form.Label>
+              {labels.name} <span style={{ color: "red" }}>*</span>
+            </Form.Label>
             <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} isInvalid={!!formErrors.name} />
             <Form.Control.Feedback type="invalid">{formErrors.name}</Form.Control.Feedback>
           </Form.Group>
@@ -165,9 +226,24 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
             <Form.Control.Feedback type="invalid">{formErrors.reg_nr}</Form.Control.Feedback>
           </Form.Group>
 
+          <Form.Check
+            type="checkbox"
+            id="enableVatEdit"
+            label="Nodokļu maksātājs"
+            className="mt-4 mb-2"
+            checked={isVatEditable}
+            onChange={(e) => toggleVatEdit(e.target.checked)}
+          />
+
           <Form.Group className="mb-2">
-            <Form.Label>Nodokļu maksātāja statuss</Form.Label>
-            <Form.Select name="vat_type" value={formData.vat_type} onChange={handleChange} isInvalid={!!formErrors.vat_type}>
+            <Form.Label>Nodokļu maksātāja statuss {isVatEditable && <span style={{ color: "red" }}>*</span>}</Form.Label>
+            <Form.Select
+              name="vat_type"
+              value={formData.vat_type}
+              onChange={handleChange}
+              isInvalid={!!formErrors.vat_type}
+              disabled={!isVatEditable}
+            >
               {vatTypeOptions.map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
@@ -178,12 +254,12 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
           </Form.Group>
 
           <Form.Group className="mb-2">
-            <Form.Label>PVN valsts</Form.Label>
+            <Form.Label>PVN valsts {isVatEditable && <span style={{ color: "red" }}>*</span>}</Form.Label>
             <Form.Select
               name="vat_country_code"
-              value={formData.vat_country_code}
+              value={vatCountryValue}
               onChange={handleChange}
-              isInvalid={!!formErrors.vat_country_code || !!formErrors.vat_nr}
+              disabled={!isVatEditable || isVatCountryDisabled}
             >
               {vatCountryOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -195,7 +271,7 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
           </Form.Group>
 
           <Form.Group className="mb-2">
-            <Form.Label>PVN numurs</Form.Label>
+            <Form.Label>PVN numurs {isVatEditable && <span style={{ color: "red" }}>*</span>}</Form.Label>
             <Form.Control
               type="text"
               name="vat_nr_input"
@@ -203,6 +279,7 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
               onChange={handleVatNrChange}
               isInvalid={!!formErrors.vat_nr}
               placeholder="Numurs bez valsts koda"
+              disabled={!isVatEditable}
             />
             <Form.Control.Feedback type="invalid">{formErrors.vat_nr}</Form.Control.Feedback>
           </Form.Group>
@@ -218,7 +295,7 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
         <Button className="custom-dark-hover" onClick={handleClose}>
           Atcelt
         </Button>
-        <Button className="custom-dark-hover" onClick={handleSubmit}>
+        <Button type="submit" className="custom-dark-hover" onClick={handleSubmit}>
           {isEditMode ? "Saglabāt" : "Pievienot"}
         </Button>
       </Modal.Footer>

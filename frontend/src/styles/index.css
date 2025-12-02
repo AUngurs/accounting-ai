@@ -30,6 +30,22 @@ code {
   font-weight: 500;
 }
 
+.btn.custom-dark-hover {
+  color: #fff;
+  background-color: #19221c;
+  border: 2px solid #fff;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.btn.custom-dark-hover:disabled,
+.btn.custom-dark-hover.disabled {
+  color: #fff;
+  background-color: #19221c;
+  border-color: #fff;
+  opacity: 0.6;
+}
+
 .btn.custom-light-hover {
   color: #19221c;
   background-color: #fff;
@@ -57,5 +73,20 @@ code {
   color: #7a0404;
   background-color: #fff;
   border-color: #7a0404;
+  font-weight: 500;
+}
+
+.btn.custom-light-red-hover {
+  color: #7a0404;
+  background-color: #fff;
+  border: 2px solid #7a0404;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.btn.custom-light-red-hover:hover {
+  color: #fff;
+  background-color: #7a0404;
+  border-color: #fff;
   font-weight: 500;
 }

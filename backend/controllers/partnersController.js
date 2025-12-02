@@ -9,7 +9,7 @@ export const getPartners = async (req, res) => {
   try {
     const companyID = req.params.companyId;
 
-    const partnersResult = await pool.query("SELECT * FROM partners WHERE company_id = $1 ORDER BY partner_name", [companyID]);
+    const partnersResult = await pool.query("SELECT * FROM partners WHERE company_id = $1 ORDER BY formatted_name", [companyID]);
 
     res.json(partnersResult.rows);
   } catch (err) {
@@ -236,11 +236,10 @@ export const editPartner = async (req, res) => {
     const { partner_id } = req.params;
     const { kind_name, title, name, reg_nr, vat_type, vat_country_code, vat_nr } = req.body;
 
-    if (!kind_name || !name || !vat_type) {
+    if (!kind_name || !name) {
       return res.status(400).json({ error: "Some fields are required" });
     }
 
-    // Recalculate formatted_name
     let formatted_name = "";
     if (kind_name === "Juridiska persona") {
       formatted_name = title ? `${name}, ${title}` : name;

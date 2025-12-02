@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
 import { useCompany } from "../components/CompanyContext";
 import { useAuth } from "../components/AuthContext";
-import EditCompanyModal from "../components/EditCompanyModal";
-import AddCompanyModal from "../components/AddCompanyModal";
+import CompanyModal from "../components/CompanyModal";
 import UserCard from "../components/UserCard";
 import { notify } from "../utils/notify";
 
@@ -15,9 +14,8 @@ export default function Companies() {
 
   const { logout } = useAuth();
 
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editingCompany, setEditingCompany] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState(null);
 
   useEffect(() => {
     axiosInstance
@@ -31,13 +29,19 @@ export default function Companies() {
     navigate("/documents");
   };
 
+  const closeModal = () => {
+    setSelectedCompany(null);
+    setShowModal(false);
+  };
+
   const handleAddCompany = async (data) => {
     try {
       const res = await axiosInstance.post("/companies", {
         name: data.name.trim(),
       });
-      updateCompanies([...companies, res.data]);
-      setShowAddModal(false);
+      const updatedList = [...companies, res.data].sort((a, b) => a.name.localeCompare(b.name));
+      updateCompanies(updatedList);
+      setShowModal(false);
       notify.success("Uzņēmums pievienots!");
     } catch (err) {
       console.error(err);
@@ -46,11 +50,12 @@ export default function Companies() {
 
   const handleSave = async (updatedCompany) => {
     try {
-      const res = await axiosInstance.put(`/companies/${updatedCompany.id}`, updatedCompany);
-      const updatedList = companies.map((c) => (c.id === updatedCompany.id ? res.data : c)).sort((a, b) => a.name.localeCompare(b.name));
+      const updated = { ...updatedCompany, name: updatedCompany.name.trim() };
+      const res = await axiosInstance.put(`/companies/${updated.id}`, updated);
+      const updatedList = companies.map((c) => (c.id === updated.id ? res.data : c)).sort((a, b) => a.name.localeCompare(b.name));
       updateCompanies(updatedList);
-      setShowEditModal(false);
-      setEditingCompany(null);
+      setShowModal(false);
+      setSelectedCompany(null);
       notify.success("Uzņēmums veiksmīgi rediģēts!");
     } catch (err) {
       console.error(err);
@@ -101,8 +106,8 @@ export default function Companies() {
               <button
                 className="btn btn-sm custom-light-hover"
                 onClick={() => {
-                  setEditingCompany(company);
-                  setShowEditModal(true);
+                  setSelectedCompany(company);
+                  setShowModal(true);
                 }}
               >
                 Rediģēt
@@ -111,27 +116,20 @@ export default function Companies() {
           ))}
         </ul>
 
-        <button className="btn custom-dark-hover mt-3 mb-1 w-100" onClick={() => setShowAddModal(true)}>
+        <button className="btn custom-dark-hover mt-3 mb-1 w-100" onClick={() => setShowModal(true)}>
           Pievienot uzņēmumu
         </button>
         <button className="btn custom-red-hover w-100" onClick={handleLogout}>
           Iziet
         </button>
       </div>
-      <AddCompanyModal
-        show={showAddModal}
-        handleClose={() => setShowAddModal(false)}
-        company={null}
-        companies={companies}
-        onSave={handleAddCompany}
-      />
-      <EditCompanyModal
-        show={showEditModal}
-        handleClose={() => setShowEditModal(false)}
-        company={editingCompany}
-        companies={companies}
-        onSave={handleSave}
+      <CompanyModal
+        show={showModal}
+        handleClose={closeModal}
+        company={selectedCompany}
+        onSave={selectedCompany ? handleSave : handleAddCompany}
         onDelete={handleDelete}
+        companies={companies}
       />
     </div>
   );

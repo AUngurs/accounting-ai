@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { useCompany } from "../components/CompanyContext";
-import EditAccountModal from "../components/EditAccountModal";
+import AccountModal from "../components/AccountModal";
 import { notify } from "../utils/notify";
 import { Table } from "react-bootstrap";
 
@@ -140,7 +140,11 @@ export default function ChartOfAccounts() {
               <td>{acc.category}</td>
               <td>
                 <div className="d-flex justify-content-evenly">
-                  <button className="btn p-0 border-0" onClick={() => handleEditClick(acc)}>
+                  <button
+                    className="btn btn-sm custom-dark-hover"
+                    style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
+                    onClick={() => handleEditClick(acc)}
+                  >
                     <i className="bi bi-pencil-square"></i>
                   </button>
                 </div>
@@ -150,7 +154,7 @@ export default function ChartOfAccounts() {
         </tbody>
       </Table>
 
-      <EditAccountModal
+      <AccountModal
         show={showModal}
         handleClose={() => setShowModal(false)}
         account={selectedAccount}
