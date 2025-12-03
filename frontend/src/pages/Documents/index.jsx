@@ -35,7 +35,8 @@ export default function Documents() {
     handleSave,
     handleDelete,
     handleExport,
-    handleImport,
+    handleXmlImport,
+    handlePdfImport,
     handleDeleteSelected,
     handleUpdateAccounted,
   } = useDocuments(companyId);
@@ -61,7 +62,8 @@ export default function Documents() {
 
       <DocumentsControls
         handleCreateClick={handleCreateClick}
-        handleImport={handleImport}
+        handleXmlImport={handleXmlImport}
+        handlePdfImport={handlePdfImport}
         handleExport={handleExport}
         handleDeleteSelected={handleDeleteSelected}
         selectedDocs={selectedDocs}

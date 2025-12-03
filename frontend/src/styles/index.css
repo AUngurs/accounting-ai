@@ -15,6 +15,12 @@ code {
   color: white !important;
 }
 
+.table-dark-custom td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .btn.custom-dark-hover {
   color: #fff;
   background-color: #19221c;

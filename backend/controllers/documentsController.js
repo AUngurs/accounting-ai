@@ -93,7 +93,7 @@ function parseXMLPartnerName(xmlName, xmlKindName) {
   return { name: xmlName, title: "" };
 }
 
-export const importDocuments = [
+export const importXmlDocuments = [
   upload.single("xmlFile"),
   async (req, res) => {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
@@ -215,6 +215,8 @@ export const importDocuments = [
     }
   },
 ];
+
+export const importPdfDocuments = [];
 
 export const getDocument = async (req, res) => {
   try {

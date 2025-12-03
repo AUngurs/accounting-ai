@@ -132,13 +132,27 @@ export const useDocuments = (companyId) => {
       alert("Eksports neizdevās");
     }
   };
-  const handleImport = async (file) => {
+  const handleXmlImport = async (file) => {
     if (!file) return alert("Izvēlieties XML datni (failu)!");
     const formData = new FormData();
     formData.append("xmlFile", file);
-
     try {
       const res = await axiosInstance.post(`/companies/${companyId}/documents/import`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setDocsData((prev) => [...prev, ...res.data.newDocuments]);
+      notify.success(`Veiksmīgi importēti ${res.data.newDocuments.length} finanšu dokumenti!`);
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Import failed!");
+    }
+  };
+  const handlePdfImport = async (file) => {
+    if (!file) return alert("Izvēlieties PDF datni (failu)!");
+    const formData = new FormData();
+    formData.append("pdfFile", file);
+    try {
+      const res = await axiosInstance.post(`/companies/${companyId}/documents/importxml`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setDocsData((prev) => [...prev, ...res.data.newDocuments]);
@@ -180,7 +194,8 @@ export const useDocuments = (companyId) => {
     handleSave,
     handleDelete,
     handleExport,
-    handleImport,
+    handleXmlImport,
+    handlePdfImport,
     handleDeleteSelected,
   };
 };

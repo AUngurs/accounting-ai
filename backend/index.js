@@ -11,7 +11,7 @@ import { authenticateToken } from "./middleware/authToken.js";
 import { authCompanyAccess } from "./middleware/authCompanyAccess.js";
 
 const app = express();
-const PORT = 5000;
+const PORT = 5001;
 
 app.use(cors());
 app.use(express.json());

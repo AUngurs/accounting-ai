@@ -1,17 +1,47 @@
 import React, { useRef, useState } from "react";
-import { Button, ButtonGroup, InputGroup, Form } from "react-bootstrap";
+import { Button, ButtonGroup, Dropdown, InputGroup, Form } from "react-bootstrap";
 import { FaPlus, FaUpload, FaDownload, FaTrash } from "react-icons/fa";
 
-export default function DocumentsControls({ handleCreateClick, handleImport, handleExport, handleDeleteSelected, selectedDocs }) {
+export default function DocumentsControls({
+  handleCreateClick,
+  handleXmlImport,
+  handlePdfImport,
+  handleExport,
+  handleDeleteSelected,
+  selectedDocs,
+}) {
   const fileInputRef = useRef(null);
+  const [fileType, setFileType] = useState(null);
   const [file, setFile] = useState(null);
 
-  const handleFileChange = (e) => setFile(e.target.files[0]);
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (!selectedFile) return;
+    setFile(selectedFile);
+  };
 
   const handleImportClick = async () => {
     if (!file) return;
-    await handleImport(file);
+    if (fileType === "xml") {
+      await handleXmlImport(file);
+    } else if (fileType === "pdf") {
+    }
     setFile(null);
+    setFileType(null);
+    if (fileInputRef.current) fileInputRef.current.value = null;
+  };
+
+  const handleTypeSelect = (type) => {
+    setFileType(type);
+    if (fileInputRef.current) {
+      fileInputRef.current.accept = type === "pdf" ? ".pdf" : ".xml";
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleCancel = () => {
+    setFile(null);
+    setFileType(null);
     if (fileInputRef.current) fileInputRef.current.value = null;
   };
 
@@ -21,17 +51,39 @@ export default function DocumentsControls({ handleCreateClick, handleImport, han
         <FaPlus className="me-1" /> Jauns
       </Button>
 
+      <Form.Control type="file" ref={fileInputRef} style={{ display: "none" }} onChange={handleFileChange} />
+
       <InputGroup className="w-auto">
-        <Form.Control type="file" accept=".xml" ref={fileInputRef} onChange={handleFileChange} />
-        <Button className="custom-dark-hover" onClick={handleImportClick} disabled={!file}>
-          <FaUpload className="me-1" /> Importēt
-        </Button>
+        {!file && (
+          <Dropdown>
+            <Dropdown.Toggle className="custom-dark-hover">
+              <FaDownload className="me-1" /> Importēt
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu>
+              <Dropdown.Item onClick={() => handleTypeSelect("pdf")}>PDF</Dropdown.Item>
+              <Dropdown.Item onClick={() => handleTypeSelect("xml")}>XML</Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+        )}
+
+        {file && (
+          <React.Fragment>
+            <Button className="custom-red-hover" onClick={handleCancel}>
+              Atcelt
+            </Button>
+            <Form.Control value={file.name} readOnly className="bg-light" />
+            <Button className="custom-dark-hover" onClick={handleImportClick}>
+              Importēt
+            </Button>
+          </React.Fragment>
+        )}
       </InputGroup>
 
       {selectedDocs.size > 0 && (
         <ButtonGroup>
           <Button className="custom-light-hover" onClick={handleExport}>
-            <FaDownload className="me-1" /> Eksportēt
+            <FaUpload className="me-1" /> Eksportēt
           </Button>
           <Button className="custom-light-red-hover" onClick={handleDeleteSelected}>
             <FaTrash className="me-1" /> Dzēst ({selectedDocs.size})
