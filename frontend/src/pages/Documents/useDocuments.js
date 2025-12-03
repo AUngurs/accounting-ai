@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../../api/axiosInstance";
 import { notify } from "../../utils/notify";
+import { useCompany } from "../../components/CompanyContext";
+import Fuse from "fuse.js";
 
 export const useDocuments = (companyId) => {
   const [docsData, setDocsData] = useState([]);
@@ -9,6 +11,10 @@ export const useDocuments = (companyId) => {
   const [sortConfig, setSortConfig] = useState({ key: "doc_date", direction: "desc" });
   const docTypeOptions = ["Čeks", "Grām.", "Ienāk.b.dok.", "Izej.b.dok.", "Kredītrēķ.", "Rēķ"];
   const docCurrencyOptions = ["DKK", "EUR", "GBP", "LVL", "NOK", "PLN", "RUB", "SEK", "USD"];
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [pdfFile, setPdfFile] = useState(null);
+  const { company } = useCompany();
   const [filters, setFilters] = useState({
     dateFrom: "",
     dateTo: "",
@@ -88,7 +94,17 @@ export const useDocuments = (companyId) => {
   };
   const handleCreate = async (newDoc) => {
     try {
-      const res = await axiosInstance.post(`/companies/${companyId}/documents`, newDoc);
+      const formData = new FormData();
+      for (const key in newDoc) {
+        if (key === "file") {
+          if (newDoc.file) formData.append("file", newDoc.file);
+        } else {
+          formData.append(key, newDoc[key]);
+        }
+      }
+      const res = await axiosInstance.post(`/companies/${companyId}/documents`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       setDocsData((prev) => [...prev, res.data]);
       notify.success("Finanšu dokuments veiksmīgi pievienots!");
     } catch (err) {
@@ -132,12 +148,37 @@ export const useDocuments = (companyId) => {
       alert("Eksports neizdevās");
     }
   };
+  function mapPartnerName(aiName, partnersData) {
+    if (!aiName || partnersData.length === 0) return "";
+    const normalize = (str) =>
+      str
+        .replace(/SIA|A\/S|,/gi, "")
+        .replace(/\./g, "")
+        .toLowerCase()
+        .trim();
+    const fuse = new Fuse(
+      partnersData.map((p) => ({
+        ...p,
+        normalized: normalize(p.formatted_name),
+      })),
+      {
+        keys: ["normalized"],
+        threshold: 0.3,
+        includeScore: true,
+      }
+    );
+    const result = fuse.search(normalize(aiName));
+    if (result.length === 0) return "";
+    const best = result[0];
+    if (best.score > 0.3) return "";
+    return best.item.id;
+  }
   const handleXmlImport = async (file) => {
     if (!file) return alert("Izvēlieties XML datni (failu)!");
     const formData = new FormData();
     formData.append("xmlFile", file);
     try {
-      const res = await axiosInstance.post(`/companies/${companyId}/documents/import`, formData, {
+      const res = await axiosInstance.post(`/companies/${companyId}/documents/importxml`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setDocsData((prev) => [...prev, ...res.data.newDocuments]);
@@ -148,18 +189,39 @@ export const useDocuments = (companyId) => {
     }
   };
   const handlePdfImport = async (file) => {
-    if (!file) return alert("Izvēlieties PDF datni (failu)!");
+    if (!file) return alert("Izvēlieties PDF datni!");
     const formData = new FormData();
-    formData.append("pdfFile", file);
+    formData.append("pdf", file);
+    formData.append("companyName", company.name);
     try {
-      const res = await axiosInstance.post(`/companies/${companyId}/documents/importxml`, formData, {
+      const res = await axiosInstance.post(`/companies/${companyId}/ai/import-pdf`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setDocsData((prev) => [...prev, ...res.data.newDocuments]);
-      notify.success(`Veiksmīgi importēti ${res.data.newDocuments.length} finanšu dokumenti!`);
+
+      if (res.data.documents?.length > 0) {
+        const aiDoc = res.data.documents[0];
+
+        const matchedPartnerId = mapPartnerName(aiDoc.partner, partnersData);
+
+        const mappedDoc = {
+          doc_id: aiDoc.document_number,
+          doc_date: aiDoc.document_date,
+          doc_type_abbrev: aiDoc.document_type,
+          doc_group_abbrev: aiDoc.document_group,
+          doc_currency: aiDoc.currency,
+          doc_amount: aiDoc.amount,
+          doc_comments: aiDoc.notes,
+          partner_id: matchedPartnerId,
+          is_accounted: false,
+        };
+
+        setSelectedDocument({ ...mappedDoc, isNewImport: true });
+        setPdfFile(file);
+        setShowModal(true);
+      }
     } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.error || "Import failed!");
+      console.error("PDF import failed:", err);
+      alert(err.response?.data?.error || "Neizdevās importēt PDF!");
     }
   };
   const handleDeleteSelected = async () => {
@@ -195,7 +257,13 @@ export const useDocuments = (companyId) => {
     handleDelete,
     handleExport,
     handleXmlImport,
-    handlePdfImport,
     handleDeleteSelected,
+    selectedDocument,
+    setSelectedDocument,
+    showModal,
+    setShowModal,
+    pdfFile,
+    setPdfFile,
+    handlePdfImport,
   };
 };

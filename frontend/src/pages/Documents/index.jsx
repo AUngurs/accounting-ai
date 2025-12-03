@@ -14,10 +14,15 @@ export default function Documents() {
   const { companyId } = useCompany();
   const [scrollTop, setScrollTop] = useState(0);
   const [openDocId, setOpenDocId] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState(null);
 
   const {
+    pdfFile,
+    setPdfFile,
+    selectedDocument,
+    setSelectedDocument,
+    showModal,
+    setShowModal,
+    handlePdfImport,
     docCurrencyOptions,
     docsData,
     docTypeOptions,
@@ -36,7 +41,6 @@ export default function Documents() {
     handleDelete,
     handleExport,
     handleXmlImport,
-    handlePdfImport,
     handleDeleteSelected,
     handleUpdateAccounted,
   } = useDocuments(companyId);
@@ -53,6 +57,7 @@ export default function Documents() {
 
   const closeModal = () => {
     setSelectedDocument(null);
+    setPdfFile(null);
     setShowModal(false);
   };
 
@@ -108,8 +113,9 @@ export default function Documents() {
       <DocumentModal
         show={showModal}
         handleClose={closeModal}
+        pdfFile={pdfFile}
         documentData={selectedDocument}
-        onSave={selectedDocument ? handleSave : handleCreate}
+        onSave={selectedDocument?.isNewImport ? handleCreate : handleSave}
         onDelete={handleDelete}
         partners={partnersData}
         documents={docsData}

@@ -2,6 +2,7 @@ import pool from "../db.js";
 import fs from "fs";
 import { parseStringPromise, Builder } from "xml2js";
 import multer from "multer";
+import path from "path";
 
 const upload = multer({ dest: "uploads/" });
 
@@ -34,10 +35,21 @@ export const createDocument = async (req, res) => {
       return res.status(400).json({ error: "Some fields are required" });
     }
 
+    let pdf_path = null;
+    if (req.file) {
+      const ext = path.extname(req.file.originalname);
+      const newFilename = req.file.filename + ext;
+      const fs = await import("fs");
+      const oldPath = req.file.path;
+      const newPath = path.join(path.dirname(oldPath), newFilename);
+      await fs.promises.rename(oldPath, newPath);
+      pdf_path = newPath;
+    }
+
     const result = await pool.query(
       `INSERT INTO documents
-        (company_id, partner_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_currency, doc_amount, doc_comments, is_accounted)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        (company_id, partner_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_currency, doc_amount, doc_comments, is_accounted, pdf_path)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING *`,
       [
         companyID,
@@ -50,6 +62,7 @@ export const createDocument = async (req, res) => {
         doc_amount,
         doc_comments,
         is_accounted || false,
+        pdf_path,
       ]
     );
 

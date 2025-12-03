@@ -1,9 +1,9 @@
 import express from "express";
+import multer from "multer";
 import {
   getDocuments,
   createDocument,
   importXmlDocuments,
-  importPdfDocuments,
   getDocument,
   editDocument,
   updateDocumentAccounted,
@@ -15,11 +15,11 @@ import {
 } from "../controllers/documentsController.js";
 
 const router = express.Router({ mergeParams: true });
+const upload = multer({ dest: "uploads/" });
 
 router.get("/", getDocuments);
-router.post("/", createDocument);
+router.post("/", upload.single("file"), createDocument);
 router.post("/importxml", importXmlDocuments);
-router.post("/importpdf", importPdfDocuments);
 router.get("/:document_id", getDocument);
 router.put("/:document_id", editDocument);
 router.put("/:document_id/accounted", updateDocumentAccounted);

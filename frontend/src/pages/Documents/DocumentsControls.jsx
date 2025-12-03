@@ -22,10 +22,13 @@ export default function DocumentsControls({
 
   const handleImportClick = async () => {
     if (!file) return;
+
     if (fileType === "xml") {
       await handleXmlImport(file);
     } else if (fileType === "pdf") {
+      await handlePdfImport(file);
     }
+
     setFile(null);
     setFileType(null);
     if (fileInputRef.current) fileInputRef.current.value = null;

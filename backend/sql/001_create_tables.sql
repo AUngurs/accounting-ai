@@ -69,6 +69,8 @@ CREATE TABLE documents (
     
     is_accounted BOOLEAN DEFAULT FALSE,
 
+    pdf_path VARCHAR(255) NULL,
+
     CONSTRAINT fk_documents_company
         FOREIGN KEY (company_id)
         REFERENCES companies(id)
