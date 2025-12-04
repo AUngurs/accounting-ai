@@ -413,11 +413,22 @@ export const editLines = async (req, res) => {
 
 export const deleteDocument = async (req, res) => {
   const { document_id } = req.params;
-  try {
-    await pool.query("DELETE FROM document_lines WHERE document_id = $1", [document_id]);
-    const result = await pool.query("DELETE FROM documents WHERE id = $1 RETURNING *", [document_id]);
 
-    if (result.rowCount === 0) return res.status(404).json({ message: "Finanšu dokuments nav atrasts" });
+  try {
+    const docResult = await pool.query("SELECT pdf_path FROM documents WHERE id = $1", [document_id]);
+    if (docResult.rowCount === 0) return res.status(404).json({ message: "Finanšu dokuments nav atrasts" });
+    const pdfPath = docResult.rows[0].pdf_path;
+
+    await pool.query("DELETE FROM document_lines WHERE document_id = $1", [document_id]);
+
+    await pool.query("DELETE FROM documents WHERE id = $1", [document_id]);
+
+    if (pdfPath) {
+      const fullPath = path.join(process.cwd(), pdfPath);
+      fs.unlink(fullPath, (err) => {
+        if (err) console.error("Failed to delete PDF file:", err);
+      });
+    }
 
     res.status(200).json({ message: "Finanšu dokuments veiksmīgi dzēsts" });
   } catch (err) {
@@ -432,8 +443,19 @@ export const bulkDeleteDocuments = async (req, res) => {
   if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ message: "Nav norādīti dokumentu ID" });
 
   try {
+    const docsResult = await pool.query("SELECT pdf_path FROM documents WHERE id = ANY($1)", [ids]);
+    const pdfPaths = docsResult.rows.map((row) => row.pdf_path).filter(Boolean);
+
     await pool.query("DELETE FROM document_lines WHERE document_id = ANY($1)", [ids]);
+
     const result = await pool.query("DELETE FROM documents WHERE id = ANY($1) RETURNING *", [ids]);
+
+    pdfPaths.forEach((pdfPath) => {
+      const fullPath = path.join(process.cwd(), pdfPath);
+      fs.unlink(fullPath, (err) => {
+        if (err) console.error("Failed to delete PDF file:", err);
+      });
+    });
 
     res.status(200).json({
       message: `Veiksmīgi dzēsti ${result.rowCount} dokumenti`,
