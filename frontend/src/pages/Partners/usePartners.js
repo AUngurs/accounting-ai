@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../../api/axiosInstance";
 import { notify } from "../../utils/notify";
+import { useLoading } from "../../components/LoadingContext";
 
 export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
   const [partnersData, setPartnersData] = useState([]);
   const [filters, setFilters] = useState({ name: "", type: "", regNr: "", vat: "" });
   const [sortConfig, setSortConfig] = useState({ key: "fullName", direction: "asc" });
   const [selectedPartners, setSelectedPartners] = useState(new Set());
+  const { setLoading } = useLoading();
 
   const startIndex = Math.floor(scrollTop / ROW_HEIGHT);
 
@@ -29,11 +31,9 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       console.error(err);
     }
   }, [companyId]);
-
   useEffect(() => {
     fetchPartners();
   }, [fetchPartners]);
-
   const handleSort = (key) => {
     let direction = "asc";
     if (sortConfig.key === key && sortConfig.direction === "asc") direction = "desc";
@@ -60,7 +60,6 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
     setPartnersData(sorted);
     setSortConfig({ key, direction });
   };
-
   const handleCreate = async (newPartner) => {
     try {
       const res = await axiosInstance.post(`/companies/${companyId}/partners`, newPartner);
@@ -71,7 +70,6 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       alert(err.response?.data?.error || "Kļūda pievienojot partneri");
     }
   };
-
   const handleSave = async (updatedPartner) => {
     try {
       const res = await axiosInstance.put(`/companies/${companyId}/partners/${updatedPartner.id}`, updatedPartner);
@@ -82,7 +80,6 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       alert(err.response?.data?.error || "Kļūda saglabājot partneri");
     }
   };
-
   const handleDelete = async (partnerID) => {
     try {
       await axiosInstance.delete(`companies/${companyId}/partners/${partnerID}`);
@@ -93,12 +90,11 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       alert(err.response?.data?.error || "Dzēšana neizdevās!");
     }
   };
-
   const handleImport = async (file) => {
     if (!file) return alert("Izvēlieties XML datni!");
+    setLoading(true);
     const formData = new FormData();
     formData.append("xmlFile", file);
-
     try {
       const res = await axiosInstance.post(`/companies/${companyId}/partners/import`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -108,9 +104,10 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Importēšana neizdevās.");
+    } finally {
+      setTimeout(() => setLoading(false), 200);
     }
   };
-
   const handleExport = async () => {
     try {
       const idsToExport = Array.from(selectedPartners);
@@ -127,7 +124,6 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       alert("Eksports neizdevās");
     }
   };
-
   const handleDeleteSelected = async () => {
     if (!window.confirm("Vai tiešām vēlaties dzēst atlasītos partnerus?")) return;
     try {

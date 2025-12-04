@@ -3,6 +3,7 @@ import axiosInstance from "../../api/axiosInstance";
 import { notify } from "../../utils/notify";
 import { useCompany } from "../../components/CompanyContext";
 import Fuse from "fuse.js";
+import { useLoading } from "../../components/LoadingContext";
 
 export const useDocuments = (companyId) => {
   const [docsData, setDocsData] = useState([]);
@@ -15,6 +16,7 @@ export const useDocuments = (companyId) => {
   const [showModal, setShowModal] = useState(false);
   const [pdfFile, setPdfFile] = useState(null);
   const { company } = useCompany();
+  const { setLoading } = useLoading();
   const [filters, setFilters] = useState({
     dateFrom: "",
     dateTo: "",
@@ -178,6 +180,7 @@ export const useDocuments = (companyId) => {
   }
   const handleXmlImport = async (file) => {
     if (!file) return alert("Izvēlieties XML datni (failu)!");
+    setLoading(true);
     const formData = new FormData();
     formData.append("xmlFile", file);
     try {
@@ -189,10 +192,13 @@ export const useDocuments = (companyId) => {
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Import failed!");
+    } finally {
+      setTimeout(() => setLoading(false), 200);
     }
   };
   const handlePdfImport = async (file) => {
     if (!file) return alert("Izvēlieties PDF datni!");
+    setLoading(true);
     const formData = new FormData();
     formData.append("pdf", file);
     formData.append("companyName", company.name);
@@ -225,6 +231,8 @@ export const useDocuments = (companyId) => {
     } catch (err) {
       console.error("PDF import failed:", err);
       alert(err.response?.data?.error || "Neizdevās importēt PDF!");
+    } finally {
+      setTimeout(() => setLoading(false), 200);
     }
   };
   const handleDeleteSelected = async () => {

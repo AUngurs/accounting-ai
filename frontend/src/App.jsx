@@ -14,64 +14,67 @@ import Companies from "./pages/Companies";
 import User from "./pages/User";
 import { CompanyProvider } from "./components/CompanyContext";
 import { AuthProvider } from "./components/AuthContext";
+import { LoadingProvider } from "./components/LoadingContext";
 
 function App() {
   return (
-    <AuthProvider>
-      <CompanyProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route
-            path="/companies"
-            element={
-              <ProtectedRoute>
-                <Companies />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/user"
-            element={
-              <ProtectedRoute>
-                <User />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/documents"
-            element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Documents />
-                </AppLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/partners"
-            element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Partners />
-                </AppLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/accounts"
-            element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <ChartOfAccounts />
-                </AppLayout>
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-        <ToastContainer />
-      </CompanyProvider>
-    </AuthProvider>
+    <LoadingProvider>
+      <AuthProvider>
+        <CompanyProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route
+              path="/companies"
+              element={
+                <ProtectedRoute>
+                  <Companies />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/user"
+              element={
+                <ProtectedRoute>
+                  <User />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/documents"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Documents />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/partners"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Partners />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/accounts"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <ChartOfAccounts />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+          <ToastContainer />
+        </CompanyProvider>
+      </AuthProvider>
+    </LoadingProvider>
   );
 }
 
