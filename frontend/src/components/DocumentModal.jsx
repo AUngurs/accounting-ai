@@ -43,10 +43,11 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
   const [formErrors, setFormErrors] = useState({});
   const pdfContainerRef = useRef(null);
   const [localPdfFile, setLocalPdfFile] = useState(null);
+  const formRef = useRef(null);
+  const pdfRef = useRef(null);
 
   const onDocumentLoadSuccess = ({ numPages }) => setNumPages(numPages);
 
-  // Initialize form data and PDF file
   useEffect(() => {
     if (show) {
       const initialData = documentData
@@ -76,7 +77,6 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
       setFormData(initialData);
       setFormErrors({});
 
-      // Determine which PDF to display
       if (documentData?.pdf_path) {
         setLocalPdfFile(`http://localhost:5001/${documentData.pdf_path}`);
       } else if (pdfFile) {
@@ -127,140 +127,173 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
     handleClose();
   };
 
+  useEffect(() => {
+    if (formRef.current && pdfRef.current) {
+      const formHeight = formRef.current.offsetHeight;
+      pdfRef.current.style.maxHeight = formHeight + "px";
+    }
+  }, [show, formData, partners, numPages]);
+
+  useEffect(() => {
+    if (!pdfRef.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+
+    observer.observe(pdfRef.current);
+
+    return () => observer.disconnect();
+  }, [pdfRef, localPdfFile]);
+
+  const hasPdf = !!localPdfFile;
+
   return (
-    <Modal show={show} onHide={handleCancel} size="xl">
+    <Modal show={show} onHide={handleCancel} size={hasPdf ? "xl" : "md"}>
       <Modal.Header closeButton>
         <Modal.Title>{isEditMode ? "Rediģēt dokumentu" : "Pievienot jaunu dokumentu"}</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
-        <div style={{ display: "flex", gap: "1rem" }}>
-          <Form style={{ flex: 1 }}>
-            {/* Document fields (doc_id, date, type, group, currency, amount, partner, comments) */}
-            <Form.Group className="mb-2">
-              <Form.Label>
-                Dokumenta numurs <span style={{ color: "red" }}>*</span>
-              </Form.Label>
-              <Form.Control type="text" name="doc_id" value={formData.doc_id} onChange={handleChange} isInvalid={!!formErrors.doc_id} />
-              <Form.Control.Feedback type="invalid">{formErrors.doc_id}</Form.Control.Feedback>
-            </Form.Group>
+        <div ref={formRef} style={{ display: hasPdf ? "flex" : "block", flexDirection: "row", gap: hasPdf ? "1rem" : "0" }}>
+          <div style={{ flex: hasPdf ? 1 : "unset", maxWidth: hasPdf ? "100%" : "600px", margin: hasPdf ? 0 : "auto" }}>
+            <Form style={{ flex: 1 }}>
+              <Form.Group className="mb-2">
+                <Form.Label>
+                  Dokumenta numurs <span style={{ color: "red" }}>*</span>
+                </Form.Label>
+                <Form.Control type="text" name="doc_id" value={formData.doc_id} onChange={handleChange} isInvalid={!!formErrors.doc_id} />
+                <Form.Control.Feedback type="invalid">{formErrors.doc_id}</Form.Control.Feedback>
+              </Form.Group>
 
-            <Form.Group className="mb-2">
-              <Form.Label>
-                Datums <span style={{ color: "red" }}>*</span>
-              </Form.Label>
-              <Form.Control
-                type="date"
-                name="doc_date"
-                value={formData.doc_date.slice(0, 10)}
-                onChange={handleChange}
-                isInvalid={!!formErrors.doc_date}
-              />
-              <Form.Control.Feedback type="invalid">{formErrors.doc_date}</Form.Control.Feedback>
-            </Form.Group>
+              <Form.Group className="mb-2">
+                <Form.Label>
+                  Datums <span style={{ color: "red" }}>*</span>
+                </Form.Label>
+                <Form.Control
+                  type="date"
+                  name="doc_date"
+                  value={formData.doc_date.slice(0, 10)}
+                  onChange={handleChange}
+                  isInvalid={!!formErrors.doc_date}
+                />
+                <Form.Control.Feedback type="invalid">{formErrors.doc_date}</Form.Control.Feedback>
+              </Form.Group>
 
-            <Form.Group className="mb-2">
-              <Form.Label>
-                Dokumenta tips <span style={{ color: "red" }}>*</span>
-              </Form.Label>
-              <Form.Select
-                name="doc_type_abbrev"
-                value={formData.doc_type_abbrev}
-                onChange={handleChange}
-                isInvalid={!!formErrors.doc_type_abbrev}
-              >
-                {docTypeOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </Form.Select>
-              <Form.Control.Feedback type="invalid">{formErrors.doc_type_abbrev}</Form.Control.Feedback>
-            </Form.Group>
-
-            <Form.Group className="mb-2">
-              <Form.Label>
-                Dokumenta grupa <span style={{ color: "red" }}>*</span>
-              </Form.Label>
-              <Form.Select
-                name="doc_group_abbrev"
-                value={formData.doc_group_abbrev}
-                onChange={handleChange}
-                isInvalid={!!formErrors.doc_group_abbrev}
-              >
-                {docGroupOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </Form.Select>
-              <Form.Control.Feedback type="invalid">{formErrors.doc_group_abbrev}</Form.Control.Feedback>
-            </Form.Group>
-
-            <Form.Group className="mb-2">
-              <Form.Label>
-                Valūta <span style={{ color: "red" }}>*</span>
-              </Form.Label>
-              <Form.Select name="doc_currency" value={formData.doc_currency} onChange={handleChange} isInvalid={!!formErrors.doc_currency}>
-                {docCurrencyOptions.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </Form.Select>
-              <Form.Control.Feedback type="invalid">{formErrors.doc_currency}</Form.Control.Feedback>
-            </Form.Group>
-
-            <Form.Group className="mb-2">
-              <Form.Label>
-                Summa <span style={{ color: "red" }}>*</span>
-              </Form.Label>
-              <AmountInput
-                name="doc_amount"
-                value={formData.doc_amount}
-                onChange={(val) => setFormData({ ...formData, doc_amount: val })}
-                isInvalid={!!formErrors.doc_amount}
-              />
-              <Form.Control.Feedback type="invalid">{formErrors.doc_amount}</Form.Control.Feedback>
-            </Form.Group>
-
-            <Form.Group className="mb-2">
-              <Form.Label>Partneris</Form.Label>
-              <Form.Select name="partner_id" value={formData.partner_id || ""} onChange={handleChange} isInvalid={!!formErrors.partner_id}>
-                <option value=""></option>
-                {partners
-                  ?.slice()
-                  .sort((a, b) => (a.formatted_name || "").localeCompare(b.formatted_name || "", "lv", { sensitivity: "base" }))
-                  .map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.formatted_name}
+              <Form.Group className="mb-2">
+                <Form.Label>
+                  Dokumenta tips <span style={{ color: "red" }}>*</span>
+                </Form.Label>
+                <Form.Select
+                  name="doc_type_abbrev"
+                  value={formData.doc_type_abbrev}
+                  onChange={handleChange}
+                  isInvalid={!!formErrors.doc_type_abbrev}
+                >
+                  {docTypeOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
                     </option>
                   ))}
-              </Form.Select>
-              <Form.Control.Feedback type="invalid">{formErrors.partner_id}</Form.Control.Feedback>
-            </Form.Group>
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">{formErrors.doc_type_abbrev}</Form.Control.Feedback>
+              </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Piezīmes</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                name="doc_comments"
-                value={formData.doc_comments}
-                onChange={handleChange}
-                isInvalid={!!formErrors.doc_comments}
-              />
-              <Form.Control.Feedback type="invalid">{formErrors.doc_comments}</Form.Control.Feedback>
-            </Form.Group>
-          </Form>
+              <Form.Group className="mb-2">
+                <Form.Label>
+                  Dokumenta grupa <span style={{ color: "red" }}>*</span>
+                </Form.Label>
+                <Form.Select
+                  name="doc_group_abbrev"
+                  value={formData.doc_group_abbrev}
+                  onChange={handleChange}
+                  isInvalid={!!formErrors.doc_group_abbrev}
+                >
+                  {docGroupOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">{formErrors.doc_group_abbrev}</Form.Control.Feedback>
+              </Form.Group>
+
+              <Form.Group className="mb-2">
+                <Form.Label>
+                  Valūta <span style={{ color: "red" }}>*</span>
+                </Form.Label>
+                <Form.Select
+                  name="doc_currency"
+                  value={formData.doc_currency}
+                  onChange={handleChange}
+                  isInvalid={!!formErrors.doc_currency}
+                >
+                  {docCurrencyOptions.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">{formErrors.doc_currency}</Form.Control.Feedback>
+              </Form.Group>
+
+              <Form.Group className="mb-2">
+                <Form.Label>
+                  Summa <span style={{ color: "red" }}>*</span>
+                </Form.Label>
+                <AmountInput
+                  name="doc_amount"
+                  value={formData.doc_amount}
+                  onChange={(val) => setFormData({ ...formData, doc_amount: val })}
+                  isInvalid={!!formErrors.doc_amount}
+                />
+                <Form.Control.Feedback type="invalid">{formErrors.doc_amount}</Form.Control.Feedback>
+              </Form.Group>
+
+              <Form.Group className="mb-2">
+                <Form.Label>Partneris</Form.Label>
+                <Form.Select
+                  name="partner_id"
+                  value={formData.partner_id || ""}
+                  onChange={handleChange}
+                  isInvalid={!!formErrors.partner_id}
+                >
+                  <option value=""></option>
+                  {partners
+                    ?.slice()
+                    .sort((a, b) => (a.formatted_name || "").localeCompare(b.formatted_name || "", "lv", { sensitivity: "base" }))
+                    .map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {`${p.formatted_name}${p.partner_reg_nr ? ` (${p.partner_reg_nr})` : ""}`}
+                      </option>
+                    ))}
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">{formErrors.partner_id}</Form.Control.Feedback>
+              </Form.Group>
+
+              <Form.Group className="mb-3">
+                <Form.Label>Piezīmes</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  name="doc_comments"
+                  value={formData.doc_comments}
+                  onChange={handleChange}
+                  isInvalid={!!formErrors.doc_comments}
+                />
+                <Form.Control.Feedback type="invalid">{formErrors.doc_comments}</Form.Control.Feedback>
+              </Form.Group>
+            </Form>
+          </div>
 
           {localPdfFile && (
             <div
-              ref={pdfContainerRef}
+              ref={pdfRef}
               style={{
-                width: "100%",
-                height: "80vh",
-                overflowY: "auto",
+                flex: 1,
+                overflowY: "scroll",
                 overflowX: "hidden",
                 border: "1px solid #ccc",
                 padding: "0.5rem",

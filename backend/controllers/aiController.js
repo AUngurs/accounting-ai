@@ -24,9 +24,10 @@ async function callLLM(text, companyName) {
         content: `Tu esi AI, kas izvelk strukturētus grāmatvedības dokumentus no PDF teksta latviešu valodā.
 Tavas kompānijas nosaukums ir: "${companyName}".
 
-Meklē dokumentā tādus atslēgas vārdus, kā "Pakalpojuma sniedzējs, sūtītājs"
 
 Katram tekstā atrastajam dokumentam:
+
+Dokumenta numurs - var tikt apzīmēts arī kā "Dok. numurs", "Rēķina nr.", "Rēķins Nr.", "Kredītrēķina numurs" utt.
     
 Debeta parāds (D) - rēķins, ko izrakstījusi mūsu kompānija (${companyName}):
     1) Rēķina adresāts ir klients vai pircējs, nevis mūsu uzņēmums.
@@ -58,6 +59,7 @@ Atgriez JSON masīvu ar vienu objektu par katru dokumentu šādā formātā:
 ]
 
 Noteikumi:
+- "document_number" ir precīzs dokumentā atrastais numurs.
 - "document_date" jābūt formātā "YYYY-MM-DD". Ja datumā teksta avotā ir cits formāts (piemēram, 30.10.2024), pārvērt to YYYY-MM-DD. Nekad neatgriez DD.MM.YYYY, DD/MM/YYYY vai citus formātus.
 - "document_type" var būt tikai "Rēķ" (Rēķins) vai "Kredītrēķ." (Kredītrēķins).
 - "document_group" var būt tikai "D" (Debeta parāds) vai "K" (Kredīta parāds), saskaņā ar noteikumiem augstāk.

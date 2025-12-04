@@ -155,7 +155,10 @@ export const useDocuments = (companyId) => {
         .replace(/SIA|A\/S|,/gi, "")
         .replace(/\./g, "")
         .toLowerCase()
-        .trim();
+        .trim()
+        .split(/\s+/)
+        .sort()
+        .join(" ");
     const fuse = new Fuse(
       partnersData.map((p) => ({
         ...p,
