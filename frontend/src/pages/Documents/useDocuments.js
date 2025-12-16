@@ -124,6 +124,9 @@ export const useDocuments = (companyId) => {
       alert(err.response?.data?.error || "Kļūda saglabājot dokumentu");
     }
   };
+  const handleUpdateAccounted = useCallback((updatedDoc) => {
+    setDocsData((prev) => prev.map((doc) => (doc.id === updatedDoc.id ? { ...doc, is_accounted: updatedDoc.is_accounted } : doc)));
+  }, []);
   const handleDelete = async (id) => {
     try {
       await axiosInstance.delete(`/companies/${companyId}/documents/${id}`);
@@ -276,5 +279,6 @@ export const useDocuments = (companyId) => {
     pdfFile,
     setPdfFile,
     handlePdfImport,
+    handleUpdateAccounted,
   };
 };

@@ -3,7 +3,9 @@ import axiosInstance from "../api/axiosInstance";
 import { useCompany } from "../components/CompanyContext";
 import AccountModal from "../components/AccountModal";
 import { notify } from "../utils/notify";
-import { Table } from "react-bootstrap";
+import { Table, Button, InputGroup, Form, Dropdown } from "react-bootstrap";
+import { FaDownload } from "react-icons/fa";
+import { GrPowerReset } from "react-icons/gr";
 
 export default function ChartOfAccounts() {
   const [accounts, setAccounts] = useState([]);
@@ -101,17 +103,52 @@ export default function ChartOfAccounts() {
     }
   };
 
+  const handleCancel = () => {
+    setFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = null;
+  };
+
+  const handleTypeSelect = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.accept = ".xlsx";
+      fileInputRef.current.click();
+    }
+  };
+
   return (
     <React.Fragment>
       <h2 className="mb-3">Kontu plāns</h2>
-      <div className="mb-3 d-flex gap-2">
-        <button className="btn custom-dark-hover" onClick={handleImport}>
-          Importēt Excel
-        </button>
-        <input type="file" accept=".xlsx" ref={fileInputRef} onChange={handleFileChange} className="form-control w-auto" />
-        <button className="btn custom-red-hover" onClick={handleSet}>
-          Iestatīt noklusējuma kontus
-        </button>
+      <div className="mb-3 d-flex flex-wrap gap-2 align-items-center">
+        <Form.Control type="file" ref={fileInputRef} style={{ display: "none" }} onChange={handleFileChange} />
+
+        <InputGroup className="w-auto">
+          {!file && (
+            <Dropdown>
+              <Dropdown.Toggle className="custom-dark-hover">
+                <FaDownload className="me-1" /> Importēt
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu>
+                <Dropdown.Item onClick={handleTypeSelect}>Excel</Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+          )}
+
+          {file && (
+            <React.Fragment>
+              <Button className="custom-red-hover" onClick={handleCancel}>
+                Atcelt
+              </Button>
+              <Form.Control value={file.name} readOnly className="bg-light" />
+              <Button className="custom-dark-hover" onClick={handleImport}>
+                Importēt
+              </Button>
+            </React.Fragment>
+          )}
+        </InputGroup>
+        <Button className="custom-red-hover" onClick={handleSet}>
+          <GrPowerReset className="me-1" /> Iestatīt noklusējuma kontus
+        </Button>
       </div>
 
       <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed" }}>

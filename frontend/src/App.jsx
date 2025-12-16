@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -10,6 +10,7 @@ import Partners from "./pages/Partners";
 import ChartOfAccounts from "./pages/ChartOfAccounts";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PublicOnlyRoute from "./components/PublicOnlyRoute";
 import Companies from "./pages/Companies";
 import User from "./pages/User";
 import { CompanyProvider } from "./components/CompanyContext";
@@ -22,8 +23,23 @@ function App() {
       <AuthProvider>
         <CompanyProvider>
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route
+              path="/login"
+              element={
+                <PublicOnlyRoute>
+                  <Login />
+                </PublicOnlyRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <PublicOnlyRoute>
+                  <Register />
+                </PublicOnlyRoute>
+              }
+            />
+
             <Route
               path="/companies"
               element={
@@ -70,6 +86,16 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route
+              path="*"
+              element={
+                <ProtectedRoute>
+                  <Navigate to="/companies" replace />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
           <ToastContainer />
         </CompanyProvider>
