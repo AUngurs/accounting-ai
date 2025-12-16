@@ -3,17 +3,18 @@ import { useCompany } from "../../components/CompanyContext";
 import DocumentsControls from "./DocumentsControls";
 import DocumentsTableHeader from "./DocumentsTableHeader";
 import DocumentsTableBody from "./DocumentsTableBody";
+import VirtualizedTableContainer from "../../components/VirtualizedTableContainer";
 import { useDocuments } from "./useDocuments";
 import DocumentModal from "../../components/DocumentModal";
 import { Table } from "react-bootstrap";
 
-const ROW_HEIGHT = 24;
-const VISIBLE_ROWS = 27;
-
 export default function Documents() {
   const { companyId } = useCompany();
   const [scrollTop, setScrollTop] = useState(0);
+  const [visibleRowsCount, setVisibleRowsCount] = useState(20);
   const [openDocId, setOpenDocId] = useState(null);
+
+  const ROW_HEIGHT = 24;
 
   const {
     pdfFile,
@@ -89,9 +90,11 @@ export default function Documents() {
         />
       </Table>
 
-      <div
-        style={{ height: ROW_HEIGHT * VISIBLE_ROWS, overflowY: "auto", borderBottom: "6px solid #19221c" }}
-        onScroll={(e) => setScrollTop(e.target.scrollTop)}
+      <VirtualizedTableContainer
+        rowHeight={ROW_HEIGHT}
+        offsetPx={280}
+        onScrollChange={setScrollTop}
+        onVisibleRowsChange={setVisibleRowsCount}
       >
         <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed", marginBottom: 0 }}>
           <DocumentsTableBody
@@ -106,9 +109,10 @@ export default function Documents() {
             handleEditClick={handleEditClick}
             sortedDocs={sortedDocs}
             handleUpdateAccounted={handleUpdateAccounted}
+            visibleRowsCount={visibleRowsCount}
           />
         </Table>
-      </div>
+      </VirtualizedTableContainer>
 
       <DocumentModal
         show={showModal}

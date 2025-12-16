@@ -1,17 +1,18 @@
 import React from "react";
 
+const ROW_HEIGHT = 24;
+
 export default function PartnersTableBody({
   filteredPartners,
   scrollTop,
-  ROW_HEIGHT,
-  VISIBLE_ROWS,
   selectedPartners,
   setSelectedPartners,
   handleEditClick,
+  visibleRowsCount,
 }) {
   const totalRows = filteredPartners.length;
   const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT));
-  const endIndex = Math.min(totalRows, startIndex + VISIBLE_ROWS);
+  const endIndex = Math.min(totalRows, startIndex + visibleRowsCount);
   const paddingTop = startIndex * ROW_HEIGHT;
   const paddingBottom = (totalRows - endIndex) * ROW_HEIGHT;
 

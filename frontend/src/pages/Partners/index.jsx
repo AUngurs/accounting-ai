@@ -4,17 +4,18 @@ import PartnersControls from "./PartnersControls";
 import PartnersTableHeader from "./PartnersTableHeader";
 import PartnersTableBody from "./PartnersTableBody";
 import PartnerModal from "../../components/PartnerModal";
+import VirtualizedTableContainer from "../../components/VirtualizedTableContainer";
 import { usePartners } from "./usePartners";
 import { Table } from "react-bootstrap";
-
-const ROW_HEIGHT = 24;
-const VISIBLE_ROWS = 29;
 
 export default function Partners() {
   const { companyId } = useCompany();
   const [scrollTop, setScrollTop] = useState(0);
+  const [visibleRowsCount, setVisibleRowsCount] = useState(20);
   const [selectedPartner, setSelectedPartner] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+  const ROW_HEIGHT = 24;
 
   const {
     partnersData,
@@ -32,7 +33,7 @@ export default function Partners() {
     handleImport,
     handleExport,
     handleDeleteSelected,
-  } = usePartners(companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop);
+  } = usePartners(companyId);
 
   const handleCreateClick = () => {
     setSelectedPartner(null);
@@ -73,23 +74,24 @@ export default function Partners() {
         />
       </Table>
 
-      <div
-        style={{ height: ROW_HEIGHT * VISIBLE_ROWS, overflowY: "auto", borderBottom: "6px solid #19221c" }}
-        onScroll={(e) => setScrollTop(e.target.scrollTop)}
+      <VirtualizedTableContainer
+        rowHeight={ROW_HEIGHT}
+        offsetPx={280}
+        onScrollChange={setScrollTop}
+        onVisibleRowsChange={setVisibleRowsCount}
       >
         <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed", marginBottom: 0 }}>
           <PartnersTableBody
             visibleRows={visibleRows}
             filteredPartners={filteredPartners}
-            ROW_HEIGHT={ROW_HEIGHT}
-            VISIBLE_ROWS={VISIBLE_ROWS}
             scrollTop={scrollTop}
             selectedPartners={selectedPartners}
             setSelectedPartners={setSelectedPartners}
             handleEditClick={handleEditClick}
+            visibleRowsCount={visibleRowsCount}
           />
         </Table>
-      </div>
+      </VirtualizedTableContainer>
 
       <PartnerModal
         show={showModal}

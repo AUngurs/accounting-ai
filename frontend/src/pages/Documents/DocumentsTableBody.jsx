@@ -3,7 +3,6 @@ import { Collapse } from "react-bootstrap";
 import DocumentLines from "../../components/DocumentLines";
 
 const ROW_HEIGHT = 24;
-const VISIBLE_ROWS = 27;
 
 export default function FinancialDocsTableBody({
   partnerMap,
@@ -16,10 +15,11 @@ export default function FinancialDocsTableBody({
   handleEditClick,
   sortedDocs,
   handleUpdateAccounted,
+  visibleRowsCount,
 }) {
   const totalRows = sortedDocs.length * 2;
   const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT));
-  const endIndex = Math.min(totalRows, startIndex + VISIBLE_ROWS * 2);
+  const endIndex = Math.min(totalRows, startIndex + visibleRowsCount * 2);
   const paddingTop = startIndex * ROW_HEIGHT;
   const paddingBottom = (totalRows - endIndex) * ROW_HEIGHT;
 
