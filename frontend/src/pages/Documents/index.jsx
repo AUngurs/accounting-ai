@@ -5,7 +5,7 @@ import DocumentsTableHeader from "./DocumentsTableHeader";
 import DocumentsTableBody from "./DocumentsTableBody";
 import VirtualizedTableContainer from "../../components/VirtualizedTableContainer";
 import { useDocuments } from "./useDocuments";
-import DocumentModal from "../../components/DocumentModal";
+import DocumentModal from "./DocumentModal";
 import { Table } from "react-bootstrap";
 
 export default function Documents() {

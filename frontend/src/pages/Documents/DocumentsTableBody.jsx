@@ -1,6 +1,6 @@
 import React from "react";
 import { Collapse } from "react-bootstrap";
-import DocumentLines from "../../components/DocumentLines";
+import DocumentLines from "./DocumentLines";
 
 const ROW_HEIGHT = 24;
 

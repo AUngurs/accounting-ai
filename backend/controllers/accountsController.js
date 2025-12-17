@@ -2,7 +2,6 @@ import pool from "../db.js";
 import fs from "fs";
 import XLSX from "xlsx";
 import multer from "multer";
-
 import defaultAccounts from "../../frontend/src/data/defaultAccounts.js";
 
 const upload = multer({ dest: "uploads/" });

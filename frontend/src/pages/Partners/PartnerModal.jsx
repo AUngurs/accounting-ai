@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import { partnerRules } from "../utils/validators";
+import { partnerRules } from "../../utils/validators";
 
 export default function PartnerModal({ show, handleClose, partner, onSave, onDelete, partners }) {
   const isEditMode = !!partner;

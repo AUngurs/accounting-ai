@@ -1,5 +1,5 @@
 import React from "react";
-import AmountInput from "../../components/AmountInput";
+import AmountInput from "../../utils/AmountInput";
 
 export default function FinancialDocsTableHeader({
   filters,

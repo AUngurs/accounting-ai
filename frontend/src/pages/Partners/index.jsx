@@ -3,7 +3,7 @@ import { useCompany } from "../../components/CompanyContext";
 import PartnersControls from "./PartnersControls";
 import PartnersTableHeader from "./PartnersTableHeader";
 import PartnersTableBody from "./PartnersTableBody";
-import PartnerModal from "../../components/PartnerModal";
+import PartnerModal from "./PartnerModal";
 import VirtualizedTableContainer from "../../components/VirtualizedTableContainer";
 import { usePartners } from "./usePartners";
 import { Table } from "react-bootstrap";

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { useCompany } from "./CompanyContext";
-import UserCard from "./UserCard";
+import { useCompany } from "../components/CompanyContext";
+import UserCard from "../components/UserCard";
 
 import "../styles/Sidebar.css";
 

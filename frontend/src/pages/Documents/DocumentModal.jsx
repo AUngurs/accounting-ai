@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import { documentRules } from "../utils/validators";
-import AmountInput from "./AmountInput";
+import { documentRules } from "../../utils/validators";
+import AmountInput from "../../utils/AmountInput";
 import { Document, Page, pdfjs } from "react-pdf";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();

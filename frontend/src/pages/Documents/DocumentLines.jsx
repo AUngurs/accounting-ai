@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import axiosInstance from "../api/axiosInstance";
+import axiosInstance from "../../api/axiosInstance";
 import { Table, Collapse, Card, Form, Button } from "react-bootstrap";
-import { documentLineRules } from "../utils/validators";
-import AmountInput from "./AmountInput";
+import { documentLineRules } from "../../utils/validators";
+import AmountInput from "../../utils/AmountInput";
 
 export default function DocumentLines({ companyId, documentId, onUpdateAccounted }) {
   const [lines, setLines] = useState([]);
