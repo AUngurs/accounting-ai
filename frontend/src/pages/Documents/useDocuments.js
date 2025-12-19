@@ -191,7 +191,13 @@ export const useDocuments = (companyId) => {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setDocsData((prev) => [...prev, ...res.data.newDocuments]);
-      notify.success(`Veiksmīgi importēti ${res.data.newDocuments.length} finanšu dokumenti!`);
+      const imported = res.data.newDocuments.length;
+      const skipped = res.data.skippedCount;
+      if (skipped > 0) {
+        notify.info(`Importēti ${imported} dokumenti. ${skipped} dokumenti netika importēti, jo tie jau eksistē.`);
+      } else {
+        notify.success(`Veiksmīgi importēti ${imported} finanšu dokumenti!`);
+      }
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Import failed!");

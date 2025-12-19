@@ -80,6 +80,9 @@ CREATE TABLE documents (
         FOREIGN KEY (partner_id)
         REFERENCES partners(id)
         ON DELETE SET NULL
+
+    CONSTRAINT documents_unique
+        UNIQUE (company_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_amount, partner_id)
 );
 
 CREATE TABLE document_lines (

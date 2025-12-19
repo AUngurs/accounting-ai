@@ -19,7 +19,7 @@ export default function Partners() {
 
   const {
     partnersData,
-    filteredPartners,
+    sortedPartners,
     visibleRows,
     selectedPartners,
     setSelectedPartners,
@@ -83,7 +83,7 @@ export default function Partners() {
         <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed", marginBottom: 0 }}>
           <PartnersTableBody
             visibleRows={visibleRows}
-            filteredPartners={filteredPartners}
+            sortedPartners={sortedPartners}
             scrollTop={scrollTop}
             selectedPartners={selectedPartners}
             setSelectedPartners={setSelectedPartners}

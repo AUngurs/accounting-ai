@@ -3,14 +3,14 @@ import React from "react";
 const ROW_HEIGHT = 24;
 
 export default function PartnersTableBody({
-  filteredPartners,
+  sortedPartners,
   scrollTop,
   selectedPartners,
   setSelectedPartners,
   handleEditClick,
   visibleRowsCount,
 }) {
-  const totalRows = filteredPartners.length;
+  const totalRows = sortedPartners.length;
   const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT));
   const endIndex = Math.min(totalRows, startIndex + visibleRowsCount);
   const paddingTop = startIndex * ROW_HEIGHT;
@@ -18,7 +18,7 @@ export default function PartnersTableBody({
 
   const visibleRows = [];
   for (let i = startIndex; i < endIndex; i++) {
-    const partner = filteredPartners[i];
+    const partner = sortedPartners[i];
     console.log("FOR LOOP STARTED");
     visibleRows.push(
       <React.Fragment key={partner.id}>

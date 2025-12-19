@@ -140,6 +140,7 @@ export const importXmlDocuments = [
       });
 
       const newDocuments = [];
+      let skippedCount = 0;
 
       for (const doc of financialDocs) {
         let partner_id = null;
@@ -162,26 +163,34 @@ export const importXmlDocuments = [
           if (partnersByName[key]) partner_id = partnersByName[key];
         }
 
-        // Insert document with temporary is_accounted=false
-        const docQuery = `
+        let insertedDoc;
+
+        try {
+          const docQuery = `
           INSERT INTO documents
           (company_id, partner_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_currency, doc_amount, doc_comments, is_accounted)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, FALSE)
           RETURNING *;
         `;
-        const { rows: docRows } = await pool.query(docQuery, [
-          companyID,
-          partner_id,
-          doc.DocNo,
-          doc.DocDate,
-          doc.DocTypeAbbreviation,
-          doc.DocGroupAbbreviation,
-          doc.DocCurrency,
-          parseFloat(doc.DocAmount),
-          doc.DocComments,
-        ]);
-
-        let insertedDoc = docRows[0];
+          const { rows: docRows } = await pool.query(docQuery, [
+            companyID,
+            partner_id,
+            doc.DocNo,
+            doc.DocDate,
+            doc.DocTypeAbbreviation,
+            doc.DocGroupAbbreviation,
+            doc.DocCurrency,
+            parseFloat(doc.DocAmount),
+            doc.DocComments,
+          ]);
+          insertedDoc = docRows[0];
+        } catch (err) {
+          if (err.code === "23505") {
+            skippedCount++;
+            continue;
+          }
+          throw err;
+        }
 
         let insertedLines = [];
         if (doc.FinancialDocLine) {
@@ -208,10 +217,8 @@ export const importXmlDocuments = [
           }
         }
 
-        // Calculate correct is_accounted
         const isFullyAccounted = calculateIsAccounted(insertedLines, insertedDoc.doc_amount);
 
-        // Update the document and return the updated row
         const { rows: updatedDocRows } = await pool.query("UPDATE documents SET is_accounted=$1 WHERE id=$2 RETURNING *", [
           isFullyAccounted,
           insertedDoc.id,
@@ -221,15 +228,13 @@ export const importXmlDocuments = [
       }
 
       fs.unlinkSync(req.file.path);
-      res.json({ message: "Import successful", newDocuments });
+      res.json({ message: "Import successful", newDocuments, skippedCount });
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Failed to import XML" });
     }
   },
 ];
-
-export const importPdfDocuments = [];
 
 export const getDocument = async (req, res) => {
   try {

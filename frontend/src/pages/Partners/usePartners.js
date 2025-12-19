@@ -10,19 +10,6 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
   const [selectedPartners, setSelectedPartners] = useState(new Set());
   const { setLoading } = useLoading();
 
-  const startIndex = Math.floor(scrollTop / ROW_HEIGHT);
-
-  const filteredPartners = partnersData.filter(
-    (p) =>
-      (!filters.name || p.formatted_name.toLowerCase().includes(filters.name.toLowerCase())) &&
-      (!filters.type || p.partner_kind_name === filters.type) &&
-      (!filters.regNr || p.partner_reg_nr?.includes(filters.regNr)) &&
-      (!filters.vat || p.vat_nr?.includes(filters.vat))
-  );
-
-  const endIndex = Math.min(filteredPartners.length, startIndex + VISIBLE_ROWS);
-  const visibleRows = filteredPartners.slice(startIndex, endIndex);
-
   const fetchPartners = useCallback(async () => {
     try {
       const res = await axiosInstance.get(`/companies/${companyId}/partners`);
@@ -34,31 +21,29 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
   useEffect(() => {
     fetchPartners();
   }, [fetchPartners]);
+  const filteredPartners = partnersData.filter(
+    (p) =>
+      (!filters.name || p.formatted_name.toLowerCase().includes(filters.name.toLowerCase())) &&
+      (!filters.type || p.partner_kind_name === filters.type) &&
+      (!filters.regNr || p.partner_reg_nr?.includes(filters.regNr)) &&
+      (!filters.vat || p.vat_nr?.includes(filters.vat))
+  );
+  const sortedPartners = [...filteredPartners].sort((a, b) => {
+    let aValue, bValue;
+    if (sortConfig.key === "fullName") {
+      aValue = a.formatted_name.toLowerCase();
+      bValue = b.formatted_name.toLowerCase();
+    } else {
+      aValue = (a[sortConfig.key] || "").toString().toLowerCase();
+      bValue = (b[sortConfig.key] || "").toString().toLowerCase();
+    }
+    return sortConfig.direction === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+  });
   const handleSort = (key) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") direction = "desc";
-
-    const sorted = [...partnersData].sort((a, b) => {
-      let aValue, bValue;
-
-      if (key === "fullName") {
-        const formatPartner = (p) =>
-          p.partner_kind_name === "Juridiska persona"
-            ? `${p.partner_name}${p.partner_title ? ", " + p.partner_title : ""}`
-            : `${p.partner_title} ${p.partner_name}`;
-
-        aValue = formatPartner(a).toLowerCase();
-        bValue = formatPartner(b).toLowerCase();
-      } else {
-        aValue = (a[key] || "").toString().toLowerCase();
-        bValue = (b[key] || "").toString().toLowerCase();
-      }
-
-      return direction === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-    });
-
-    setPartnersData(sorted);
-    setSortConfig({ key, direction });
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
   };
   const handleCreate = async (newPartner) => {
     try {
@@ -138,9 +123,13 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
     }
   };
 
+  const startIndex = Math.floor(scrollTop / ROW_HEIGHT);
+  const endIndex = Math.min(sortedPartners.length, startIndex + VISIBLE_ROWS);
+  const visibleRows = sortedPartners.slice(startIndex, endIndex);
+
   return {
     partnersData,
-    filteredPartners,
+    sortedPartners,
     visibleRows,
     startIndex,
     endIndex,
