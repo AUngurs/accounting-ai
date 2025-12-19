@@ -64,8 +64,8 @@ export const importPartners = [
       const partnersRaw = result.dataroot.tjResponse.Partner;
       const partners = Array.isArray(partnersRaw) ? partnersRaw : [partnersRaw];
 
+      let skippedCount = 0;
       const newPartners = [];
-      const skipped = [];
 
       for (const partner of partners) {
         const isCompany = partner.PartnerKindName === "Juridiska persona";
@@ -74,38 +74,11 @@ export const importPartners = [
         const partnerName = isCompany ? (partner.PartnerName || "").trim() : (partner.PartnerFirstName || "").trim();
         const partnerRegNr = isCompany ? (partner.PartnerRegistrationNo || "").trim() : (partner.PartnerPersonalIdentityNo || "").trim();
 
-        // Build formatted_name for sorting/display
         let formattedName = "";
         if (isCompany) {
           formattedName = partnerTitle ? `${partnerName}, ${partnerTitle}` : partnerName;
         } else {
           formattedName = `${partnerTitle} ${partnerName}`.trim();
-        }
-
-        let existing;
-        if (partnerRegNr !== "") {
-          const regQuery = `
-            SELECT * FROM partners
-            WHERE company_id=$1 AND partner_reg_nr=$2
-          `;
-          existing = (await pool.query(regQuery, [companyID, partnerRegNr])).rows;
-        } else {
-          const nameQuery = `
-            SELECT * FROM partners
-            WHERE company_id=$1 
-              AND LOWER(partner_name)=LOWER($2)
-              AND LOWER(partner_title)=LOWER($3)
-          `;
-          existing = (await pool.query(nameQuery, [companyID, partnerName, partnerTitle])).rows;
-        }
-
-        if (existing.length > 0) {
-          skipped.push({
-            partnerRegNr: partnerRegNr || "(empty)",
-            partnerName,
-            reason: "Partner already exists",
-          });
-          continue;
         }
 
         const vatInfoRaw = partner.PartnerVatNo;
@@ -118,31 +91,36 @@ export const importPartners = [
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
           RETURNING *;
         `;
-
-        const { rows: partnerRows } = await pool.query(insertQuery, [
-          companyID,
-          partner.PartnerKindName || "",
-          partnerTitle,
-          partnerName,
-          partnerRegNr,
-          partner.PartnerTaxpayerType || "",
-          vatInfo.VatNoCountryCode || "",
-          vatInfo.VatNo || "",
-          vatInfo.VatNoDefaultNoticeID || "",
-          formattedName,
-        ]);
-
-        newPartners.push(partnerRows[0]);
+        try {
+          const { rows: partnerRows } = await pool.query(insertQuery, [
+            companyID,
+            partner.PartnerKindName || "",
+            partnerTitle,
+            partnerName,
+            partnerRegNr,
+            partner.PartnerTaxpayerType || "",
+            vatInfo.VatNoCountryCode || "",
+            vatInfo.VatNo || "",
+            vatInfo.VatNoDefaultNoticeID || "",
+            formattedName,
+          ]);
+          newPartners.push(partnerRows[0]);
+        } catch (err) {
+          if (err.code === "23505") {
+            skippedCount++;
+            continue;
+          } else {
+            throw err;
+          }
+        }
       }
 
       fs.unlinkSync(req.file.path);
 
       res.json({
         message: "Import completed",
-        imported: newPartners.length,
-        skipped: skipped.length,
         newPartners,
-        skippedPartners: skipped,
+        skippedCount,
       });
     } catch (err) {
       console.error(err);

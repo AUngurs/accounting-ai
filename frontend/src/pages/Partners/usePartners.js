@@ -85,7 +85,13 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setPartnersData((prev) => [...prev, ...res.data.newPartners]);
-      notify.success(`Veiksmīgi importēti ${res.data.newPartners.length} partneri!`);
+      const imported = res.data.newPartners.length;
+      const skipped = res.data.skippedCount;
+      if (skipped > 0) {
+        notify.info(`Importēti ${imported} partneri. ${skipped} partneri netika importēti, jo tie jau eksistē.`);
+      } else {
+        notify.success(`Veiksmīgi importēti ${imported} partneri!`);
+      }
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Importēšana neizdevās.");

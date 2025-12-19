@@ -51,6 +51,9 @@ CREATE TABLE partners (
         FOREIGN KEY (company_id)
         REFERENCES companies(id)
         ON DELETE CASCADE
+
+    CONSTRAINT partners_unique
+        UNIQUE (company_id, partner_kind_name, partner_name, partner_title)
 );
 
 CREATE TABLE documents (
