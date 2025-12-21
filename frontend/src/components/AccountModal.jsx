@@ -28,11 +28,11 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setFormErrors((prev) => ({ ...prev, [name]: undefined })); // remove error on edit
+    setFormErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
   const handleSubmit = () => {
-    const errors = accountRules(accounts, { ...account, ...formData }); // accounts = current state array
+    const errors = accountRules(accounts, { ...account, ...formData });
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;

@@ -1,4 +1,31 @@
 .sidebar {
-  background-color: #19221C !important;
+  background-color: #021526;
+  border-radius: 0 12px 12px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
   width: 260px;
+  flex-shrink: 0;
+  height: 100vh;
+}
+
+.user-card {
+  margin-bottom: 0.25rem;
+  background-color: #03346e;
+  color: #f8f9fa;
+  border-radius: 0.375rem;
+}
+
+.user-card-body {
+  padding: 0.75rem;
+}
+
+.user-card-title {
+  margin-bottom: 0.25rem;
+  font-weight: 700;
+}
+
+.user-card-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.85;
 }

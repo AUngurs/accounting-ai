@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Button, ButtonGroup, InputGroup, Form, Dropdown } from "react-bootstrap";
+import { Button, InputGroup, Form, Dropdown } from "react-bootstrap";
 import { FaPlus, FaUpload, FaDownload, FaTrash } from "react-icons/fa";
 
 export default function PartnersControls({ handleCreateClick, handleImport, handleExport, handleDeleteSelected, selectedPartners }) {
@@ -66,14 +66,14 @@ export default function PartnersControls({ handleCreateClick, handleImport, hand
       </InputGroup>
 
       {selectedPartners.size > 0 && (
-        <ButtonGroup>
-          <Button className="custom-light-hover" onClick={handleExport}>
+        <div className="ms-auto">
+          <Button className="custom-dark-hover me-2" onClick={handleExport}>
             <FaUpload className="me-1" /> Eksportēt
           </Button>
-          <Button className="custom-light-red-hover" onClick={handleDeleteSelected}>
-            <FaTrash className="me-1" /> Dzēst ({selectedPartners.size})
+          <Button className="custom-red-hover" onClick={handleDeleteSelected}>
+            <FaTrash className="me-1" /> Dzēst
           </Button>
-        </ButtonGroup>
+        </div>
       )}
     </div>
   );

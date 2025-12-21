@@ -92,7 +92,7 @@ export default function Documents() {
 
       <VirtualizedTableContainer
         rowHeight={ROW_HEIGHT}
-        offsetPx={280}
+        offsetPx={290}
         onScrollChange={setScrollTop}
         onVisibleRowsChange={setVisibleRowsCount}
       >
@@ -115,6 +115,10 @@ export default function Documents() {
       </VirtualizedTableContainer>
 
       <div className="virtualized-table-divider" />
+
+      <div className="mt-2 text-muted small">
+        Atlasīti {selectedDocs.size} no {sortedDocs.length} finanšu dokumentiem
+      </div>
 
       <DocumentModal
         show={showModal}

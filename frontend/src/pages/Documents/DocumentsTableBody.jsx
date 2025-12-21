@@ -49,7 +49,7 @@ export default function FinancialDocsTableBody({
           <td>{partnerMap[doc.partner_id] || ""}</td>
           <td>{doc.doc_type_abbrev}</td>
           <td>{doc.doc_currency}</td>
-          <td style={{ backgroundColor: doc.is_accounted ? "#d4edda" : "#f8d7da" }}>{doc.doc_amount}</td>
+          <td style={{ textAlign: "right", backgroundColor: doc.is_accounted ? "#d4edda" : "#f8d7da" }}>{doc.doc_amount}</td>
           <td>{doc.doc_comments}</td>
           <td>
             <div className="d-flex justify-content-evenly">

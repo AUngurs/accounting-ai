@@ -81,7 +81,7 @@ export default function Companies() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh", backgroundColor: "#19221C" }}>
+    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh", backgroundColor: "#021526" }}>
       <div
         className="card p-4 shadow"
         style={{

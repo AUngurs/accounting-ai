@@ -40,7 +40,7 @@ export default function Login() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh", backgroundColor: "#19221C" }}>
+    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh", backgroundColor: "#021526" }}>
       <div className="card p-4 shadow" style={{ width: "100%", maxWidth: "400px", borderRadius: "10px" }}>
         <Form noValidate onSubmit={handleLogin}>
           <Form.Group className="mb-3">

@@ -1,13 +1,14 @@
 import { useAuth } from "./AuthContext";
+import "../styles/Sidebar.css";
 
 export default function UserCard() {
   const { user } = useAuth();
 
   return (
-    <div className="card mb-1 bg-secondary text-light">
-      <div className="card-body p-3">
-        <h6 className="card-title mb-1 fw-bold">{user.username}</h6>
-        <p className="card-subtitle small">{user.email}</p>
+    <div className="user-card">
+      <div className="user-card-body">
+        <h6 className="user-card-title">{user.username}</h6>
+        <p className="user-card-subtitle">{user.email}</p>
       </div>
     </div>
   );

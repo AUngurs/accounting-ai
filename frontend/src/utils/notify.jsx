@@ -12,14 +12,14 @@ const defaultOptions = {
 };
 
 const toastColors = {
-  success: "#198754",
+  success: "#cfe3f2",
   error: "#dc3545",
-  info: "#0d6efd",
+  info: "#03346e",
   warn: "#ffc107",
 };
 
 export const notify = {
-  success: (msg) => toast.success(msg, { ...defaultOptions, style: { backgroundColor: toastColors.success, color: "white" } }),
+  success: (msg) => toast.success(msg, { ...defaultOptions, style: { backgroundColor: toastColors.success, color: "black" } }),
   error: (msg) => toast.error(msg, { ...defaultOptions, style: { backgroundColor: toastColors.error, color: "white" } }),
   info: (msg) => toast.info(msg, { ...defaultOptions, style: { backgroundColor: toastColors.info, color: "white" } }),
   warn: (msg) => toast.warn(msg, { ...defaultOptions, style: { backgroundColor: toastColors.warn, color: "black" } }),

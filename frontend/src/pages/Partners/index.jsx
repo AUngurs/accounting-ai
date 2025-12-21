@@ -95,6 +95,10 @@ export default function Partners() {
 
       <div className="virtualized-table-divider" />
 
+      <div className="mt-2 text-muted small">
+        Atlasīti {selectedPartners.size} no {sortedPartners.length} partneriem
+      </div>
+
       <PartnerModal
         show={showModal}
         handleClose={closeModal}
