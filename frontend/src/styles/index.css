@@ -1,3 +1,8 @@
+html,
+body {
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
@@ -95,4 +100,10 @@ code {
   background-color: #7a0404;
   border-color: #fff;
   font-weight: 500;
+}
+
+.virtualized-table-divider {
+  height: 2px;
+  background-color: #19221c;
+  margin-top: 2px;
 }

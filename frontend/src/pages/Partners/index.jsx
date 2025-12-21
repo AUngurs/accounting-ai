@@ -93,6 +93,8 @@ export default function Partners() {
         </Table>
       </VirtualizedTableContainer>
 
+      <div className="virtualized-table-divider" />
+
       <PartnerModal
         show={showModal}
         handleClose={closeModal}

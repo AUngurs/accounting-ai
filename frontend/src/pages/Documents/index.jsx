@@ -114,6 +114,8 @@ export default function Documents() {
         </Table>
       </VirtualizedTableContainer>
 
+      <div className="virtualized-table-divider" />
+
       <DocumentModal
         show={showModal}
         handleClose={closeModal}
