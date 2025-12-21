@@ -1,18 +1,58 @@
 import OpenAI from "openai";
 import dotenv from "dotenv";
 import { PDFParse } from "pdf-parse";
+import fs from "fs";
+import path from "path";
+import os from "os";
+import { exec } from "child_process";
+import vision from "@google-cloud/vision";
 
 dotenv.config();
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const visionClient = new vision.ImageAnnotatorClient(); // Google Cloud Vision client
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY }); // OpenAI client
 
 function needsOCR(text) {
-  return text.trim().length < 50;
+  if (!text) return true;
+  const cleaned = text.replace(/\s+/g, "");
+  return cleaned.length < 100 || !/[A-Z0-9]/i.test(cleaned);
+}
+
+async function pdfToImages(buffer) {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "pdf-ocr-"));
+  const pdfPath = path.join(tmpDir, "input.pdf");
+  fs.writeFileSync(pdfPath, buffer);
+
+  await new Promise((resolve, reject) => {
+    exec(`pdftoppm -png "${pdfPath}" "${tmpDir}/page"`, (err) => (err ? reject(err) : resolve()));
+  });
+
+  return fs
+    .readdirSync(tmpDir)
+    .filter((f) => f.startsWith("page") && f.endsWith(".png"))
+    .map((f) => path.join(tmpDir, f));
+}
+
+async function runOCROnImageBuffer(imageBuffer) {
+  const [result] = await visionClient.textDetection({
+    image: { content: imageBuffer },
+  });
+  const extractedText = result.fullTextAnnotation?.text || "";
+  console.log("OCR extracted text:", extractedText);
+  return extractedText;
 }
 
 async function runOCR(buffer) {
-  // TODO: integrate Tesseract, Google Vision, or OpenAI Vision
-  return "";
+  const images = await pdfToImages(buffer);
+  let fullText = "";
+
+  for (const imagePath of images) {
+    const imageBuffer = fs.readFileSync(imagePath);
+    const text = await runOCROnImageBuffer(imageBuffer);
+    fullText += "\n" + text;
+  }
+
+  return fullText.trim();
 }
 
 async function callLLM(text, companyName) {
@@ -127,20 +167,21 @@ export const importPdf = async (req, res) => {
 
     const uint8array = new Uint8Array(req.file.buffer);
     const parser = new PDFParse(uint8array);
+
     const extractedText = (await parser.getText()).text;
 
-    /*
+    let finalText = extractedText;
+
     if (needsOCR(extractedText)) {
-      console.log("Running OCR...");
       const ocrText = await runOCR(req.file.buffer);
-      extractedText += "\n" + ocrText;
+      finalText += "\n" + ocrText;
     }
-    */
-    console.log(extractedText);
-    const aiResult = await callLLM(extractedText, companyName);
-    res.json({
-      documents: aiResult,
-    });
+
+    finalText = finalText.replace(/[^\S\r\n]{2,}/g, " ").trim();
+
+    const aiResult = await callLLM(finalText, companyName);
+
+    res.json({ documents: aiResult });
   } catch (error) {
     console.error("PDF import error:", error);
     res.status(500).json({ error: "Failed to import or parse PDF" });

@@ -158,7 +158,7 @@ export const useDocuments = (companyId) => {
     const normalize = (str) =>
       str
         .replace(/SIA|A\/S|,/gi, "")
-        .replace(/\./g, "")
+        .replace(/[.,"]/g, "")
         .toLowerCase()
         .trim()
         .split(/\s+/)
