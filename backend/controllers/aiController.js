@@ -14,8 +14,9 @@ const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY }); // OpenAI cli
 
 function needsOCR(text) {
   if (!text) return true;
-  const cleaned = text.replace(/\s+/g, "");
-  return cleaned.length < 100 || !/[A-Z0-9]/i.test(cleaned);
+  const printableRatio = text.replace(/\s/g, "").length / text.length;
+  const hasLatvianWords = /(SIA|Rēķins|Datums|Summa|Kopā|EUR)/i.test(text);
+  return printableRatio < 0.7 || !hasLatvianWords;
 }
 
 async function pdfToImages(buffer) {
@@ -24,7 +25,7 @@ async function pdfToImages(buffer) {
   fs.writeFileSync(pdfPath, buffer);
 
   await new Promise((resolve, reject) => {
-    exec(`pdftoppm -png "${pdfPath}" "${tmpDir}/page"`, (err) => (err ? reject(err) : resolve()));
+    exec(`pdftoppm -r 300 -png "${pdfPath}" "${tmpDir}/page"`, (err) => (err ? reject(err) : resolve()));
   });
 
   return fs
@@ -83,6 +84,31 @@ Kredīta parāds (K) - rēķins, ko izrakstījis kāds mums:
 
     Lūdzu izvērtē dokumentu pēc rēķina adresāta un partnera: ja adresāts nav mūsu uzņēmums → Debeta parāds, ja adresāts ir mūsu uzņēmums → Kredīta parāds. Ja nav skaidrs, atstāj tukšu.
 
+Adresāta noteikšanas prioritāte (no augstākās uz zemāko):
+1) Lauki: "Rēķina saņēmējs", "Pircējs", "Klients", "Adresāts"
+2) Juridiskās adreses bloks (nosaukums + reģ. nr.)
+3) Teksts "Rēķins izrakstīts" / "Saņemts rēķins"
+4) Ja minēti abi uzņēmumi bez skaidras lomas → neskaidrs
+
+Pirms JSON atgriešanas:
+1) Nosaki, kurš ir rēķina IZRAKSTĪTĀJS un kurš ir RĒĶINA SAŅĒMĒJS.
+2) Skaidri nosaki, vai adresāts ir mūsu uzņēmums (${companyName}) vai nē.
+3) Tikai pēc tam nosaki document_group (D vai K).
+4) Ja adresāts NAV skaidri identificējams, document_group atstāj tukšu.
+
+Noteikumi:
+- Nekad nenorādi ${companyName} laukā "partner".
+- Neizdomā partnera nosaukumu, ja tas nav skaidri tekstā.
+- Neaizpildi document_group, ja nav pārliecības.
+- Neizdomā dokumenta numuru vai datumu.
+- "document_number" ir precīzs dokumentā atrastais numurs.
+- "document_date" jābūt formātā "YYYY-MM-DD". Ja datumā teksta avotā ir cits formāts (piemēram, 30.10.2024), pārvērt to YYYY-MM-DD. Nekad neatgriez DD.MM.YYYY, DD/MM/YYYY vai citus formātus.
+- "document_type" var būt tikai "Rēķ" (Rēķins) vai "Kredītrēķ." (Kredītrēķins).
+- "document_group" var būt tikai "D" (Debeta parāds) vai "K" (Kredīta parāds), saskaņā ar noteikumiem augstāk.
+- Ja kāda lauka nav tekstā, atstāj to kā tukšu string.
+- Piezīmes ("notes") ir īsas, max 200 rakstzīmes.
+- Atbild tikai ar JSON, bez paskaidrojumiem.
+
 Atgriez JSON masīvu ar vienu objektu par katru dokumentu šādā formātā:
 
 [
@@ -97,16 +123,6 @@ Atgriez JSON masīvu ar vienu objektu par katru dokumentu šādā formātā:
     "notes": ""
   }
 ]
-
-Noteikumi:
-- "document_number" ir precīzs dokumentā atrastais numurs.
-- "document_date" jābūt formātā "YYYY-MM-DD". Ja datumā teksta avotā ir cits formāts (piemēram, 30.10.2024), pārvērt to YYYY-MM-DD. Nekad neatgriez DD.MM.YYYY, DD/MM/YYYY vai citus formātus.
-- "document_type" var būt tikai "Rēķ" (Rēķins) vai "Kredītrēķ." (Kredītrēķins).
-- "document_group" var būt tikai "D" (Debeta parāds) vai "K" (Kredīta parāds), saskaņā ar noteikumiem augstāk.
-- Ja kāda lauka nav tekstā, atstāj to kā tukšu string.
-- "partner" nav mūsu uzņēmums (${companyName}).
-- Piezīmes ("notes") ir īsas, max 200 rakstzīmes.
-- Atbild tikai ar JSON, bez paskaidrojumiem.
 
 Piemēri:
 1) Rēķins, ko izrakstījām klientam "SIA Alfa":
@@ -173,11 +189,18 @@ export const importPdf = async (req, res) => {
     let finalText = extractedText;
 
     if (needsOCR(extractedText)) {
-      const ocrText = await runOCR(req.file.buffer);
-      finalText += "\n" + ocrText;
+      finalText = await runOCR(req.file.buffer);
+    } else {
+      finalText = extractedText;
     }
 
-    finalText = finalText.replace(/[^\S\r\n]{2,}/g, " ").trim();
+    finalText = finalText
+      .replace(/(\d)\s+(\d)/g, "$1$2")
+      .replace(/([A-Za-zĀ-ž])\s+([A-Za-zĀ-ž])/g, "$1$2")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+
+    console.log("Final extracted text:", finalText);
 
     const aiResult = await callLLM(finalText, companyName);
 
