@@ -228,7 +228,7 @@ export const importXmlDocuments = [
       }
 
       fs.unlinkSync(req.file.path);
-      res.json({ message: "Import successful", newDocuments, skippedCount });
+      res.json({ newDocuments, skippedCount });
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Failed to import XML" });

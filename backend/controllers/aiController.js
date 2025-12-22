@@ -9,14 +9,18 @@ import vision from "@google-cloud/vision";
 
 dotenv.config();
 
-const visionClient = new vision.ImageAnnotatorClient(); // Google Cloud Vision client
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY }); // OpenAI client
+// Inicializē Google Cloud Vision klientu OCR vajadzībām
+const visionClient = new vision.ImageAnnotatorClient();
+
+// Inicializē OpenAI klientu ar API atslēgu no .env
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 function needsOCR(text) {
   if (!text) return true;
+  // Aprēķina drukājamo simbolu īpatsvaru
   const printableRatio = text.replace(/\s/g, "").length / text.length;
-  const hasLatvianWords = /(SIA|Rēķins|Datums|Summa|Kopā|EUR)/i.test(text);
-  return printableRatio < 0.7 || !hasLatvianWords;
+  // Ja drukājamo simbolu mazāk par 70%, nepieciešams OCR
+  return printableRatio < 0.7;
 }
 
 async function pdfToImages(buffer) {
@@ -24,10 +28,12 @@ async function pdfToImages(buffer) {
   const pdfPath = path.join(tmpDir, "input.pdf");
   fs.writeFileSync(pdfPath, buffer);
 
+  // pdftoppm komanda, kas konvertē PDF uz PNG
   await new Promise((resolve, reject) => {
     exec(`pdftoppm -r 300 -png "${pdfPath}" "${tmpDir}/page"`, (err) => (err ? reject(err) : resolve()));
   });
 
+  // Atgriež visu PNG failu ceļus
   return fs
     .readdirSync(tmpDir)
     .filter((f) => f.startsWith("page") && f.endsWith(".png"))
@@ -35,11 +41,11 @@ async function pdfToImages(buffer) {
 }
 
 async function runOCROnImageBuffer(imageBuffer) {
+  // Izsauc Google Cloud Vision API teksta atpazīšanai no attēla
   const [result] = await visionClient.textDetection({
     image: { content: imageBuffer },
   });
   const extractedText = result.fullTextAnnotation?.text || "";
-  console.log("OCR extracted text:", extractedText);
   return extractedText;
 }
 
@@ -47,6 +53,7 @@ async function runOCR(buffer) {
   const images = await pdfToImages(buffer);
   let fullText = "";
 
+  // Veic OCR uz katra attēla un sapludina tekstus
   for (const imagePath of images) {
     const imageBuffer = fs.readFileSync(imagePath);
     const text = await runOCROnImageBuffer(imageBuffer);
@@ -57,6 +64,7 @@ async function runOCR(buffer) {
 }
 
 async function callLLM(text, companyName) {
+  // Sazinās ar OpenAI LLM, lai strukturētu PDF tekstu JSON formātā.
   const response = await client.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
@@ -154,13 +162,14 @@ Piemēri:
   });
 
   try {
+    // Saņem OpenAI atbildi un notīra ```json blokus, ja tādi ir
     let raw = response.choices[0].message.content.trim();
     if (raw.startsWith("```")) {
       raw = raw.replace(/^```(?:json)?\s*/, "").replace(/```$/, "");
     }
 
+    // Parsē JSON un formatē summu uz divām zīmēm aiz komata
     const parsed = JSON.parse(raw);
-
     const standardized = parsed.map((doc) => ({
       ...doc,
       amount: doc.amount ? parseFloat(doc.amount.toString().replace(",", ".")).toFixed(2) : "",
@@ -175,33 +184,37 @@ Piemēri:
   }
 }
 
+/**
+ * Galvenā funkcija PDF importa endpointam.
+ * - Izņem tekstu no PDF
+ * - Pārbauda, vai nepieciešams OCR
+ * - Notīra tekstu (novērš liekas atstarpes)
+ * - Sauc LLM, lai strukturētu datus
+ */
 export const importPdf = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "PDF file is required" });
 
     const companyName = req.body.companyName;
 
+    // PDF buffer pārvērš Uint8Array formātā
     const uint8array = new Uint8Array(req.file.buffer);
     const parser = new PDFParse(uint8array);
 
+    // Pēc noklusējuma izvelk tekstu
     const extractedText = (await parser.getText()).text;
 
-    let finalText = extractedText;
+    // Pārbauda, vai nepieciešams OCR
+    let finalText = needsOCR(extractedText) ? await runOCR(req.file.buffer) : extractedText;
 
-    if (needsOCR(extractedText)) {
-      finalText = await runOCR(req.file.buffer);
-    } else {
-      finalText = extractedText;
-    }
-
+    // Attīra tekstu no liekām atstarpēm un sapludina vārdus/numurus
     finalText = finalText
       .replace(/(\d)\s+(\d)/g, "$1$2")
       .replace(/([A-Za-zĀ-ž])\s+([A-Za-zĀ-ž])/g, "$1$2")
       .replace(/\s{2,}/g, " ")
       .trim();
 
-    console.log("Final extracted text:", finalText);
-
+    // Sauc LLM, lai strukturētu PDF datus JSON formātā
     const aiResult = await callLLM(finalText, companyName);
 
     res.json({ documents: aiResult });

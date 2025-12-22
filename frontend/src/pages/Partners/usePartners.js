@@ -119,10 +119,12 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
     if (!window.confirm("Vai tiešām vēlaties dzēst atlasītos partnerus?")) return;
     try {
       const idsToDelete = Array.from(selectedPartners);
-      await axiosInstance.post(`/companies/${companyId}/partners/bulk-delete`, { ids: idsToDelete });
-      setPartnersData((prev) => prev.filter((p) => !selectedPartners.has(p.id)));
+      const response = await axiosInstance.post(`/companies/${companyId}/partners/bulk-delete`, { ids: idsToDelete });
+      const { deletedCount, deletedRows } = response.data;
+      const deletedIds = deletedRows.map((p) => p.id);
+      setPartnersData((prev) => prev.filter((p) => !deletedIds.includes(p.id)));
       setSelectedPartners(new Set());
-      notify.success(`Veiksmīgi dzēsti ${idsToDelete.length} partneri!`);
+      notify.success(`Veiksmīgi dzēsti ${deletedCount} partneri!`);
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Dzēšana neizdevās!");
