@@ -1,14 +1,14 @@
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
-    username VARCHAR(255) NOT NULL,
+    username VARCHAR(20) NOT NULL,
     password VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE companies (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(30) NOT NULL,
 
     CONSTRAINT fk_companies_user
         FOREIGN KEY (user_id)
@@ -19,6 +19,8 @@ CREATE TABLE companies (
 CREATE TABLE accounts (
     id SERIAL PRIMARY KEY,
     company_id INT NOT NULL,
+
+    -- ATBILST JUMIS SPECIFIKACIJAI
     code VARCHAR(10) NOT NULL,
     name VARCHAR(255) NOT NULL,
     type VARCHAR(50),

@@ -10,7 +10,7 @@ export const getCompanies = async (req, res) => {
 
     res.json(result.rows);
   } catch (err) {
-    console.error(err.message);
+    console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 };
@@ -20,17 +20,17 @@ export const addCompany = async (req, res) => {
     const userId = req.user.userId;
     const { name } = req.body;
 
-    // Pārbauda, vai nosaukums ir ievadīts un nav tikai tukšas vietas
-    if (!name || !name.trim()) {
+    // Pārbauda, vai nosaukums ir ievadīts
+    if (!name) {
       return res.status(400).json({ error: "Company name is required" });
     }
 
     // Ievieto jaunu uzņēmumu un atgriež tā ID un nosaukumu
-    const result = await pool.query("INSERT INTO companies (name, user_id) VALUES ($1, $2) RETURNING id, name", [name.trim(), userId]);
+    const result = await pool.query("INSERT INTO companies (name, user_id) VALUES ($1, $2) RETURNING id, name", [name, userId]);
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error(err.message);
+    console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 };
@@ -41,18 +41,18 @@ export const editCompany = async (req, res) => {
     const companyId = req.params.companyId;
     const { name } = req.body;
 
-    // Pārbauda, vai nosaukums ir ievadīts un nav tikai tukšas vietas
-    if (!name || !name.trim()) {
+    // Pārbauda, vai nosaukums ir ievadīts
+    if (!name) {
       return res.status(400).json({ error: "Company name is required" });
     }
 
-    // Atjaunina tikai tos uzņēmumus, kas pieder konkrētajam lietotājam, RETURNING ļauj uzreiz atgriezt atjaunināto ierakstu
+    // Atjaunina uzņēmumu, kas pieder konkrētajam lietotājam
     const result = await pool.query(
       `UPDATE companies
        SET name = $1
        WHERE id = $2 AND user_id = $3
        RETURNING id, name`,
-      [name.trim(), companyId, userId]
+      [name, companyId, userId]
     );
 
     // Ja rowCount === 0, uzņēmums ar šādu ID nepieder lietotājam vai neeksistē
@@ -62,13 +62,13 @@ export const editCompany = async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (err) {
-    console.error(err.message);
+    console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 };
 
 export const deleteCompany = async (req, res) => {
-  const { companyId } = req.params;
+  const companyId = req.params.companyId;
 
   try {
     // Dzēš uzņēmumu pēc ID, RETURNING tiek izmantots, lai zinātu, vai ieraksts vispār eksistēja
@@ -80,7 +80,7 @@ export const deleteCompany = async (req, res) => {
 
     res.status(200).json({ message: "Company successfully deleted" });
   } catch (err) {
-    console.error("Dzēšanas kļūda:", err);
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };

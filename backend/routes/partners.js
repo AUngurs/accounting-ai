@@ -9,6 +9,7 @@ import {
   exportPartners,
 } from "../controllers/partnersController.js";
 
+// mergeParams dod piekļuvi params no iepriekšējām ceļa daļām
 const router = express.Router({ mergeParams: true });
 
 router.get("/", getPartners);

@@ -1,6 +1,6 @@
 import pool from "../db.js";
 import fs from "fs";
-import { parseStringPromise } from "xml2js";
+import { parseStringPromise, Builder } from "xml2js";
 import multer from "multer";
 
 const upload = multer({ dest: "uploads/" });
@@ -25,11 +25,11 @@ export const createPartner = async (req, res) => {
     const { kind_name, title, name, reg_nr, vat_type, vat_country_code, vat_nr } = req.body;
 
     // Pārbauda obligātos laukus
-    if (!kind_name || !name || !company_id) {
+    if (!kind_name || !name) {
       return res.status(400).json({ error: "Some fields are required" });
     }
 
-    // Izveido formatted_name
+    // Izveido formatted_name (title ir vai nu SIA/AS/cits, vai uzvārds)
     let formatted_name = "";
     if (kind_name === "Juridiska persona") {
       formatted_name = title ? `${name}, ${title}` : name;
@@ -37,7 +37,7 @@ export const createPartner = async (req, res) => {
       formatted_name = `${title || ""} ${name}`.trim();
     }
 
-    // Ievieto jaunu partneri datubāzē, un tiek atgriezts ievietotais ieraksts
+    // Ievieto jaunu partneri datubāzē un atgriež ievietoto ierakstu
     const result = await pool.query(
       `INSERT INTO partners
         (partner_kind_name, partner_title, partner_name, partner_reg_nr,
@@ -55,6 +55,7 @@ export const createPartner = async (req, res) => {
 };
 
 export const importPartners = [
+  // Upload middleware. "xmlFile" ir lauka nosaukums iekš form-data. Pievieno req.file
   upload.single("xmlFile"),
 
   async (req, res) => {
@@ -66,7 +67,7 @@ export const importPartners = [
       // Nolasa XML failu
       const xmlData = fs.readFileSync(req.file.path, "utf-8");
 
-      // Parse XML uz JS objektu
+      // Pārtaisa XML uz JS objektu
       const result = await parseStringPromise(xmlData, { explicitArray: false });
 
       // Atrod Partner objektus
@@ -108,7 +109,7 @@ export const importPartners = [
 
         try {
           // Mēģina ievietot partneri datubāzē
-          const { rows: partnerRows } = await pool.query(insertQuery, [
+          const { rows } = await pool.query(insertQuery, [
             companyID,
             partner.PartnerKindName || "",
             partnerTitle,
@@ -120,7 +121,7 @@ export const importPartners = [
             vatInfo.VatNoDefaultNoticeID || "",
             formattedName,
           ]);
-          newPartners.push(partnerRows[0]);
+          newPartners.push(rows[0]);
         } catch (err) {
           // Ja ir duplikāts (unikālās kolonnas pārkāpums), iet tālāk, citādi met kļūdu
           if (err.code === "23505") {
@@ -132,7 +133,7 @@ export const importPartners = [
         }
       }
 
-      // Pagaidu fails vairs nav vajadzīgs
+      // Pagaidu fails vairs nav vajadzīgs, to izdzēš
       fs.unlinkSync(req.file.path);
 
       res.json({ newPartners, skippedCount });
@@ -150,7 +151,7 @@ export const exportPartners = async (req, res) => {
 
     // Pārbauda, vai ir izvēlēti partneru ID
     if (!ids?.length) {
-      return res.status(400).json({ error: "Nav atlasītu partneru" });
+      return res.status(400).json({ error: "No partners selected" });
     }
 
     // Iegūst atlasītos partnerus no DB
@@ -175,7 +176,6 @@ export const exportPartners = async (req, res) => {
           ...(p.partner_name && { PartnerFirstName: p.partner_name }),
           ...(p.partner_title && { PartnerSurname: p.partner_title }),
           ...(p.partner_reg_nr && { PartnerPersonalIdentityNo: p.partner_reg_nr }),
-          ...(p.birth_date && { PhysicalPersonBirthDate: p.birth_date.toISOString() }),
         }),
 
         ...(p.partner_vat_type && { PartnerTaxpayerType: p.partner_vat_type }),
@@ -223,7 +223,7 @@ export const exportPartners = async (req, res) => {
 
     // Iestata atbilstošus headerus faila lejupielādei
     res.setHeader("Content-Type", "application/xml");
-    res.setHeader("Content-Disposition", `attachment; filename=partners_selected_${companyID}.xml`);
+    res.setHeader("Content-Disposition", `attachment; filename=partners_export_${companyID}.xml`);
 
     // Sūta XML klientam
     res.send(xml);

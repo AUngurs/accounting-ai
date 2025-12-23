@@ -4,17 +4,23 @@ import bcrypt from "bcryptjs";
 export const editUser = async (req, res) => {
   try {
     const userId = req.user.userId; // Lietotāja ID no autentifikācijas middleware
-    const { username, password } = req.body;
+    const { username, password, repeatPassword } = req.body;
 
     // Username obligāts, atgriež kļūdu, ja tukšs
-    if (!username || !username.trim()) {
+    if (!username) {
       return res.status(400).json({ error: "Username is required" });
     }
 
     let result;
 
+    // Ja tiek mainīta parole
     if (password) {
-      // Ja norādīta parole, to hashē ar bcrypt
+      // Paroles tiek salīdzinātas
+      if (password !== repeatPassword) {
+        return res.status(400).json({ error: "Passwords do not match" });
+      }
+
+      // Paroli hashē ar bcrypt
       const hashedPassword = await bcrypt.hash(password, 10);
 
       // Atjaunina gan username, gan password
@@ -24,7 +30,7 @@ export const editUser = async (req, res) => {
                 password = $2
             WHERE id = $3
             RETURNING id, email, username`,
-        [username.trim(), hashedPassword, userId]
+        [username, hashedPassword, userId]
       );
     } else {
       // Atjaunina tikai username
@@ -65,10 +71,7 @@ export const deleteUser = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    res.json({
-      message: "User deleted successfully",
-      user: result.rows[0],
-    });
+    res.json(result.rows[0]);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Server error" });

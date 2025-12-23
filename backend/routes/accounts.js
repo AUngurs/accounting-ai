@@ -1,12 +1,7 @@
 import express from "express";
-import {
-  setAccounts,
-  getAccounts,
-  editAccount,
-  importAccounts,
-  deleteAccount,
-} from "../controllers/accountsController.js";
+import { setAccounts, getAccounts, editAccount, importAccounts, deleteAccount } from "../controllers/accountsController.js";
 
+// mergeParams dod piekļuvi params no iepriekšējām ceļa daļām
 const router = express.Router({ mergeParams: true });
 
 router.post("/set", setAccounts);

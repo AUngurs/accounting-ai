@@ -30,16 +30,13 @@ export const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Jaunais lietotājs tiek saglabāts datubāzē, RETURNING ļauj uzreiz atgriezt lietotāja datus
-    const newUser = await pool.query("INSERT INTO users (email, username, password) VALUES ($1, $2, $3) RETURNING id, email, username", [
+    const result = await pool.query("INSERT INTO users (email, username, password) VALUES ($1, $2, $3) RETURNING id, email, username", [
       email,
       username,
       hashedPassword,
     ]);
 
-    res.status(201).json({
-      message: "User registered successfully",
-      user: newUser.rows[0],
-    });
+    res.status(201).json({ user: result.rows[0] });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Server error" });

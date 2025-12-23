@@ -11,7 +11,7 @@ export const authCompanyAccess = async (req, res, next) => {
     }
 
     // Pārbauda, vai šis uzņēmums pieder autentificētajam lietotājam
-    // Šeit tiek izmantots userId, kas iepriekš pievienots req objektam middleware (authenticateToken no authToken.js)
+    // Šeit tiek izmantots userId, kas iepriekš pievienots req objektam middleware stadijā (authenticateToken no authToken.js)
     const result = await pool.query("SELECT * FROM companies WHERE id = $1 AND user_id = $2", [companyId, req.user.userId]);
 
     // Ja rowCount === 0, lietotājam nav piekļuves šim uzņēmumam

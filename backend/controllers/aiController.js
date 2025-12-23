@@ -24,20 +24,33 @@ function needsOCR(text) {
 }
 
 async function pdfToImages(buffer) {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "pdf-ocr-"));
-  const pdfPath = path.join(tmpDir, "input.pdf");
-  fs.writeFileSync(pdfPath, buffer);
+  let tmpDir;
+  try {
+    // Pagaidu mape
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "pdf-ocr-"));
 
-  // pdftoppm komanda, kas konvertē PDF uz PNG
-  await new Promise((resolve, reject) => {
-    exec(`pdftoppm -r 300 -png "${pdfPath}" "${tmpDir}/page"`, (err) => (err ? reject(err) : resolve()));
-  });
+    // PDF pagaidu mapē
+    const pdfPath = path.join(tmpDir, "input.pdf");
+    fs.writeFileSync(pdfPath, buffer);
 
-  // Atgriež visu PNG failu ceļus
-  return fs
-    .readdirSync(tmpDir)
-    .filter((f) => f.startsWith("page") && f.endsWith(".png"))
-    .map((f) => path.join(tmpDir, f));
+    // PDF uz PNG (300 DPI)
+    await new Promise((resolve, reject) => {
+      exec(`pdftoppm -r 300 -png "${pdfPath}" "${tmpDir}/page"`, (err) => (err ? reject(err) : resolve()));
+    });
+
+    // Savāc attēlu ceļus
+    const imageBuffers = fs
+      .readdirSync(tmpDir)
+      .filter((f) => f.startsWith("page") && f.endsWith(".png"))
+      .map((f) => fs.readFileSync(path.join(tmpDir, f)));
+
+    return imageBuffers;
+  } finally {
+    // Notīra pagaidu mapes
+    if (tmpDir) {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  }
 }
 
 async function runOCROnImageBuffer(imageBuffer) {
@@ -50,12 +63,11 @@ async function runOCROnImageBuffer(imageBuffer) {
 }
 
 async function runOCR(buffer) {
-  const images = await pdfToImages(buffer);
+  const imageBuffers = await pdfToImages(buffer);
   let fullText = "";
 
   // Veic OCR uz katra attēla un sapludina tekstus
-  for (const imagePath of images) {
-    const imageBuffer = fs.readFileSync(imagePath);
+  for (const imageBuffer of imageBuffers) {
     const text = await runOCROnImageBuffer(imageBuffer);
     fullText += "\n" + text;
   }
@@ -174,8 +186,6 @@ Piemēri:
       ...doc,
       amount: doc.amount ? parseFloat(doc.amount.toString().replace(",", ".")).toFixed(2) : "",
     }));
-
-    console.log(standardized);
 
     return standardized;
   } catch (err) {

@@ -54,10 +54,11 @@ export default function User() {
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
-    const payload = { username: formData.username };
+    const payload = { username: formData.username.trim() };
 
-    if (allowPasswordEdit && formData.password) {
+    if (allowPasswordEdit) {
       payload.password = formData.password;
+      payload.repeatPassword = formData.repeatPassword;
     }
 
     try {

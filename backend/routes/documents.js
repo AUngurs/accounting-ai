@@ -14,7 +14,10 @@ import {
   exportDocuments,
 } from "../controllers/documentsController.js";
 
+// mergeParams dod piekļuvi params no iepriekšējām ceļa daļām
 const router = express.Router({ mergeParams: true });
+
+// Augšupielādētie faili tiek turēti atmiņā kā buferi, nevis saglabāti diskā
 const upload = multer({ dest: "uploads/" });
 
 router.get("/", getDocuments);
