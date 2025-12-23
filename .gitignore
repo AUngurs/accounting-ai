@@ -1,6 +1,14 @@
-node_modules/
+backend/node_modules/
 backend/.env
 backend/secrets/
 backend/uploads/
-frontend/.env
-pgdata/
+
+frontend/node_modules/
+frontend/coverage/
+frontend/build/
+frontend/.DS_Store
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+.prettierc
