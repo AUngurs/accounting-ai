@@ -23,6 +23,7 @@ function App() {
       <AuthProvider>
         <CompanyProvider>
           <Routes>
+            {/* Publiski pieejamie maršruti */}
             <Route
               path="/login"
               element={
@@ -40,6 +41,7 @@ function App() {
               }
             />
 
+            {/* Aizsargātie maršruti */}
             <Route
               path="/companies"
               element={
@@ -87,6 +89,7 @@ function App() {
               }
             />
 
+            {/* Noklusējuma maršruti */}
             <Route
               path="*"
               element={

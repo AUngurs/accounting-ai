@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import { accountRules } from "../utils/validators";
+import { accountRules } from "../utils/Validators";
 
 export default function AccountModal({ show, handleClose, account, onSave, onDelete, accounts }) {
+  // Sākotnējie formData stāvokļa dati, kas tiek izmantoti formā
   const [formData, setFormData] = useState({
     code: "",
     name: "",
@@ -10,10 +11,14 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
     category: "",
   });
 
+  // Objekts formErrors satur validācijas kļūdas katram laukam
   const [formErrors, setFormErrors] = useState({});
+
+  // Opciju saraksti select laukiem
   const typeOptions = ["Analītiskais", "Sintētiskais"];
   const categoryOptions = ["Aktīva", "Pasīva", "Operāciju"];
 
+  // useEffect sinhronizē formData ar nodoto account objektu katru reizi, kad tas mainās vai modal tiek atvērts
   useEffect(() => {
     if (account) {
       setFormData({
@@ -25,27 +30,32 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
     }
   }, [account, show]);
 
+  // Apstrādā formu lauku izmaiņas un noņem attiecīgās kļūdas, ja tās pastāv
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setFormErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
+  // Apstrādā formu saglabāšanu
   const handleSubmit = () => {
+    // Validē datus, izmantojot accountRules
     const errors = accountRules(accounts, { ...account, ...formData });
     if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
+      setFormErrors(errors); // Atjauno kļūdu stāvokli, ja validācija neizdevās
       return;
     }
 
+    // Saglabā konta datus, nogriež liekās atstarpes
     onSave({ ...account, ...formData, code: formData.code.trim(), name: formData.name.trim() });
-    handleClose();
+    handleClose(); // Aizver modal logu pēc saglabāšanas
   };
 
+  // Apstrādā konta dzēšanu ar apstiprinājuma logu
   const handleDelete = async () => {
     if (!window.confirm("Vai tiešām vēlaties dzēst šo kontu?")) return;
-    onDelete(account.id);
-    handleClose();
+    onDelete(account.id); // Izsauc dzēšanas callback
+    handleClose(); // Aizver modal logu pēc dzēšanas
   };
 
   return (
@@ -57,10 +67,11 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
         <Form
           noValidate
           onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmit();
+            e.preventDefault(); // Novērš noklusējuma formu iesniegšanu
+            handleSubmit(); // Izsauc saglabāšanas funkciju
           }}
         >
+          {/* Koda lauks ar validācijas atgriezenisko saiti */}
           <Form.Group className="mb-2">
             <Form.Label>
               Kods <span style={{ color: "red" }}>*</span>
@@ -68,6 +79,8 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
             <Form.Control type="text" name="code" value={formData.code} onChange={handleChange} isInvalid={!!formErrors.code} />
             <Form.Control.Feedback type="invalid">{formErrors.code}</Form.Control.Feedback>
           </Form.Group>
+
+          {/* Nosaukuma lauks ar validācijas atgriezenisko saiti */}
           <Form.Group className="mb-2">
             <Form.Label>
               Nosaukums <span style={{ color: "red" }}>*</span>
@@ -75,6 +88,8 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
             <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} isInvalid={!!formErrors.name} />
             <Form.Control.Feedback type="invalid">{formErrors.name}</Form.Control.Feedback>
           </Form.Group>
+
+          {/* Analītiskais/Sintētiskais select lauks */}
           <Form.Group className="mb-2">
             <Form.Label>
               Analītiskais/Sintētiskais <span style={{ color: "red" }}>*</span>
@@ -88,6 +103,8 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
             </Form.Select>
             <Form.Control.Feedback type="invalid">{formErrors.type}</Form.Control.Feedback>
           </Form.Group>
+
+          {/* Aktīva/Pasīva/Operāciju select lauks */}
           <Form.Group className="mb-2">
             <Form.Label>
               Aktīva/Pasīva/Operāciju <span style={{ color: "red" }}>*</span>
@@ -103,6 +120,8 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
           </Form.Group>
         </Form>
       </Modal.Body>
+
+      {/* Modal kājenes pogas ar dzēšanas, atcelšanas un saglabāšanas funkcionalitāti */}
       <Modal.Footer>
         <Button className="custom-red-hover" onClick={handleDelete}>
           Dzēst

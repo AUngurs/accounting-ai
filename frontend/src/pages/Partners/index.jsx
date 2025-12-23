@@ -15,7 +15,7 @@ export default function Partners() {
   const [selectedPartner, setSelectedPartner] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  const ROW_HEIGHT = 24;
+  const ROW_HEIGHT = 24; // Rindas augstums virtualizētajai tabulai
 
   const {
     partnersData,
@@ -35,16 +35,19 @@ export default function Partners() {
     handleDeleteSelected,
   } = usePartners(companyId);
 
+  // Atver modal jauna partnera pievienošanai
   const handleCreateClick = () => {
     setSelectedPartner(null);
     setShowModal(true);
   };
 
+  // Atver modal partnera rediģēšanai
   const handleEditClick = (partner) => {
     setSelectedPartner(partner);
     setShowModal(true);
   };
 
+  // Aizver modal logu un notīra izvēlēto partneri
   const closeModal = () => {
     setSelectedPartner(null);
     setShowModal(false);
@@ -54,6 +57,7 @@ export default function Partners() {
     <div>
       <h2 className="mb-3">Partneri</h2>
 
+      {/* Kontroles: pievienošana, importēšana, eksports, dzēšana */}
       <PartnersControls
         selectedPartners={selectedPartners}
         handleCreateClick={handleCreateClick}
@@ -62,6 +66,7 @@ export default function Partners() {
         handleDeleteSelected={handleDeleteSelected}
       />
 
+      {/* Tabulas galvene */}
       <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed", marginBottom: 0 }}>
         <PartnersTableHeader
           filters={filters}
@@ -74,6 +79,7 @@ export default function Partners() {
         />
       </Table>
 
+      {/* Virtualizētā tabula rindu attēlošanai */}
       <VirtualizedTableContainer
         rowHeight={ROW_HEIGHT}
         offsetPx={280}
@@ -95,10 +101,12 @@ export default function Partners() {
 
       <div className="virtualized-table-divider" />
 
+      {/* Informācija par atlasīto partneru skaitu */}
       <div className="mt-2 text-muted small">
         Atlasīti {selectedPartners.size} no {sortedPartners.length} partneriem
       </div>
 
+      {/* Modal logs partnera pievienošanai/rediģēšanai */}
       <PartnerModal
         show={showModal}
         handleClose={closeModal}

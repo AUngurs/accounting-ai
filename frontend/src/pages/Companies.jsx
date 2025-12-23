@@ -5,18 +5,19 @@ import { useCompany } from "../components/CompanyContext";
 import { useAuth } from "../components/AuthContext";
 import CompanyModal from "../components/CompanyModal";
 import UserCard from "../components/UserCard";
-import { notify } from "../utils/notify";
+import { notify } from "../utils/Notify";
 
 export default function Companies() {
   const navigate = useNavigate();
 
-  const { companies, updateCompanies, selectCompany, clearAll: clearCompanies } = useCompany();
+  const { companies, updateCompanies, selectCompany, clearAll: clearCompanies } = useCompany(); // Iegūst uzņēmumu sarakstu un metodes no CompanyContext
 
-  const { logout } = useAuth();
+  const { logout } = useAuth(); // Iegūst logout funkciju no AuthContext
 
   const [showModal, setShowModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
 
+  // Saņem uzņēmumus no servera un atjauno CompanyContext
   useEffect(() => {
     axiosInstance
       .get("/companies")
@@ -24,22 +25,23 @@ export default function Companies() {
       .catch((err) => console.error(err));
   }, [updateCompanies]);
 
+  // Izvēlas uzņēmumu un pāriet uz dokumentu lapu
   const handleSelectCompany = (company) => {
     selectCompany(company.id, company);
     navigate("/documents");
   };
 
+  // Aizver modal logu un notīra izvēlēto uzņēmumu
   const closeModal = () => {
     setSelectedCompany(null);
     setShowModal(false);
   };
 
+  // Pievieno jaunu uzņēmumu
   const handleAddCompany = async (data) => {
     try {
-      const res = await axiosInstance.post("/companies", {
-        name: data.name.trim(),
-      });
-      const updatedList = [...companies, res.data].sort((a, b) => a.name.localeCompare(b.name));
+      const res = await axiosInstance.post("/companies", { name: data.name.trim() });
+      const updatedList = [...companies, res.data].sort((a, b) => a.name.localeCompare(b.name)); // Sakārto pēc nosaukuma
       updateCompanies(updatedList);
       setShowModal(false);
       notify.success("Uzņēmums pievienots!");
@@ -48,11 +50,12 @@ export default function Companies() {
     }
   };
 
+  // Saglabā rediģēto uzņēmumu
   const handleSave = async (updatedCompany) => {
     try {
-      const updated = { ...updatedCompany, name: updatedCompany.name.trim() };
+      const updated = { ...updatedCompany, name: updatedCompany.name.trim() }; // Noņem liekās atstarpes nosaukumā
       const res = await axiosInstance.put(`/companies/${updated.id}`, updated);
-      const updatedList = companies.map((c) => (c.id === updated.id ? res.data : c)).sort((a, b) => a.name.localeCompare(b.name));
+      const updatedList = companies.map((c) => (c.id === updated.id ? res.data : c)).sort((a, b) => a.name.localeCompare(b.name)); // Sakārto pēc nosaukuma
       updateCompanies(updatedList);
       setShowModal(false);
       setSelectedCompany(null);
@@ -63,10 +66,11 @@ export default function Companies() {
     }
   };
 
+  // Dzēš uzņēmumu
   const handleDelete = async (companyId) => {
     try {
       await axiosInstance.delete(`companies/${companyId}`);
-      updateCompanies(companies.filter((company) => company.id !== companyId));
+      updateCompanies(companies.filter((company) => company.id !== companyId)); // Filtrē dzēsto uzņēmumu
       notify.success("Uzņēmums veiksmīgi dzēsts!");
     } catch (err) {
       console.error(err);
@@ -74,24 +78,17 @@ export default function Companies() {
     }
   };
 
+  // Iziet no sistēmas
   const handleLogout = () => {
     logout();
-    clearCompanies();
+    clearCompanies(); // Notīra uzņēmumu CompanyContext
     navigate("/login");
   };
 
   return (
     <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh", backgroundColor: "#021526" }}>
-      <div
-        className="card p-4 shadow"
-        style={{
-          width: "100%",
-          maxWidth: "400px",
-          borderRadius: "10px",
-          maxHeight: "90vh",
-        }}
-      >
-        <UserCard></UserCard>
+      <div className="card p-4 shadow" style={{ width: "100%", maxWidth: "400px", borderRadius: "10px", maxHeight: "90vh" }}>
+        <UserCard></UserCard> {/* Rāda lietotāja informāciju */}
         <button className="btn custom-dark-hover mb-4 w-100" onClick={() => navigate("/user")}>
           Mainīt lietotāja datus
         </button>
@@ -102,7 +99,6 @@ export default function Companies() {
               <span style={{ cursor: "pointer" }} onClick={() => handleSelectCompany(company)}>
                 {company.name}
               </span>
-
               <button
                 className="btn btn-sm custom-light-hover"
                 onClick={() => {
@@ -115,7 +111,6 @@ export default function Companies() {
             </li>
           ))}
         </ul>
-
         <button className="btn custom-dark-hover mt-3 mb-1 w-100" onClick={() => setShowModal(true)}>
           Pievienot uzņēmumu
         </button>
@@ -127,7 +122,7 @@ export default function Companies() {
         show={showModal}
         handleClose={closeModal}
         company={selectedCompany}
-        onSave={selectedCompany ? handleSave : handleAddCompany}
+        onSave={selectedCompany ? handleSave : handleAddCompany} // Ja izvēlēts uzņēmums, saglabā; ja nav, pievieno
         onDelete={handleDelete}
         companies={companies}
       />

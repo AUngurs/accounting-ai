@@ -1,36 +1,33 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
-import { notify } from "../utils/notify";
-import { registerRules } from "../utils/validators";
+import { notify } from "../utils/Notify";
+import { registerRules } from "../utils/Validators";
 import { Button, Form } from "react-bootstrap";
 
 export default function Register() {
-  const [formData, setFormData] = useState({
-    email: "",
-    username: "",
-    password: "",
-    repeatPassword: "",
-  });
+  const [formData, setFormData] = useState({ email: "", username: "", password: "", repeatPassword: "" });
   const [formErrors, setFormErrors] = useState({});
-
   const navigate = useNavigate();
 
+  // Atjauno formData, kad lietotājs maina ievadi
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Apstrādā reģistrāciju
   const handleRegister = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Novērš noklusējuma formas iesniegšanu
 
-    const errors = registerRules(formData);
+    const errors = registerRules(formData); // Validē ievadītos datus
     setFormErrors(errors);
-    if (Object.keys(errors).length > 0) return;
+
+    if (Object.keys(errors).length > 0) return; // Ja ir kļūdas, neiesniedz
 
     try {
-      await axiosInstance.post("/auth/register", formData);
+      await axiosInstance.post("/auth/register", formData); // Sūta reģistrācijas pieprasījumu
       notify.success("Reģistrācija veiksmīga!");
-      navigate("/login");
+      navigate("/login"); // Pāriet uz login lapu
     } catch (err) {
       console.error(err);
       notify.error("Reģistrācija neizdevās!");
@@ -45,13 +42,25 @@ export default function Register() {
         <Form noValidate onSubmit={handleRegister}>
           <Form.Group className="mb-3">
             <Form.Label>E-pasts</Form.Label>
-            <Form.Control type="text" name="email" value={formData.email} onChange={handleChange} isInvalid={!!formErrors.email} />
+            <Form.Control
+              type="text"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              isInvalid={!!formErrors.email} // Parāda kļūdu vizuāli
+            />
             <Form.Control.Feedback type="invalid">{formErrors.email}</Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group className="mb-3">
             <Form.Label>Lietotājvārds</Form.Label>
-            <Form.Control type="text" name="username" value={formData.username} onChange={handleChange} isInvalid={!!formErrors.username} />
+            <Form.Control
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              isInvalid={!!formErrors.username} // Parāda kļūdu vizuāli
+            />
             <Form.Control.Feedback type="invalid">{formErrors.username}</Form.Control.Feedback>
           </Form.Group>
 
@@ -62,7 +71,7 @@ export default function Register() {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              isInvalid={!!formErrors.password}
+              isInvalid={!!formErrors.password} // Parāda kļūdu vizuāli
             />
             <Form.Control.Feedback type="invalid">{formErrors.password}</Form.Control.Feedback>
           </Form.Group>
@@ -74,7 +83,7 @@ export default function Register() {
               name="repeatPassword"
               value={formData.repeatPassword}
               onChange={handleChange}
-              isInvalid={!!formErrors.repeatPassword}
+              isInvalid={!!formErrors.repeatPassword} // Parāda kļūdu vizuāli
             />
             <Form.Control.Feedback type="invalid">{formErrors.repeatPassword}</Form.Control.Feedback>
           </Form.Group>

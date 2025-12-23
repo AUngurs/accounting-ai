@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import { partnerRules } from "../../utils/validators";
+import { partnerRules } from "../../utils/Validators";
 
 export default function PartnerModal({ show, handleClose, partner, onSave, onDelete, partners }) {
-  const isEditMode = !!partner;
+  const isEditMode = !!partner; // Pārbauda, vai modal ir rediģēšanas režīmā
 
   const [formData, setFormData] = useState({
     kind_name: "Juridiska persona",
@@ -20,48 +20,13 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
 
   const kindNameOptions = ["Juridiska persona", "Fiziska persona", "Darbinieks"];
   const vatTypeOptions = ["Apliekama persona, LV", "Apliekama persona, EU"];
-  const vatCountryOptions = [
-    "LV",
-    "AT",
-    "AU",
-    "BE",
-    "BG",
-    "BY",
-    "CA",
-    "CH",
-    "CN",
-    "CZ",
-    "DE",
-    "DK",
-    "EE",
-    "ES",
-    "FI",
-    "FR",
-    "GB",
-    "GR",
-    "HU",
-    "IE",
-    "IL",
-    "IN",
-    "IT",
-    "JP",
-    "LT",
-    "LU",
-    "MY",
-    "NL",
-    "NO",
-    "PL",
-    "RU",
-    "SE",
-    "SI",
-    "SK",
-    "UA",
-    "US",
-  ];
+  // prettier-ignore
+  const vatCountryOptions = ["LV", "AT", "AU", "BE", "BG", "BY", "CA", "CH", "CN", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GB", "GR", "HU", "IE", "IL", "IN", "IT", "JP", "LT", "LU", "MY", "NL", "NO", "PL", "RU", "SE", "SI", "SK", "UA", "US", ];
 
   const isVatCountryDisabled = formData.vat_type === "Apliekama persona, LV";
   const vatCountryValue = isVatCountryDisabled ? "LV" : formData.vat_country_code;
 
+  // Sākuma dati, atkarībā no režīma (rediģēšana/pievienošana)
   useEffect(() => {
     if (isEditMode && partner) {
       const countryCode = partner.vat_country_code || "";
@@ -93,6 +58,7 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
     setFormErrors({});
   }, [isEditMode, partner, show]);
 
+  // Funkcija PVN lauku ieslēgšanai/izslēgšanai
   const toggleVatEdit = (checked) => {
     setIsVatEditable(checked);
     if (!checked) {
@@ -133,6 +99,7 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
     setFormErrors((prev) => ({ ...prev, vat_nr: undefined }));
   };
 
+  // Saglabāšanas loģika: validācija, PVN salikšana, onSave izsaukums
   const handleSubmit = () => {
     const combinedVatNr = isVatEditable ? formData.vat_country_code + vatNrInput.trim() : "";
 
@@ -156,14 +123,15 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
     handleClose();
   };
 
+  // Dzēšanas funkcija ar apstiprinājumu
   const handleDelete = () => {
     if (!window.confirm("Vai tiešām vēlaties dzēst šo partneri?")) return;
     onDelete(partner.id);
     handleClose();
   };
 
+  // Placeholderi atkarībā no juridiskā/fiziskā partnera
   const isCompany = formData.kind_name === "Juridiska persona";
-
   const labels = {
     title: isCompany ? "Tiesiskā forma" : "Uzvārds",
     name: isCompany ? "Nosaukums" : "Vārds",
@@ -183,6 +151,7 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
             handleSubmit();
           }}
         >
+          {/* Partnera veids */}
           <Form.Group className="mb-2">
             <Form.Label>
               Juridiska persona/Fiziska persona/Darbinieks <span style={{ color: "red" }}>*</span>
@@ -197,6 +166,7 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
             <Form.Control.Feedback type="invalid">{formErrors.kind_name}</Form.Control.Feedback>
           </Form.Group>
 
+          {/* Nosaukums/Uzvārds */}
           <Form.Group className="mb-2">
             <Form.Label>
               {labels.title} {!isCompany && <span style={{ color: "red" }}>*</span>}
@@ -212,6 +182,7 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
             <Form.Control.Feedback type="invalid">{formErrors.title}</Form.Control.Feedback>
           </Form.Group>
 
+          {/* Vārds/Nosaukums */}
           <Form.Group className="mb-2">
             <Form.Label>
               {labels.name} <span style={{ color: "red" }}>*</span>
@@ -220,12 +191,14 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
             <Form.Control.Feedback type="invalid">{formErrors.name}</Form.Control.Feedback>
           </Form.Group>
 
+          {/* Reģistrācijas numurs/Personas kods */}
           <Form.Group className="mb-2">
             <Form.Label>{labels.reg_nr}</Form.Label>
             <Form.Control type="text" name="reg_nr" value={formData.reg_nr} onChange={handleChange} isInvalid={!!formErrors.reg_nr} />
             <Form.Control.Feedback type="invalid">{formErrors.reg_nr}</Form.Control.Feedback>
           </Form.Group>
 
+          {/* PVN checkbox un lauki */}
           <Form.Check
             type="checkbox"
             id="enableVatEdit"
@@ -286,6 +259,7 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
         </Form>
       </Modal.Body>
 
+      {/* Modal pogas: dzēst, atcelt, saglabāt/pievienot */}
       <Modal.Footer>
         {isEditMode && (
           <Button className="custom-red-hover" onClick={handleDelete}>

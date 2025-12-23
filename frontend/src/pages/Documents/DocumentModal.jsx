@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import { documentRules } from "../../utils/validators";
+import { documentRules } from "../../utils/Validators";
 import AmountInput from "../../utils/AmountInput";
 import { Document, Page, pdfjs } from "react-pdf";
 
+// Iestata PDF.js worker, lai varētu renderēt PDF failus
 pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
 
+// Dokumenta tipu izvēles opcijas
 const docTypeOptions = [
   { value: "Rēķ", label: "Rēķins" },
   { value: "Kredītrēķ.", label: "Kredītrēķins" },
@@ -14,6 +16,8 @@ const docTypeOptions = [
   { value: "Ienāk.b.dok.", label: "Ienākošais bankas dokuments" },
   { value: "Izej.b.dok.", label: "Izejošais bankas dokuments" },
 ];
+
+// Dokumenta grupu izvēles opcijas
 const docGroupOptions = [
   { value: "K", label: "Kredīta parāds" },
   { value: "KA", label: "Kredīta apmaksa" },
@@ -21,11 +25,15 @@ const docGroupOptions = [
   { value: "DA", label: "Debeta apmaksa" },
   { value: "-", label: "-" },
 ];
+
+// Valūtu opcijas
 const docCurrencyOptions = ["EUR", "DKK", "GBP", "LVL", "NOK", "PLN", "RUB", "SEK", "USD"];
 
 export default function DocumentModal({ show, handleClose, documentData, pdfFile, onSave, onDelete, partners, documents }) {
+  // Pārbaude, vai tiek rediģēts esošs dokuments
   const isEditMode = !!documentData && !documentData.isNewImport;
 
+  // Formas dati
   const [formData, setFormData] = useState({
     doc_id: "",
     doc_date: "",
@@ -38,16 +46,22 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
     partner_id: "",
   });
 
+  // PDF lapu skaits
   const [numPages, setNumPages] = useState(null);
+  // Konteinera platums, lai pareizi renderētu PDF lapas
   const [containerWidth, setContainerWidth] = useState(0);
+  // Formas validācijas kļūdas
   const [formErrors, setFormErrors] = useState({});
+
   const pdfContainerRef = useRef(null);
-  const [localPdfFile, setLocalPdfFile] = useState(null);
+  const [localPdfFile, setLocalPdfFile] = useState(null); // Vietējais PDF fails
   const formRef = useRef(null);
   const pdfRef = useRef(null);
 
+  // Callback funkcija, kad PDF fails ir ielādēts
   const onDocumentLoadSuccess = ({ numPages }) => setNumPages(numPages);
 
+  // Inicializē formu katru reizi, kad modal tiek atvērts
   useEffect(() => {
     if (show) {
       const initialData = documentData
@@ -77,6 +91,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
       setFormData(initialData);
       setFormErrors({});
 
+      // PDF faila iestatīšana
       if (documentData?.pdf_path) {
         setLocalPdfFile(`http://localhost:5001/${documentData.pdf_path}`);
       } else if (pdfFile) {
@@ -87,21 +102,25 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
     }
   }, [show, documentData, pdfFile]);
 
+  // Aprēķina konteineru platumu PDF renderēšanai
   useEffect(() => {
     if (pdfContainerRef.current) {
       const el = pdfContainerRef.current;
-      const scrollbarWidth = el.offsetWidth - el.clientWidth;
+      const scrollbarWidth = el.offsetWidth - el.clientWidth; // Ņem vērā scroll joslu platumu
       setContainerWidth(el.offsetWidth - scrollbarWidth);
     }
   }, [show, numPages]);
 
+  // Apstrādā formu izmaiņas
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setFormErrors((prev) => ({ ...prev, [name]: undefined }));
+    setFormErrors((prev) => ({ ...prev, [name]: undefined })); // Dzēš kļūdas, kad lietotājs labo lauku
   };
 
+  // Formas iesniegšana
   const handleSubmit = () => {
+    // Pārbauda validāciju, izmantojot Validators.jsx
     const errors = documentRules(documents, {
       ...formData,
       id: documentData?.id || null,
@@ -112,21 +131,24 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
-      return;
+      return; // Nepārsūta datus, ja ir kļūdas
     }
 
     onSave({ ...documentData, ...formData, file: localPdfFile });
     handleClose();
   };
 
+  // Atcelt formas izmaiņas
   const handleCancel = () => handleClose();
 
+  // Dzēst dokumentu
   const handleDelete = () => {
     if (!window.confirm("Vai tiešām vēlaties dzēst šo dokumentu?")) return;
     onDelete(documentData.id);
     handleClose();
   };
 
+  // Sinhronizē PDF maksimālo augstumu ar formas augstumu
   useEffect(() => {
     if (formRef.current && pdfRef.current) {
       const formHeight = formRef.current.offsetHeight;
@@ -134,6 +156,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
     }
   }, [show, formData, partners, numPages]);
 
+  // ResizeObserver, lai dinamiski pielāgotu PDF lapu platumu
   useEffect(() => {
     if (!pdfRef.current) return;
 
@@ -148,6 +171,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
     return () => observer.disconnect();
   }, [pdfRef, localPdfFile]);
 
+  // Vai ir PDF fails, lai noteiktu modal izmēru
   const hasPdf = !!localPdfFile;
 
   return (
@@ -158,8 +182,10 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
 
       <Modal.Body>
         <div ref={formRef} style={{ display: hasPdf ? "flex" : "block", flexDirection: "row", gap: hasPdf ? "1rem" : "0" }}>
+          {/* Formas panelis */}
           <div style={{ flex: hasPdf ? 1 : "unset", maxWidth: hasPdf ? "100%" : "600px", margin: hasPdf ? 0 : "auto" }}>
             <Form style={{ flex: 1 }}>
+              {/* Dokumenta numurs */}
               <Form.Group className="mb-2">
                 <Form.Label>
                   Dokumenta numurs <span style={{ color: "red" }}>*</span>
@@ -168,6 +194,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
                 <Form.Control.Feedback type="invalid">{formErrors.doc_id}</Form.Control.Feedback>
               </Form.Group>
 
+              {/* Datums */}
               <Form.Group className="mb-2">
                 <Form.Label>
                   Datums <span style={{ color: "red" }}>*</span>
@@ -175,13 +202,14 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
                 <Form.Control
                   type="date"
                   name="doc_date"
-                  value={formData.doc_date.slice(0, 10)}
+                  value={formData.doc_date.slice(0, 10)} // Izgriež tikai YYYY-MM-DD formātu
                   onChange={handleChange}
                   isInvalid={!!formErrors.doc_date}
                 />
                 <Form.Control.Feedback type="invalid">{formErrors.doc_date}</Form.Control.Feedback>
               </Form.Group>
 
+              {/* Dokumenta tips */}
               <Form.Group className="mb-2">
                 <Form.Label>
                   Dokumenta tips <span style={{ color: "red" }}>*</span>
@@ -201,6 +229,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
                 <Form.Control.Feedback type="invalid">{formErrors.doc_type_abbrev}</Form.Control.Feedback>
               </Form.Group>
 
+              {/* Dokumenta grupa */}
               <Form.Group className="mb-2">
                 <Form.Label>
                   Dokumenta grupa <span style={{ color: "red" }}>*</span>
@@ -220,6 +249,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
                 <Form.Control.Feedback type="invalid">{formErrors.doc_group_abbrev}</Form.Control.Feedback>
               </Form.Group>
 
+              {/* Valūta */}
               <Form.Group className="mb-2">
                 <Form.Label>
                   Valūta <span style={{ color: "red" }}>*</span>
@@ -239,6 +269,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
                 <Form.Control.Feedback type="invalid">{formErrors.doc_currency}</Form.Control.Feedback>
               </Form.Group>
 
+              {/* Summa */}
               <Form.Group className="mb-2">
                 <Form.Label>
                   Summa <span style={{ color: "red" }}>*</span>
@@ -252,6 +283,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
                 <Form.Control.Feedback type="invalid">{formErrors.doc_amount}</Form.Control.Feedback>
               </Form.Group>
 
+              {/* Partneris */}
               <Form.Group className="mb-2">
                 <Form.Label>Partneris</Form.Label>
                 <Form.Select
@@ -261,6 +293,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
                   isInvalid={!!formErrors.partner_id}
                 >
                   <option value=""></option>
+                  {/* Meklē partnerus un attēlo alfabēta secībā */}
                   {partners
                     ?.slice()
                     .sort((a, b) => (a.formatted_name || "").localeCompare(b.formatted_name || "", "lv", { sensitivity: "base" }))
@@ -273,6 +306,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
                 <Form.Control.Feedback type="invalid">{formErrors.partner_id}</Form.Control.Feedback>
               </Form.Group>
 
+              {/* Piezīmes */}
               <Form.Group className="mb-3">
                 <Form.Label>Piezīmes</Form.Label>
                 <Form.Control
@@ -288,6 +322,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
             </Form>
           </div>
 
+          {/* PDF skatītājs, ja fails ir pieejams */}
           {localPdfFile && (
             <div
               ref={pdfRef}
@@ -304,6 +339,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
                 {Array.from(new Array(numPages), (el, index) => (
                   <React.Fragment key={index}>
                     <Page pageNumber={index + 1} width={containerWidth} renderAnnotationLayer={false} renderTextLayer={false} />
+                    {/* Dashed line starp lapām, ja vairākas lapas */}
                     {index < numPages - 1 && <hr style={{ border: "2px dashed #000", margin: "1rem 0" }} />}
                   </React.Fragment>
                 ))}
@@ -313,6 +349,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
         </div>
       </Modal.Body>
 
+      {/* Footer ar pogām */}
       <Modal.Footer>
         {isEditMode && (
           <Button className="custom-red-hover" onClick={handleDelete}>

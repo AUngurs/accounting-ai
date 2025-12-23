@@ -6,16 +6,18 @@ export default function PartnersControls({ handleCreateClick, handleImport, hand
   const fileInputRef = useRef(null);
   const [file, setFile] = useState(null);
 
+  // Kad fails izvēlēts
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (!selectedFile) return;
     setFile(selectedFile);
   };
 
+  // Faila importēšana
   const handleImportClick = async () => {
     if (!file) return;
-    await handleImport(file);
-    setFile(null);
+    await handleImport(file); // izsauc usePartners hook funkciju
+    setFile(null); // notīra input
     if (fileInputRef.current) fileInputRef.current.value = null;
   };
 
@@ -26,19 +28,22 @@ export default function PartnersControls({ handleCreateClick, handleImport, hand
 
   const handleTypeSelect = () => {
     if (fileInputRef.current) {
-      fileInputRef.current.accept = ".xml";
+      fileInputRef.current.accept = ".xml"; // Pieļauj tikai XML importam
       fileInputRef.current.click();
     }
   };
 
   return (
     <div className="mb-3 d-flex flex-wrap gap-2 align-items-center">
+      {/* Jauna partnera pievienošana */}
       <Button className="custom-dark-hover" onClick={handleCreateClick}>
         <FaPlus className="me-1" /> Jauns
       </Button>
 
+      {/* Slēptais faila input */}
       <Form.Control type="file" ref={fileInputRef} style={{ display: "none" }} onChange={handleFileChange} />
 
+      {/* Importa grupa */}
       <InputGroup className="w-auto">
         {!file && (
           <Dropdown>
@@ -65,6 +70,7 @@ export default function PartnersControls({ handleCreateClick, handleImport, hand
         )}
       </InputGroup>
 
+      {/* Eksports un dzēšana tikai, ja ir atlasīti partneri */}
       {selectedPartners.size > 0 && (
         <div className="ms-auto">
           <Button className="custom-dark-hover me-2" onClick={handleExport}>

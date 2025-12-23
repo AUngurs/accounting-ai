@@ -19,9 +19,12 @@ export default function PartnersTableHeader({
         <col style={{ width: "20%" }} />
         <col style={{ width: "38px" }} />
       </colgroup>
+
       <thead>
+        {/* Galvenes rinda ar kolonnu nosaukumiem un kārtošanas indikatoriem */}
         <tr className="align-middle">
           <th style={{ textAlign: "center", borderBottom: "none" }}>
+            {/* "Select all" checkbox */}
             <input
               type="checkbox"
               className="form-check-input"
@@ -29,6 +32,8 @@ export default function PartnersTableHeader({
               onChange={(e) => setSelectedPartners(e.target.checked ? new Set(partnersData.map((p) => p.id)) : new Set())}
             />
           </th>
+
+          {/* Kolonnu nosaukumi ar click funkciju kārtošanai */}
           <th style={{ cursor: "pointer", borderBottom: "none" }} onClick={() => handleSort("fullName")}>
             Nosaukums/Uzvārds, vārds {sortConfig.key === "fullName" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
           </th>
@@ -43,6 +48,8 @@ export default function PartnersTableHeader({
           </th>
           <th style={{ borderBottom: "none" }}></th>
         </tr>
+
+        {/* Filtru rinda zem galvenes */}
         <tr>
           <th></th>
           <th>
@@ -85,6 +92,7 @@ export default function PartnersTableHeader({
             />
           </th>
           <th className="text-center align-middle p-0">
+            {/* Poga filtru atiestatīšanai un visu atlases notīrīšanai */}
             <button
               type="button"
               className="btn btn-sm custom-red-hover"

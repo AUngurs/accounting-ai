@@ -1,16 +1,20 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from "react";
 
+// Izveido Company kontekstu, lai dalītos ar uzņēmumu datiem visā aplikācijā
 const CompanyContext = createContext();
 
+// Custom hook, kas ļauj komponentiem piekļūt Company konteksta vērtībai
 export function useCompany() {
   return useContext(CompanyContext);
 }
 
 export function CompanyProvider({ children }) {
+  // Stāvokļi uzņēmumu sarakstam, izvēlētajam uzņēmuma ID un uzņēmuma datiem
   const [companies, setCompanies] = useState([]);
   const [companyId, setCompanyId] = useState(null);
   const [company, setCompany] = useState(null);
 
+  // useEffect ielādē saglabātos datus no localStorage pirmās renderēšanas laikā
   useEffect(() => {
     const savedCompanies = localStorage.getItem("companies");
     const savedId = localStorage.getItem("companyId");
@@ -21,21 +25,25 @@ export function CompanyProvider({ children }) {
     if (savedCompanies) setCompanies(JSON.parse(savedCompanies));
   }, []);
 
+  // Sinhronizē companies stāvokli ar localStorage
   useEffect(() => {
     if (companies?.length > 0) localStorage.setItem("companies", JSON.stringify(companies));
-    else localStorage.removeItem("companies");
+    else localStorage.removeItem("companies"); // Noņem, ja saraksts ir tukšs
   }, [companies]);
 
+  // Sinhronizē companyId stāvokli ar localStorage
   useEffect(() => {
     if (companyId) localStorage.setItem("companyId", companyId);
     else localStorage.removeItem("companyId");
   }, [companyId]);
 
+  // Sinhronizē izvēlētā uzņēmuma datus ar localStorage
   useEffect(() => {
     if (company) localStorage.setItem("company", JSON.stringify(company));
     else localStorage.removeItem("company");
   }, [company]);
 
+  // Funkcija, kas atjaunina uzņēmumu sarakstu un dzēš izvēlēto uzņēmumu, ja tas vairs nav sarakstā
   const updateCompanies = useCallback(
     (companyList) => {
       setCompanies(companyList);
@@ -48,6 +56,7 @@ export function CompanyProvider({ children }) {
     [companyId]
   );
 
+  // Funkcija izvēlētā uzņēmuma iestatīšanai pēc ID vai datiem
   const selectCompany = (id, companyData = null) => {
     setCompanyId(id);
 
@@ -59,6 +68,7 @@ export function CompanyProvider({ children }) {
     }
   };
 
+  // Funkcija izvēlētā uzņēmuma dzēšanai
   const clearCompany = () => {
     localStorage.removeItem("companyId");
     localStorage.removeItem("company");
@@ -66,6 +76,7 @@ export function CompanyProvider({ children }) {
     setCompany(null);
   };
 
+  // Funkcija visiem uzņēmumiem un izvēlētajam uzņēmumam stāvokļa un localStorage dzēšanai
   const clearAll = () => {
     localStorage.removeItem("companies");
     localStorage.removeItem("companyId");
@@ -76,6 +87,7 @@ export function CompanyProvider({ children }) {
     setCompany(null);
   };
 
+  // Konteksta vērtība, kas nodrošina piekļuvi visiem stāvokļiem un funkcijām
   const value = {
     companies,
     companyId,
@@ -87,8 +99,8 @@ export function CompanyProvider({ children }) {
     setCompanies,
     setCompanyId,
     setCompany,
-    hasCompany: !!companyId,
+    hasCompany: !!companyId, // Boolean, kas norāda, vai ir izvēlēts uzņēmums
   };
 
-  return <CompanyContext.Provider value={value}>{children}</CompanyContext.Provider>;
+  return <CompanyContext.Provider value={value}>{children}</CompanyContext.Provider>; // Nodrošina konteksta vērtību visiem bērniem
 }

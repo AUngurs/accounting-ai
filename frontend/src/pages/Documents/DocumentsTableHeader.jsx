@@ -1,20 +1,22 @@
 import React from "react";
 import AmountInput from "../../utils/AmountInput";
 
+// Komponente, kas renderē dokumentu tabulas galveni ar kārtošanu un filtriem
 export default function FinancialDocsTableHeader({
-  filters,
-  setFilters,
-  sortConfig,
-  handleSort,
-  partnersData,
-  selectedDocs,
-  setSelectedDocs,
-  filteredDocs,
-  docTypeOptions,
-  docCurrencyOptions,
+  filters, // Objekts ar filtriem (datums, summa, dok. nr., partneris utt.)
+  setFilters, // Funkcija filtru atjaunināšanai
+  sortConfig, // Objekts ar kārtošanas informāciju: { key, direction }
+  handleSort, // Funkcija, kas maina kārtošanas konfigurāciju
+  partnersData, // Masīvs ar partneru datiem
+  selectedDocs, // Set ar izvēlētajiem dokumentiem
+  setSelectedDocs, // Funkcija izvēlētu dokumentu atjaunināšanai
+  filteredDocs, // Masīvs ar filtrētiem dokumentiem (checkbox galvenē)
+  docTypeOptions, // Masīvs ar dokumenta tipu iespējām
+  docCurrencyOptions, // Masīvs ar valūtu iespējām
 }) {
   return (
     <React.Fragment>
+      {/* Definē kolonnu platumus */}
       <colgroup>
         <col style={{ width: "3%" }} />
         <col style={{ width: "10%" }} />
@@ -26,8 +28,11 @@ export default function FinancialDocsTableHeader({
         <col style={{ width: "36%" }} />
         <col style={{ width: "38px" }} />
       </colgroup>
+
       <thead>
+        {/* Pirmā rinda: galvenes ar kārtošanas pogām */}
         <tr className="align-middle">
+          {/* Checkbox, kas izvēlas/atceļ visus filtrētos dokumentus */}
           <th style={{ textAlign: "center", borderBottom: "none" }}>
             <input
               type="checkbox"
@@ -36,6 +41,8 @@ export default function FinancialDocsTableHeader({
               onChange={(e) => setSelectedDocs(e.target.checked ? new Set(filteredDocs.map((d) => d.id)) : new Set())}
             />
           </th>
+
+          {/* Galvenes ar kārtošanu klikšķa funkcionalitāti */}
           <th style={{ cursor: "pointer", borderBottom: "none" }} onClick={() => handleSort("doc_date")}>
             Datums {sortConfig.key === "doc_date" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
           </th>
@@ -59,6 +66,8 @@ export default function FinancialDocsTableHeader({
           </th>
           <th style={{ borderBottom: "none" }}></th>
         </tr>
+
+        {/* Otrā rinda: filtri (daži lauki) */}
         <tr>
           <th style={{ borderBottom: "none" }}></th>
           <th style={{ borderBottom: "none" }}>
@@ -84,6 +93,8 @@ export default function FinancialDocsTableHeader({
           <th style={{ borderBottom: "none" }}></th>
           <th style={{ borderBottom: "none" }}></th>
         </tr>
+
+        {/* Trešā rinda: papildus filtri */}
         <tr>
           <th></th>
           <th>
@@ -104,6 +115,7 @@ export default function FinancialDocsTableHeader({
             />
           </th>
           <th>
+            {/* Partnera filtrs ar sakārtotu select */}
             <select
               className="form-select form-select-sm"
               value={filters.partnerId}
@@ -121,6 +133,7 @@ export default function FinancialDocsTableHeader({
             </select>
           </th>
           <th>
+            {/* Dokumenta tipa filtrs */}
             <select
               className="form-select form-select-sm"
               value={filters.docType}
@@ -135,6 +148,7 @@ export default function FinancialDocsTableHeader({
             </select>
           </th>
           <th>
+            {/* Valūtas filtrs */}
             <select
               className="form-select form-select-sm"
               value={filters.currency}
@@ -149,6 +163,7 @@ export default function FinancialDocsTableHeader({
             </select>
           </th>
           <th>
+            {/* AmountInput filtrs "Līdz" */}
             <AmountInput
               size="sm"
               placeholder="Līdz"
@@ -166,6 +181,7 @@ export default function FinancialDocsTableHeader({
             />
           </th>
           <th className="text-center align-middle p-0">
+            {/* Notīrīšanas poga visiem filtriem un izvēlētajiem dokumentiem */}
             <button
               type="button"
               className="btn custom-red-hover btn-sm"

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../../api/axiosInstance";
-import { notify } from "../../utils/notify";
+import { notify } from "../../utils/Notify";
 import { useLoading } from "../../components/LoadingContext";
 
 export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
@@ -10,6 +10,11 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
   const [selectedPartners, setSelectedPartners] = useState(new Set());
   const { setLoading } = useLoading();
 
+  /*
+    Funkcija partneru iegūšanai no servera
+    useCallback nodrošina, ka funkcija netiek saukta katru renderēšanas reizi,
+    un to var izmantot iekš useEffect
+   */
   const fetchPartners = useCallback(async () => {
     try {
       const res = await axiosInstance.get(`/companies/${companyId}/partners`);
@@ -18,9 +23,13 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       console.error(err);
     }
   }, [companyId]);
+
+  // Automātiska partneru iegūšana pie hook ielādes
   useEffect(() => {
     fetchPartners();
   }, [fetchPartners]);
+
+  // Filtrē partnerus pēc ievadītajiem kritērijiem
   const filteredPartners = partnersData.filter(
     (p) =>
       (!filters.name || p.formatted_name.toLowerCase().includes(filters.name.toLowerCase())) &&
@@ -28,6 +37,8 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       (!filters.regNr || p.partner_reg_nr?.includes(filters.regNr)) &&
       (!filters.vat || p.vat_nr?.includes(filters.vat))
   );
+
+  // Kārtošana pēc izvēlētā lauka un virziena
   const sortedPartners = [...filteredPartners].sort((a, b) => {
     let aValue, bValue;
     if (sortConfig.key === "fullName") {
@@ -39,12 +50,16 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
     }
     return sortConfig.direction === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
   });
+
+  // Maina kārtošanas konfigurāciju. Ja tiek klikšķināts uz jau kārtotā lauka, apgriež virzienu
   const handleSort = (key) => {
     setSortConfig((prev) => ({
       key,
       direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
     }));
   };
+
+  // Partnera pievienošana. POST uz serveri un lokāla atjaunošana
   const handleCreate = async (newPartner) => {
     try {
       const res = await axiosInstance.post(`/companies/${companyId}/partners`, newPartner);
@@ -55,6 +70,8 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       alert(err.response?.data?.error || "Kļūda pievienojot partneri");
     }
   };
+
+  // Partnera rediģēšana. PUT uz serveri un lokāla atjaunošana
   const handleSave = async (updatedPartner) => {
     try {
       const res = await axiosInstance.put(`/companies/${companyId}/partners/${updatedPartner.id}`, updatedPartner);
@@ -65,6 +82,8 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       alert(err.response?.data?.error || "Kļūda saglabājot partneri");
     }
   };
+
+  // Partnera dzēšana. DELETE uz serveri un lokāla atjaunošana
   const handleDelete = async (partnerID) => {
     try {
       await axiosInstance.delete(`companies/${companyId}/partners/${partnerID}`);
@@ -75,6 +94,13 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       alert(err.response?.data?.error || "Dzēšana neizdevās!");
     }
   };
+
+  /*
+    - XML partneru importēšana
+    - POST ar multipart/form-data
+    - Papildina lokālos partnerus ar jauniem
+    - Ziņo par importētajiem un jau eksistējošajiem
+   */
   const handleImport = async (file) => {
     if (!file) return alert("Izvēlieties XML datni!");
     setLoading(true);
@@ -99,6 +125,12 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       setTimeout(() => setLoading(false), 200);
     }
   };
+
+  /*
+    - Partneru eksportēšana
+    - Atlasīto ID masīvs tiek nosūtīts POST
+    - Saņemtais blob tiek lejupielādēts kā XML
+   */
   const handleExport = async () => {
     try {
       const idsToExport = Array.from(selectedPartners);
@@ -115,6 +147,12 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       alert("Eksports neizdevās");
     }
   };
+
+  /*
+    - Bulk dzēšana
+    - Atlasītie partneri tiek dzēsti uz servera
+    - Lokāli tiek filtrēti dzēstie
+   */
   const handleDeleteSelected = async () => {
     if (!window.confirm("Vai tiešām vēlaties dzēst atlasītos partnerus?")) return;
     try {
@@ -131,10 +169,12 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
     }
   };
 
+  // Virtuāli redzamās rindas aprēķins priekš tabulas
   const startIndex = Math.floor(scrollTop / ROW_HEIGHT);
   const endIndex = Math.min(sortedPartners.length, startIndex + VISIBLE_ROWS);
   const visibleRows = sortedPartners.slice(startIndex, endIndex);
 
+  // Hook atgriež nepieciešamos datus un funkcijas komponentei
   return {
     partnersData,
     sortedPartners,

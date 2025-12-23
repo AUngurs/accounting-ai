@@ -1,6 +1,6 @@
 import React from "react";
 
-const ROW_HEIGHT = 24;
+const ROW_HEIGHT = 24; // Augstums vienai rindai virtualizētajā tabulā
 
 export default function PartnersTableBody({
   sortedPartners,
@@ -11,19 +11,19 @@ export default function PartnersTableBody({
   visibleRowsCount,
 }) {
   const totalRows = sortedPartners.length;
-  const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT));
-  const endIndex = Math.min(totalRows, startIndex + visibleRowsCount);
-  const paddingTop = startIndex * ROW_HEIGHT;
-  const paddingBottom = (totalRows - endIndex) * ROW_HEIGHT;
+  const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT)); // Pirmā redzamā rinda
+  const endIndex = Math.min(totalRows, startIndex + visibleRowsCount); // Pēdējā redzamā rinda
+  const paddingTop = startIndex * ROW_HEIGHT; // Augšējā padding vieta
+  const paddingBottom = (totalRows - endIndex) * ROW_HEIGHT; // Apakšējā padding vieta
 
   const visibleRows = [];
   for (let i = startIndex; i < endIndex; i++) {
     const partner = sortedPartners[i];
-    console.log("FOR LOOP STARTED");
     visibleRows.push(
       <React.Fragment key={partner.id}>
         <tr style={{ cursor: "pointer" }}>
           <td style={{ textAlign: "center" }}>
+            {/* Checkbox izvēlei */}
             <input
               type="checkbox"
               className="form-check-input"
@@ -33,24 +33,29 @@ export default function PartnersTableBody({
                 e.target.checked ? newSet.add(partner.id) : newSet.delete(partner.id);
                 setSelectedPartners(newSet);
               }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()} // Neizsauc row click
             />
           </td>
+
+          {/* Partnera nosaukums / uzvārds atkarībā, vai ir Juridiska persona */}
           <td>
             {partner.partner_kind_name === "Juridiska persona"
               ? `${partner.partner_name}${partner.partner_title ? ", " + partner.partner_title : ""}`
               : `${partner.partner_title} ${partner.partner_name}`}
           </td>
+
           <td>{partner.partner_kind_name}</td>
           <td>{partner.partner_reg_nr}</td>
           <td>{partner.vat_nr}</td>
+
+          {/* Edit poga */}
           <td>
             <div className="d-flex justify-content-evenly">
               <button
                 className="btn btn-sm custom-dark-hover"
                 style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
                 onClick={(e) => {
-                  e.stopPropagation();
+                  e.stopPropagation(); // Neizsauc row click
                   handleEditClick(partner);
                 }}
               >
@@ -62,6 +67,7 @@ export default function PartnersTableBody({
       </React.Fragment>
     );
   }
+
   return (
     <React.Fragment>
       <colgroup>
@@ -73,8 +79,11 @@ export default function PartnersTableBody({
         <col style={{ width: "38px" }} />
       </colgroup>
       <tbody>
+        {/* Augšējais padding */}
         <tr style={{ height: paddingTop }} />
+        {/* Redzamās rindas */}
         {visibleRows}
+        {/* Apakšējais padding */}
         <tr style={{ height: paddingBottom }} />
       </tbody>
     </React.Fragment>

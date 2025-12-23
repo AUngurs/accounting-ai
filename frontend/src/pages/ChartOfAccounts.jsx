@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import axiosInstance from "../api/axiosInstance";
 import { useCompany } from "../components/CompanyContext";
 import AccountModal from "../components/AccountModal";
-import { notify } from "../utils/notify";
+import { notify } from "../utils/Notify";
 import { Table, Button, InputGroup, Form, Dropdown } from "react-bootstrap";
 import { FaDownload } from "react-icons/fa";
 import { GrPowerReset } from "react-icons/gr";
@@ -15,9 +15,9 @@ export default function ChartOfAccounts() {
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  const { companyId } = useCompany();
+  const { companyId } = useCompany(); // Iegūst uzņēmuma ID no CompanyContext
 
-  // Get accounts
+  // Ielādē kontus no servera pie komponenta ielādes
   useEffect(() => {
     axiosInstance
       .get(`/companies/${companyId}/accounts`)
@@ -25,14 +25,12 @@ export default function ChartOfAccounts() {
       .catch((err) => console.error(err));
   }, [companyId]);
 
-  // Set default accounts
+  // Iestata noklusējuma kontus, izdzēšot pašreizējos
   const handleSet = async () => {
-    if (!window.confirm("Vai gribat iestatīt noklusējuma kontus? Tiks dzēsts pašreizējais kontu plāns!")) {
-      return;
-    }
+    if (!window.confirm("Vai gribat iestatīt noklusējuma kontus? Tiks dzēsts pašreizējais kontu plāns!")) return;
     try {
       const res = await axiosInstance.post(`/companies/${companyId}/accounts/set`);
-      setAccounts(res.data.accounts);
+      setAccounts(res.data.accounts); // Atjauno kontus ar servera atbildi
       notify.success("Noklusējuma konti veiksmīgi iestatīti!");
     } catch (err) {
       console.error(err);
@@ -40,28 +38,23 @@ export default function ChartOfAccounts() {
     }
   };
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
+  // Saglabā failu stāvoklī, kad izvēlēts
+  const handleFileChange = (e) => setFile(e.target.files[0]);
 
-  // Import accounts from Excel file
+  // Importē kontus no Excel faila
   const handleImport = async () => {
     if (!file) return alert("Izvēlieties XLSX datni (failu)!");
     const formData = new FormData();
-    formData.append("xlsxFile", file);
-    if (!window.confirm("Vai gribat importēt kontus? Tiks dzēsts pašreizējais kontu plāns!")) {
-      return;
-    }
+    formData.append("xlsxFile", file); // pievieno failu formData
+    if (!window.confirm("Vai gribat importēt kontus? Tiks dzēsts pašreizējais kontu plāns!")) return;
     try {
       const res = await axiosInstance.post(`/companies/${companyId}/accounts/import`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
       const data = res.data;
-      setAccounts(data.accounts);
-      fileInputRef.current.value = "";
-      setFile(null);
+      setAccounts(data.accounts); // atjauno kontus ar importēto datu sarakstu
+      fileInputRef.current.value = ""; // notīra file input vizuāli
+      setFile(null); // notīra faila stāvokli
       notify.success(`Veiksmīgi importēti ${data.accounts.length} konti!`);
     } catch (err) {
       console.error(err);
@@ -69,19 +62,19 @@ export default function ChartOfAccounts() {
     }
   };
 
+  // Sagatavo kontu rediģēšanai
   const handleEditClick = (account) => {
     setSelectedAccount(account);
     setShowModal(true);
   };
 
-  // Edit account
+  // Saglabā rediģēto kontu
   const handleSave = async (updatedAccount) => {
     try {
       const res = await axiosInstance.put(`/companies/${companyId}/accounts/${updatedAccount.id}`, updatedAccount);
-
       setAccounts((prev) =>
         prev.map((acc) => (acc.id === updatedAccount.id ? res.data : acc)).sort((a, b) => a.code.localeCompare(b.code))
-      );
+      ); // aizvieto atjaunoto kontu un sakārto pēc koda
       setShowModal(false);
       setSelectedAccount(null);
       notify.success("Konts veiksmīgi rediģēts!");
@@ -91,11 +84,11 @@ export default function ChartOfAccounts() {
     }
   };
 
-  // Delete account
+  // Dzēš kontu
   const handleDelete = async (accountID) => {
     try {
       await axiosInstance.delete(`companies/${companyId}/accounts/${accountID}`);
-      setAccounts(accounts.filter((account) => account.id !== accountID));
+      setAccounts(accounts.filter((account) => account.id !== accountID)); // filtrē dzēsto kontu ārā
       notify.success("Konts veiksmīgi dzēsts!");
     } catch (err) {
       console.error(err);
@@ -103,11 +96,13 @@ export default function ChartOfAccounts() {
     }
   };
 
+  // Atceļ faila izvēli importēšanai
   const handleCancel = () => {
     setFile(null);
     if (fileInputRef.current) fileInputRef.current.value = null;
   };
 
+  // Atver failu dialogu, iestatot tikai xlsx tipus
   const handleTypeSelect = () => {
     if (fileInputRef.current) {
       fileInputRef.current.accept = ".xlsx";
@@ -118,23 +113,24 @@ export default function ChartOfAccounts() {
   return (
     <React.Fragment>
       <h2 className="mb-3">Kontu plāns</h2>
-      <div className="mb-3 d-flex flex-wrap gap-2 align-items-center">
-        <Form.Control type="file" ref={fileInputRef} style={{ display: "none" }} onChange={handleFileChange} />
 
+      <div className="mb-3 d-flex flex-wrap gap-2 align-items-center">
+        {/* Slēpts file input */}
+        <Form.Control type="file" ref={fileInputRef} style={{ display: "none" }} onChange={handleFileChange} />
         <InputGroup className="w-auto">
           {!file && (
             <Dropdown>
               <Dropdown.Toggle className="custom-dark-hover">
                 <FaDownload className="me-1" /> Importēt
               </Dropdown.Toggle>
-
+              {/* Izvēle importam */}
               <Dropdown.Menu>
                 <Dropdown.Item onClick={handleTypeSelect}>Excel</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
           )}
 
-          {file && (
+          {file && ( // Ja fails izvēlēts, rāda Atcelt un Importēt pogas
             <React.Fragment>
               <Button className="custom-red-hover" onClick={handleCancel}>
                 Atcelt
@@ -146,9 +142,10 @@ export default function ChartOfAccounts() {
             </React.Fragment>
           )}
         </InputGroup>
+        {/* Noklusējuma kontu iestatīšana */}
         <Button className="custom-red-hover" onClick={handleSet}>
           <GrPowerReset className="me-1" /> Iestatīt noklusējuma kontus
-        </Button>
+        </Button>{" "}
       </div>
 
       <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed" }}>
@@ -169,25 +166,29 @@ export default function ChartOfAccounts() {
           </tr>
         </thead>
         <tbody>
-          {accounts.map((acc) => (
-            <tr key={acc.id} className="align-middle">
-              <td>{acc.code}</td>
-              <td>{acc.name}</td>
-              <td>{acc.type}</td>
-              <td>{acc.category}</td>
-              <td>
-                <div className="d-flex justify-content-evenly">
-                  <button
-                    className="btn btn-sm custom-dark-hover"
-                    style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
-                    onClick={() => handleEditClick(acc)}
-                  >
-                    <i className="bi bi-pencil-square"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
+          {accounts.map(
+            (
+              acc // iet cauri kontiem un parāda katru rindu
+            ) => (
+              <tr key={acc.id} className="align-middle">
+                <td>{acc.code}</td>
+                <td>{acc.name}</td>
+                <td>{acc.type}</td>
+                <td>{acc.category}</td>
+                <td>
+                  <div className="d-flex justify-content-evenly">
+                    <button
+                      className="btn btn-sm custom-dark-hover"
+                      style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
+                      onClick={() => handleEditClick(acc)}
+                    >
+                      <i className="bi bi-pencil-square"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            )
+          )}
         </tbody>
       </Table>
 

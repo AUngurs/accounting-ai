@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../../api/axiosInstance";
-import { notify } from "../../utils/notify";
+import { notify } from "../../utils/Notify";
 import { useCompany } from "../../components/CompanyContext";
 import Fuse from "fuse.js";
 import { useLoading } from "../../components/LoadingContext";
@@ -29,12 +29,15 @@ export const useDocuments = (companyId) => {
     comments: "",
   });
 
+  // Iegūst partnerus no backend
   useEffect(() => {
     axiosInstance
       .get(`/companies/${companyId}/partners`)
       .then((res) => setPartnersData(res.data))
       .catch((err) => console.error(err));
   }, [companyId]);
+
+  // Funkcija, kas fetchē dokumentus no backend
   const fetchDocuments = useCallback(async () => {
     try {
       const res = await axiosInstance.get(`/companies/${companyId}/documents`);
@@ -43,13 +46,19 @@ export const useDocuments = (companyId) => {
       console.error(err);
     }
   }, [companyId]);
+
+  // Iegūst dokumentus uzreiz pēc hook ielādes
   useEffect(() => {
     fetchDocuments();
   }, [fetchDocuments]);
+
+  // Mapē partneru ID uz nosaukumiem ērtākai piekļuvei
   const partnerMap = partnersData.reduce((map, p) => {
     map[p.id] = p.formatted_name || "";
     return map;
   }, {});
+
+  // Filtrē dokumentus pēc izvēlētajiem filtriem
   const filteredDocs = docsData.filter((doc) => {
     const docDate = new Date(doc.doc_date);
     return (
@@ -64,10 +73,13 @@ export const useDocuments = (companyId) => {
       (!filters.comments || doc.doc_comments?.toLowerCase().includes(filters.comments.toLowerCase()))
     );
   });
+
+  // Kārto filtrētos dokumentus pēc sortConfig
   const sortedDocs = [...filteredDocs].sort((a, b) => {
     let aValue = a[sortConfig.key];
     let bValue = b[sortConfig.key];
 
+    // Salīdzina pēc nosaukuma
     if (sortConfig.key === "partner_id") {
       aValue = partnersData.find((p) => p.id === aValue)?.formatted_name || "";
       bValue = partnersData.find((p) => p.id === bValue)?.formatted_name || "";
@@ -88,18 +100,22 @@ export const useDocuments = (companyId) => {
     if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
     return 0;
   });
+
+  // Funkcija, kas maina kārtošanas key un direction
   const handleSort = (key) => {
     setSortConfig((prev) => ({
       key,
       direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
     }));
   };
+
+  // Funkcija jauna dokumenta pievienošanai backend
   const handleCreate = async (newDoc) => {
     try {
       const formData = new FormData();
       for (const key in newDoc) {
         if (key === "file") {
-          if (newDoc.file) formData.append("file", newDoc.file);
+          if (newDoc.file) formData.append("file", newDoc.file); // PDF fails, ja importēts
         } else {
           formData.append(key, newDoc[key]);
         }
@@ -107,40 +123,52 @@ export const useDocuments = (companyId) => {
       const res = await axiosInstance.post(`/companies/${companyId}/documents`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setDocsData((prev) => [...prev, res.data]);
+      setDocsData((prev) => [...prev, res.data]); // Pievieno jauno dokumentu lokāli
       notify.success("Finanšu dokuments veiksmīgi pievienots!");
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Kļūda pievienojot dokumentu");
     }
   };
+
+  // Saglabā rediģētu dokumentu backend un atjauno lokāli
   const handleSave = async (updatedDoc) => {
     try {
       const res = await axiosInstance.put(`/companies/${companyId}/documents/${updatedDoc.id}`, updatedDoc);
-      setDocsData((prev) => prev.map((d) => (d.id === updatedDoc.id ? res.data : d)));
+      setDocsData((prev) => prev.map((d) => (d.id === updatedDoc.id ? res.data : d))); // Aizvieto veco dokumentu ar jauno
       notify.success("Finanšu dokuments veiksmīgi rediģēts!");
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Kļūda saglabājot dokumentu");
     }
   };
+
+  // Atjauno tikai 'is_accounted' lauku lokāli (bez backend call)
   const handleUpdateAccounted = useCallback((updatedDoc) => {
     setDocsData((prev) => prev.map((doc) => (doc.id === updatedDoc.id ? { ...doc, is_accounted: updatedDoc.is_accounted } : doc)));
   }, []);
+
+  // Dzēš dokumentu backend un lokāli
   const handleDelete = async (id) => {
     try {
       await axiosInstance.delete(`/companies/${companyId}/documents/${id}`);
-      setDocsData((prev) => prev.filter((doc) => doc.id !== id));
+      setDocsData((prev) => prev.filter((doc) => doc.id !== id)); // Noņem dzēsto dokumentu no lokālā state
       notify.success("Finanšu dokuments veiksmīgi dzēsts!");
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Dzēšana neizdevās!");
     }
   };
+
+  // Eksportē izvēlētos dokumentus XML formātā
   const handleExport = async () => {
     try {
       const idsToExport = Array.from(selectedDocs);
-      const res = await axiosInstance.post(`/companies/${companyId}/documents/export`, { ids: idsToExport }, { responseType: "blob" });
+      const res = await axiosInstance.post(
+        `/companies/${companyId}/documents/export`,
+        { ids: idsToExport },
+        { responseType: "blob" } // Blob nepieciešams faila lejupielādei
+      );
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -153,8 +181,12 @@ export const useDocuments = (companyId) => {
       alert("Eksports neizdevās");
     }
   };
+
+  // AI partnera vārda normalizācija un matching ar Fuse.js
   function mapPartnerName(aiName, partnersData) {
     if (!aiName || partnersData.length === 0) return "";
+
+    // Normalizē nosaukumu: izņem juridiskos tipus, komatus, punktus, pārveido uz lowercase, sadala vārdos, sakārto
     const normalize = (str) =>
       str
         .replace(/SIA|A\/S|,/gi, "")
@@ -164,35 +196,46 @@ export const useDocuments = (companyId) => {
         .split(/\s+/)
         .sort()
         .join(" ");
+
     const fuse = new Fuse(
       partnersData.map((p) => ({
         ...p,
         normalized: normalize(p.formatted_name),
       })),
       {
-        keys: ["normalized"],
-        threshold: 0.3,
+        keys: ["normalized"], // Meklē tikai pēc normalizētā nosaukuma
+        threshold: 0.3, // Maksimālā atšķirība, lai uzskatītu par sakritību (0.0 = precīza sakritība, 1.0 = jebkura atšķirība)
         includeScore: true,
       }
     );
+
     const result = fuse.search(normalize(aiName));
-    if (result.length === 0) return "";
+    if (result.length === 0) return ""; // Nav sakritību
     const best = result[0];
-    if (best.score > 0.3) return "";
-    return best.item.id;
+    if (best.score > 0.3) return ""; // Pārāk liela atšķirība
+    return best.item.id; // Atgriež labākās sakritības partnera ID
   }
+
+  // Importē dokumentus no XML faila
   const handleXmlImport = async (file) => {
-    if (!file) return alert("Izvēlieties XML datni (failu)!");
-    setLoading(true);
+    if (!file) return alert("Izvēlieties XML datni (failu)!"); // Ja nav faila, atgādinājums
+    setLoading(true); // Ieslēdz loading indikatoru
+
     const formData = new FormData();
     formData.append("xmlFile", file);
+
     try {
       const res = await axiosInstance.post(`/companies/${companyId}/documents/importxml`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+
+      // Pievieno jaunās importētās dokumentu ierakstus lokāli
       setDocsData((prev) => [...prev, ...res.data.newDocuments]);
+
       const imported = res.data.newDocuments.length;
       const skipped = res.data.skippedCount;
+
+      // Paziņojums par importēto un izlaisto dokumentu skaitu
       if (skipped > 0) {
         notify.info(`Importēti ${imported} dokumenti. ${skipped} dokumenti netika importēti, jo tie jau eksistē.`);
       } else {
@@ -202,15 +245,19 @@ export const useDocuments = (companyId) => {
       console.error(err);
       alert(err.response?.data?.error || "Import failed!");
     } finally {
-      setTimeout(() => setLoading(false), 200);
+      setTimeout(() => setLoading(false), 200); // Nedaudz aizkavē izslēgšanu, lai UX būtu plūdenāks
     }
   };
+
+  // Importē PDF failu un mēģina atpazīt dokumentu informāciju ar AI
   const handlePdfImport = async (file) => {
     if (!file) return alert("Izvēlieties PDF datni!");
     setLoading(true);
+
     const formData = new FormData();
     formData.append("pdf", file);
     formData.append("companyName", company.name);
+
     try {
       const res = await axiosInstance.post(`/companies/${companyId}/ai/import-pdf`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -219,8 +266,10 @@ export const useDocuments = (companyId) => {
       if (res.data.documents?.length > 0) {
         const aiDoc = res.data.documents[0];
 
+        // Mēģina sasaistīt AI atpazīto partneri ar reālu partneru ID
         const matchedPartnerId = mapPartnerName(aiDoc.partner, partnersData);
 
+        // Sagatavo lokālu dokumenta objektu priekš modal loga
         const mappedDoc = {
           doc_id: aiDoc.document_number,
           doc_date: aiDoc.document_date,
@@ -233,7 +282,7 @@ export const useDocuments = (companyId) => {
           is_accounted: false,
         };
 
-        setSelectedDocument({ ...mappedDoc, isNewImport: true });
+        setSelectedDocument({ ...mappedDoc, isNewImport: true }); // Atver modal logu ar jauno importu
         setPdfFile(file);
         setShowModal(true);
       }
@@ -244,14 +293,21 @@ export const useDocuments = (companyId) => {
       setTimeout(() => setLoading(false), 200);
     }
   };
+
+  // Dzēš atlasītos dokumentus vienlaicīgi (bulk delete)
   const handleDeleteSelected = async () => {
     if (!window.confirm("Vai tiešām vēlaties dzēst atlasītos finanšu dokumentus?")) return;
+
     try {
       const ids = Array.from(selectedDocs);
+
       await axiosInstance.post(`/companies/${companyId}/documents/bulk-delete`, { ids });
+
+      // Noņem dzēstos dokumentus lokāli
       setDocsData((prev) => prev.filter((doc) => !selectedDocs.has(doc.id)));
+
       notify.success(`Veiksmīgi dzēsti ${ids.length} finanšu dokumenti!`);
-      setSelectedDocs(new Set());
+      setSelectedDocs(new Set()); // Notīra atlasītos dokumentus
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Dzēšana neizdevās!");

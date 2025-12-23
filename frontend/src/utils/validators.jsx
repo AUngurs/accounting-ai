@@ -1,3 +1,4 @@
+// Pamatfunkcijas validācijai
 export const isRequired = (value) => value !== undefined && value !== null && value !== "";
 export const isDigitsOnly = (value) => /^\d+$/.test(value);
 export const maxLength = (value, length) => value.length <= length;
@@ -5,7 +6,7 @@ export const minLength = (value, length) => value.length >= length;
 export const uniqueInArray = (array, key, value, currentId = null) => !array.some((item) => item[key] === value && item.id !== currentId);
 export const isEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
-// LOGIN
+// LOGIN validācijas noteikumi
 export const loginRules = (data) => {
   const errors = {};
 
@@ -19,7 +20,7 @@ export const loginRules = (data) => {
   return errors;
 };
 
-// REGISTER
+// REGISTER validācijas noteikumi
 export const registerRules = (data) => {
   const errors = {};
 
@@ -40,7 +41,7 @@ export const registerRules = (data) => {
   return errors;
 };
 
-// USER
+// USER validācijas noteikumi
 export const userRules = (data, allowPasswordEdit = false) => {
   const errors = {};
 
@@ -60,7 +61,7 @@ export const userRules = (data, allowPasswordEdit = false) => {
   return errors;
 };
 
-// COMPANIES
+// COMPANIES validācijas noteikumi
 export const companyRules = (companies, company) => {
   const errors = {};
 
@@ -75,7 +76,7 @@ export const companyRules = (companies, company) => {
   return errors;
 };
 
-// ACCOUNTS
+// ACCOUNTS validācijas noteikumi
 export const accountRules = (accounts, account) => {
   const errors = {};
   if (!isRequired(account.code)) errors.code = "Kods ir obligāts";
@@ -91,7 +92,7 @@ export const accountRules = (accounts, account) => {
   return errors;
 };
 
-// PARTNERS
+// PARTNERS validācijas noteikumi
 export const partnerRules = (partners, partner) => {
   const errors = {};
 
@@ -144,7 +145,7 @@ export const partnerRules = (partners, partner) => {
   return errors;
 };
 
-// DOCUMENTS
+// DOCUMENTS validācijas noteikumi
 export const documentRules = (documents, doc) => {
   const errors = {};
 
@@ -191,7 +192,7 @@ export const documentRules = (documents, doc) => {
   return errors;
 };
 
-// DOCUMENT LINES
+// DOCUMENT LINES validācijas noteikumi
 export const documentLineRules = (line) => {
   const errors = {};
 
