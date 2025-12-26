@@ -21,10 +21,10 @@ CREATE TABLE accounts (
     company_id INT NOT NULL,
 
     -- ATBILST JUMIS SPECIFIKACIJAI
-    code VARCHAR(10) NOT NULL,
+    code VARCHAR(21) NOT NULL,
     name VARCHAR(255) NOT NULL,
-    type VARCHAR(50),
-    category VARCHAR(50),
+    type VARCHAR(50) NOT NULL,
+    category VARCHAR(50) NOT NULL,
     UNIQUE (company_id, code),
 
     CONSTRAINT fk_accounts_company
@@ -52,10 +52,10 @@ CREATE TABLE partners (
     CONSTRAINT fk_partners_company
         FOREIGN KEY (company_id)
         REFERENCES companies(id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
 
     CONSTRAINT partners_unique
-        UNIQUE (company_id, partner_kind_name, partner_name, partner_title)
+        UNIQUE (company_id, partner_kind_name, partner_title, partner_name)
 );
 
 CREATE TABLE documents (
@@ -68,13 +68,13 @@ CREATE TABLE documents (
     doc_date DATE,                     -- <DocDate> 2015-12-07T00:00:00
     doc_type_abbrev VARCHAR(25),       -- <DocTypeAbbreviation> Rēķ
     doc_group_abbrev VARCHAR(25),      -- <DocGroupAbbreviation> K
-    doc_currency VARCHAR(3),           -- <DocCurrency> EUR
+    doc_currency VARCHAR(3) NOT NULL,  -- <DocCurrency> EUR
     doc_amount NUMERIC(12,2),          -- <DocAmount> 685
     doc_comments VARCHAR(255),         -- <DocComments> Durvis
     
     is_accounted BOOLEAN DEFAULT FALSE,
 
-    pdf_path VARCHAR(255) NULL,
+    pdf_path VARCHAR(255),
 
     CONSTRAINT fk_documents_company
         FOREIGN KEY (company_id)
@@ -84,7 +84,7 @@ CREATE TABLE documents (
     CONSTRAINT fk_documents_partner
         FOREIGN KEY (partner_id)
         REFERENCES partners(id)
-        ON DELETE SET NULL
+        ON DELETE SET NULL,
 
     CONSTRAINT documents_unique
         UNIQUE (company_id, doc_id, doc_date, doc_type_abbrev, doc_group_abbrev, doc_amount, partner_id)
@@ -100,7 +100,7 @@ CREATE TABLE document_lines (
     line_amount NUMERIC(12,2),              -- <LineAmount> 685
     line_debet_account VARCHAR(21),         -- <LineDebetAccountCode> 7160
     line_credit_account VARCHAR(21),        -- <LineCreditAccountCode> 7160
-    line_vat_rate INTEGER,                  -- <LineVatRate> 21
+    line_vat_rate INT,                      -- <LineVatRate> 21
     line_comments VARCHAR(255),             -- <LineComments> Durvis
 
     CONSTRAINT fk_doc_lines_document

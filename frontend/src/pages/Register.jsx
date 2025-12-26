@@ -6,7 +6,12 @@ import { registerRules } from "../utils/Validators";
 import { Button, Form } from "react-bootstrap";
 
 export default function Register() {
-  const [formData, setFormData] = useState({ email: "", username: "", password: "", repeatPassword: "" });
+  const [formData, setFormData] = useState({
+    email: "",
+    username: "",
+    password: "",
+    repeatPassword: "",
+  });
   const [formErrors, setFormErrors] = useState({});
   const navigate = useNavigate();
 
@@ -35,8 +40,14 @@ export default function Register() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh", backgroundColor: "#021526" }}>
-      <div className="card p-4 shadow" style={{ width: "100%", maxWidth: "400px", borderRadius: "10px" }}>
+    <div
+      className="d-flex justify-content-center align-items-center"
+      style={{ minHeight: "100vh", backgroundColor: "#021526" }}
+    >
+      <div
+        className="card p-4 shadow"
+        style={{ width: "100%", maxWidth: "400px", borderRadius: "10px" }}
+      >
         <h3 className="text-center mb-4">Reģistrēties</h3>
 
         <Form noValidate onSubmit={handleRegister}>
@@ -49,7 +60,9 @@ export default function Register() {
               onChange={handleChange}
               isInvalid={!!formErrors.email} // Parāda kļūdu vizuāli
             />
-            <Form.Control.Feedback type="invalid">{formErrors.email}</Form.Control.Feedback>
+            <Form.Control.Feedback type="invalid">
+              {formErrors.email}
+            </Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group className="mb-3">
@@ -61,7 +74,9 @@ export default function Register() {
               onChange={handleChange}
               isInvalid={!!formErrors.username} // Parāda kļūdu vizuāli
             />
-            <Form.Control.Feedback type="invalid">{formErrors.username}</Form.Control.Feedback>
+            <Form.Control.Feedback type="invalid">
+              {formErrors.username}
+            </Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group className="mb-3">
@@ -73,7 +88,9 @@ export default function Register() {
               onChange={handleChange}
               isInvalid={!!formErrors.password} // Parāda kļūdu vizuāli
             />
-            <Form.Control.Feedback type="invalid">{formErrors.password}</Form.Control.Feedback>
+            <Form.Control.Feedback type="invalid">
+              {formErrors.password}
+            </Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group className="mb-3">
@@ -85,13 +102,19 @@ export default function Register() {
               onChange={handleChange}
               isInvalid={!!formErrors.repeatPassword} // Parāda kļūdu vizuāli
             />
-            <Form.Control.Feedback type="invalid">{formErrors.repeatPassword}</Form.Control.Feedback>
+            <Form.Control.Feedback type="invalid">
+              {formErrors.repeatPassword}
+            </Form.Control.Feedback>
           </Form.Group>
 
           <Button type="submit" className="btn custom-dark-hover w-100 mb-2">
             Reģistrēties
           </Button>
-          <Button type="button" className="btn custom-dark-hover w-100" onClick={() => navigate("/login")}>
+          <Button
+            type="button"
+            className="btn custom-dark-hover w-100"
+            onClick={() => navigate("/login")}
+          >
             Atpakaļ
           </Button>
         </Form>
