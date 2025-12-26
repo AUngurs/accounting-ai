@@ -22,8 +22,24 @@ const toastColors = {
 
 // Paziņojumu funkcijas, kas izmanto React-Toastify ar pielāgotām krāsām un stilu
 export const notify = {
-  success: (msg) => toast.success(msg, { ...defaultOptions, style: { backgroundColor: toastColors.success, color: "black" } }),
-  error: (msg) => toast.error(msg, { ...defaultOptions, style: { backgroundColor: toastColors.error, color: "white" } }),
-  info: (msg) => toast.info(msg, { ...defaultOptions, style: { backgroundColor: toastColors.info, color: "white" } }),
-  warn: (msg) => toast.warn(msg, { ...defaultOptions, style: { backgroundColor: toastColors.warn, color: "black" } }),
+  success: (msg) =>
+    toast.success(msg, {
+      ...defaultOptions,
+      style: { backgroundColor: toastColors.success, color: "black" },
+    }),
+  error: (msg) =>
+    toast.error(msg, {
+      ...defaultOptions,
+      style: { backgroundColor: toastColors.error, color: "white" },
+    }),
+  info: (msg) =>
+    toast.info(msg, {
+      ...defaultOptions,
+      style: { backgroundColor: toastColors.info, color: "white" },
+    }),
+  warn: (msg) =>
+    toast.warn(msg, {
+      ...defaultOptions,
+      style: { backgroundColor: toastColors.warn, color: "black" },
+    }),
 };

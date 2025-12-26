@@ -40,7 +40,10 @@ export default function FinancialDocsTableBody({
     visibleRows.push(
       <React.Fragment key={doc.id}>
         {/* Galvenā rinda */}
-        <tr onClick={() => setOpenDocId(isOpen ? null : doc.id)} style={{ cursor: "pointer" }}>
+        <tr
+          onClick={() => setOpenDocId(isOpen ? null : doc.id)}
+          style={{ cursor: "pointer" }}
+        >
           {/* Checkbox izvēlei */}
           <td style={{ textAlign: "center" }}>
             <input
@@ -61,20 +64,31 @@ export default function FinancialDocsTableBody({
           <td>{doc.doc_type_abbrev}</td>
           <td>{doc.doc_currency}</td>
           {/* Summa ar fona krāsu atkarībā no is_accounted */}
-          <td style={{ textAlign: "right", backgroundColor: doc.is_accounted ? "#d4edda" : "#f8d7da" }}>{doc.doc_amount}</td>
+          <td
+            style={{
+              textAlign: "right",
+              backgroundColor: doc.is_accounted ? "#d4edda" : "#f8d7da",
+            }}
+          >
+            {doc.doc_amount}
+          </td>
           <td>{doc.doc_comments}</td>
           <td>
             <div className="d-flex justify-content-evenly">
               {/* Rediģēšanas poga */}
               <button
                 className="btn btn-sm custom-dark-hover"
-                style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
+                style={{
+                  padding: "0.15rem 0.25rem",
+                  fontSize: "0.85rem",
+                  lineHeight: 1,
+                }}
                 onClick={(e) => {
                   e.stopPropagation(); // Neļauj triggerēt rindu click
                   handleEditClick(doc);
                 }}
               >
-                <i className="bi bi-pencil-square"></i>
+                <i className="bi bi-pencil-square" />
               </button>
             </div>
           </td>
@@ -85,7 +99,11 @@ export default function FinancialDocsTableBody({
           <td colSpan={9} style={{ padding: 0, border: 0 }}>
             <Collapse in={isOpen}>
               <div>
-                <DocumentLines companyId={companyId} documentId={doc.id} onUpdateAccounted={handleUpdateAccounted} />
+                <DocumentLines
+                  companyId={companyId}
+                  documentId={doc.id}
+                  onUpdateAccounted={handleUpdateAccounted}
+                />
               </div>
             </Collapse>
           </td>
