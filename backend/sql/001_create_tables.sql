@@ -65,11 +65,11 @@ CREATE TABLE documents (
 
     -- ATBILST JUMIS SPECIFIKACIJAI
     doc_id VARCHAR(50),                -- <DocNo> 00290
-    doc_date DATE,                     -- <DocDate> 2015-12-07T00:00:00
+    doc_date DATE NOT NULL,            -- <DocDate> 2015-12-07T00:00:00
     doc_type_abbrev VARCHAR(25),       -- <DocTypeAbbreviation> Rēķ
     doc_group_abbrev VARCHAR(25),      -- <DocGroupAbbreviation> K
     doc_currency VARCHAR(3) NOT NULL,  -- <DocCurrency> EUR
-    doc_amount NUMERIC(12,2),          -- <DocAmount> 685
+    doc_amount NUMERIC(19,2),          -- <DocAmount> 685 // Jumis atbalsta (19,4), taču praksē tādi skaitļi nav nepieciešami
     doc_comments VARCHAR(255),         -- <DocComments> Durvis
     
     is_accounted BOOLEAN DEFAULT FALSE,
@@ -97,7 +97,7 @@ CREATE TABLE document_lines (
     -- ATBILST JUMIS SPECIFIKACIJAI
     line_supplementary_notice VARCHAR(1),   -- <LineSupplementaryNoticeID> 1
     line_currency VARCHAR(3),               -- <LineCurrency> EUR
-    line_amount NUMERIC(12,2),              -- <LineAmount> 685
+    line_amount NUMERIC(19,2),              -- <LineAmount> 685
     line_debet_account VARCHAR(21),         -- <LineDebetAccountCode> 7160
     line_credit_account VARCHAR(21),        -- <LineCreditAccountCode> 7160
     line_vat_rate INT,                      -- <LineVatRate> 21

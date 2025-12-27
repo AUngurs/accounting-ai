@@ -28,6 +28,7 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
         category: account.category,
       });
     }
+    setFormErrors({});
   }, [account, show]);
 
   // Apstrādā formu lauku izmaiņas un noņem attiecīgās kļūdas, ja tās pastāv

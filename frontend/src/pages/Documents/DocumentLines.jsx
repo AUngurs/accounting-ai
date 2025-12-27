@@ -113,7 +113,6 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
       const { data: docs } = await axiosInstance.get(`/companies/${companyId}/documents/${documentId}`);
       const doc = docs[0];
       const docAmountCents = Math.round(Number(doc.doc_amount) * 100);
-      console.log("Total cents:", totalCents, "Doc amount cents:", docAmountCents);
       const is_accounted = totalCents === docAmountCents;
 
       // Atjauno dokumenta accounted statusu serverī
@@ -139,14 +138,14 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
           <Table hover size="sm" className="mb-0">
             {/* Kolonu platumu definēšana */}
             <colgroup>
-              <col style={{ width: "3%" }} /> {/* Checkbox kolonna */}
-              <col style={{ width: "7%" }} /> {/* Valūta */}
-              <col style={{ width: "10%" }} /> {/* Summa */}
-              <col style={{ width: "12%" }} /> {/* Debets */}
-              <col style={{ width: "12%" }} /> {/* Kredīts */}
-              <col style={{ width: "6%" }} /> {/* PVN */}
-              <col style={{ width: "50%" }} /> {/* Kontējuma piezīmes */}
-              <col style={{ width: "38px" }} /> {/* Darbības (dzēst/pievienot) */}
+              <col style={{ width: "3%" }} />
+              <col style={{ width: "7%" }} />
+              <col style={{ width: "10%" }} />
+              <col style={{ width: "12%" }} />
+              <col style={{ width: "12%" }} />
+              <col style={{ width: "6%" }} />
+              <col style={{ width: "50%" }} />
+              <col style={{ width: "38px" }} />
             </colgroup>
 
             <thead className="table-light">

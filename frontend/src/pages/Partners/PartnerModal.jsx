@@ -15,6 +15,7 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
   });
 
   const [vatNrInput, setVatNrInput] = useState("");
+  // Objekts formErrors satur validācijas kļūdas katram laukam
   const [formErrors, setFormErrors] = useState({});
   const [isVatEditable, setIsVatEditable] = useState(false);
 
@@ -99,7 +100,7 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
     setFormErrors((prev) => ({ ...prev, vat_nr: undefined }));
   };
 
-  // Saglabāšanas loģika: validācija, PVN salikšana, onSave izsaukums
+  // Apstrādā formu saglabāšanu
   const handleSubmit = () => {
     const combinedVatNr = isVatEditable ? formData.vat_country_code + vatNrInput.trim() : "";
 
@@ -109,10 +110,10 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
       vat_nr: combinedVatNr,
       isVatEditable,
     };
+    // Validē datus, izmantojot partnerRules
     const errors = partnerRules(partners, dataToValidate);
-
     if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
+      setFormErrors(errors); // Atjauno kļūdu stāvokli, ja validācija neizdevās
       return;
     }
 

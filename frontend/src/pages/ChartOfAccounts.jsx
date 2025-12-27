@@ -110,6 +110,11 @@ export default function ChartOfAccounts() {
     }
   };
 
+  const closeModal = () => {
+    setSelectedAccount(null);
+    setShowModal(false);
+  };
+
   return (
     <React.Fragment>
       <h2 className="mb-3">Kontu plāns</h2>
@@ -194,7 +199,7 @@ export default function ChartOfAccounts() {
 
       <AccountModal
         show={showModal}
-        handleClose={() => setShowModal(false)}
+        handleClose={closeModal}
         account={selectedAccount}
         onSave={handleSave}
         onDelete={handleDelete}

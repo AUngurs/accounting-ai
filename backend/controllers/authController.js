@@ -1,29 +1,17 @@
 import bcrypt from "bcryptjs";
 import pool from "../db.js";
-import { validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
 
 export const register = async (req, res) => {
-  // Pārbauda validācijas kļūdas no express-validator middleware
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   // Lietotāja ievades dati
-  const { email, username, password, repeatPassword } = req.body;
+  const { email, username, password } = req.body;
 
   try {
-    // Paroles tiek salīdzinātas
-    if (password !== repeatPassword) {
-      return res.status(400).json({ error: "Passwords do not match" });
-    }
-
     // Pārbauda, vai lietotājs ar šādu e-pastu jau eksistē
     const existingUser = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
 
     if (existingUser.rows.length > 0) {
-      return res.status(400).json({ error: "Email already in use" });
+      return res.status(400).json({ error: "E-pasts jau reģistrēts" });
     }
 
     // Parole tiek šifrēta pirms saglabāšanas datubāzē
@@ -39,17 +27,12 @@ export const register = async (req, res) => {
     res.status(201).json({ user: result.rows[0] });
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
 export const login = async (req, res) => {
-  // Pārbauda validācijas kļūdas no express-validator middleware
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
+  // Lietotāja ievades dati
   const { email, password } = req.body;
 
   try {
@@ -60,13 +43,13 @@ export const login = async (req, res) => {
 
     // Netiek norādīts, vai kļūda ir e-pastā vai parolē (drošības apsvērumu dēļ)
     if (!user) {
-      return res.status(400).json({ error: "Invalid credentials" });
+      return res.status(400).json({ error: "Nepareizi pieteikšanās dati" });
     }
 
     // Salīdzina ievadīto paroli ar datubāzē saglabāto hash
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ error: "Invalid credentials" });
+      return res.status(400).json({ error: "Nepareizi pieteikšanās dati" });
     }
 
     // JWT tokens satur minimālu informāciju, kas nepieciešama lietotāja autentifikācijai
@@ -86,7 +69,7 @@ export const login = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ error: "Server error" });
+    console.error(err);
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };

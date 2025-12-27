@@ -4,7 +4,7 @@ import XLSX from "xlsx";
 import multer from "multer";
 
 // Jumis noklusējuma kontu plāns
-import defaultAccounts from "../../frontend/src/data/defaultAccounts.js";
+import defaultAccounts from "../data/defaultAccounts.js";
 
 // XLSX apstrādei nepieciešams reāls faila ceļš, tāpēc fails tiek saglabāts lokāli
 const upload = multer({ dest: "uploads/" });
@@ -27,15 +27,12 @@ export const setAccounts = async (req, res) => {
     }
 
     // Konti tiek atgriezti sakārtoti pēc koda
-    const result = await pool.query(
-      "SELECT * FROM accounts WHERE company_id = $1 ORDER BY code",
-      [companyID]
-    );
+    const result = await pool.query("SELECT * FROM accounts WHERE company_id = $1 ORDER BY code", [companyID]);
 
     res.json({ accounts: result.rows });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -44,15 +41,12 @@ export const getAccounts = async (req, res) => {
     const companyID = req.params.companyId;
 
     // Konti tiek atgriezti sakārtoti pēc koda
-    const accountsResult = await pool.query(
-      "SELECT * FROM accounts WHERE company_id = $1 ORDER BY code",
-      [companyID]
-    );
+    const accountsResult = await pool.query("SELECT * FROM accounts WHERE company_id = $1 ORDER BY code", [companyID]);
 
     res.json(accountsResult.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -80,13 +74,13 @@ export const editAccount = async (req, res) => {
 
     // Ja netika atjaunināta neviena rinda, konts ar šādu ID neeksistē
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Account not found" });
+      return res.status(404).json({ error: "Neparedzēta servera kļūda" });
     }
 
     res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -95,19 +89,16 @@ export const deleteAccount = async (req, res) => {
 
   try {
     // RETURNING tiek izmantots, lai varētu noteikt, vai konts vispār eksistēja
-    const result = await pool.query(
-      "DELETE FROM accounts WHERE id = $1 RETURNING *",
-      [account_id]
-    );
+    const result = await pool.query("DELETE FROM accounts WHERE id = $1 RETURNING *", [account_id]);
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ message: "Account not found" });
+      return res.status(404).json({ error: "Neparedzēta servera kļūda" });
     }
 
-    res.status(200).json({ message: "Account successfully deleted" });
+    res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -120,7 +111,7 @@ export const importAccounts = [
 
       // XLSX fails ir obligāts
       if (!req.file) {
-        return res.status(400).json({ error: "No file uploaded" });
+        return res.status(400).json({ error: "Neparedzēta servera kļūda" });
       }
 
       // XLSX fails tiek nolasīts no pagaidu mapes
@@ -148,9 +139,7 @@ export const importAccounts = [
       });
 
       // Esošie konti tiek dzēsti
-      await pool.query("DELETE FROM accounts WHERE company_id = $1", [
-        companyID,
-      ]);
+      await pool.query("DELETE FROM accounts WHERE company_id = $1", [companyID]);
 
       // Jaunie konti tiek ievietoti
       for (const acc of accounts) {
@@ -165,15 +154,12 @@ export const importAccounts = [
       fs.unlinkSync(req.file.path);
 
       // Konti tiek atgriezti sakārtoti pēc koda
-      const result = await pool.query(
-        "SELECT * FROM accounts WHERE company_id = $1 ORDER BY code",
-        [companyID]
-      );
+      const result = await pool.query("SELECT * FROM accounts WHERE company_id = $1 ORDER BY code", [companyID]);
 
-      res.json({ accounts: result.rows });
+      res.status(200).json(result.rows[0]);
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: "Server error" });
+      res.status(500).json({ error: "Neparedzēta servera kļūda" });
     }
   },
 ];

@@ -34,7 +34,11 @@ export default function Login() {
       navigate("/companies"); // Pāriet uz uzņēmumu sarakstu
     } catch (err) {
       console.error(err);
-      notify.error("Pieslēgšanās neizdevās!");
+      if (err.response && err.response.data && err.response.data.error) {
+        notify.error(err.response.data.error);
+      } else {
+        notify.error("Neparedzēta servera kļūda");
+      }
     }
   };
 

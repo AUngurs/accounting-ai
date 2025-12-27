@@ -40,10 +40,7 @@ export default function FinancialDocsTableBody({
     visibleRows.push(
       <React.Fragment key={doc.id}>
         {/* Galvenā rinda */}
-        <tr
-          onClick={() => setOpenDocId(isOpen ? null : doc.id)}
-          style={{ cursor: "pointer" }}
-        >
+        <tr onClick={() => setOpenDocId(isOpen ? null : doc.id)} style={{ cursor: "pointer" }}>
           {/* Checkbox izvēlei */}
           <td style={{ textAlign: "center" }}>
             <input
@@ -99,11 +96,7 @@ export default function FinancialDocsTableBody({
           <td colSpan={9} style={{ padding: 0, border: 0 }}>
             <Collapse in={isOpen}>
               <div>
-                <DocumentLines
-                  companyId={companyId}
-                  documentId={doc.id}
-                  onUpdateAccounted={handleUpdateAccounted}
-                />
+                <DocumentLines companyId={companyId} documentId={doc.id} onUpdateAccounted={handleUpdateAccounted} />
               </div>
             </Collapse>
           </td>
@@ -127,11 +120,14 @@ export default function FinancialDocsTableBody({
         <col style={{ width: "38px" }} />
       </colgroup>
 
-      {/* tbody ar padding rindām virtualizācijai */}
       <tbody>
-        <tr style={{ height: paddingTop }} /> {/* Top padding */}
-        {visibleRows} {/* Redzamās rindas */}
-        <tr style={{ height: paddingBottom }} /> {/* Bottom padding */}
+        <tr>
+          <td colSpan={9} style={{ height: paddingTop, padding: 0, border: 0 }} />
+        </tr>
+        {visibleRows}
+        <tr>
+          <td colSpan={9} style={{ height: paddingBottom, padding: 0, border: 0 }} />
+        </tr>
       </tbody>
     </React.Fragment>
   );

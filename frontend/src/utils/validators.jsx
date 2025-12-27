@@ -1,25 +1,26 @@
 // Pamatfunkcijas validācijai
-export const isRequired = (value) =>
-  value !== undefined && value !== null && value !== "";
+export const isRequired = (value) => value !== undefined && value !== null && value !== "";
 export const isDigitsOnly = (value) => /^\d+$/.test(value);
 export const maxLength = (value, length) => value.length <= length;
 export const minLength = (value, length) => value.length >= length;
-export const uniqueInArray = (array, key, value, currentId = null) =>
-  !array.some((item) => item[key] === value && item.id !== currentId);
+export const uniqueInArray = (array, key, value, currentId = null) => !array.some((item) => item[key] === value && item.id !== currentId);
 export const isEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+export const max17DigitsBeforeDecimal = (value) => {
+  const val = value.toString().trim();
+  const [integerPart] = val.split(".");
+  return integerPart.length <= 17;
+};
 
 // LOGIN validācijas noteikumi
 export const loginRules = (data) => {
   const errors = {};
 
-  if (!isRequired(data.email)) errors.email = "E-pasts ir obligāts";
+  if (!isRequired(data.email)) errors.email = "Nederīgs e-pasta formāts";
   else if (!isEmail(data.email)) errors.email = "Nederīgs e-pasta formāts";
 
-  if (!isRequired(data.password)) errors.password = "Parole ir obligāta";
-  else if (!minLength(data.password, 8))
-    errors.password = "Parolei jābūt vismaz 8 simboliem";
-  else if (!maxLength(data.password, 64))
-    errors.password = "Parole nedrīkst pārsniegt 64 simbolus";
+  if (!isRequired(data.password)) errors.password = "Parolei jābūt 8-64 simbolu garai";
+  else if (!minLength(data.password, 8)) errors.password = "Parolei jābūt 8-64 simbolu garai";
+  else if (!maxLength(data.password, 64)) errors.password = "Parolei jābūt 8-64 simbolu garai";
 
   return errors;
 };
@@ -28,25 +29,21 @@ export const loginRules = (data) => {
 export const registerRules = (data) => {
   const errors = {};
 
-  if (!isRequired(data.email)) errors.email = "E-pasts ir obligāts";
+  if (!isRequired(data.email)) errors.email = "Nederīgs e-pasta formāts";
   else if (!isEmail(data.email)) errors.email = "Nederīgs e-pasta formāts";
 
-  if (!isRequired(data.username)) errors.username = "Lietotājvārds ir obligāts";
-  else if (!minLength(data.username, 3))
-    errors.username = "Lietotājvārdam jābūt vismaz 3 simboliem";
-  else if (!maxLength(data.username, 20))
-    errors.username = "Lietotājvārds nedrīkst pārsniegt 20 simbolus";
+  if (!isRequired(data.username)) errors.username = "Lietotājvārdam jābūt 3-20 simbolu garam";
+  else if (!minLength(data.username, 3)) errors.username = "Lietotājvārdam jābūt 3-20 simbolu garam";
+  else if (!maxLength(data.username, 20)) errors.username = "Lietotājvārdam jābūt 3-20 simbolu garam";
 
-  if (!isRequired(data.password)) errors.password = "Parole ir obligāta";
-  else if (!minLength(data.password, 8))
-    errors.password = "Parolei jābūt vismaz 8 simboliem";
-  else if (!maxLength(data.password, 64))
-    errors.password = "Parole nedrīkst pārsniegt 64 simbolus";
+  if (!isRequired(data.password)) errors.password = "Parolei jābūt 8-64 simbolu garai";
+  else if (!minLength(data.password, 8)) errors.password = "Parolei jābūt 8-64 simbolu garai";
+  else if (!maxLength(data.password, 64)) errors.password = "Parolei jābūt 8-64 simbolu garai";
 
-  if (!isRequired(data.repeatPassword))
-    errors.repeatPassword = "Atkārtota parole ir obligāta";
-  else if (data.repeatPassword !== data.password)
-    errors.repeatPassword = "Paroles nesakrīt";
+  if (!isRequired(data.repeatPassword)) errors.repeatPassword = "Parolei jābūt 8-64 simbolu garai";
+  else if (!minLength(data.repeatPassword, 8)) errors.repeatPassword = "Parolei jābūt 8-64 simbolu garai";
+  else if (!maxLength(data.repeatPassword, 64)) errors.repeatPassword = "Parolei jābūt 8-64 simbolu garai";
+  else if (data.repeatPassword !== data.password) errors.repeatPassword = "Paroles nesakrīt";
 
   return errors;
 };
@@ -55,23 +52,19 @@ export const registerRules = (data) => {
 export const userRules = (data, allowPasswordEdit = false) => {
   const errors = {};
 
-  if (!isRequired(data.username)) errors.username = "Lietotājvārds ir obligāts";
-  else if (!minLength(data.username, 3))
-    errors.username = "Lietotājvārdam jābūt vismaz 3 simboliem";
-  else if (!maxLength(data.username, 20))
-    errors.username = "Lietotājvārds nedrīkst pārsniegt 20 simbolus";
+  if (!isRequired(data.username)) errors.username = "Lietotājvārdam jābūt 3-20 simbolu garam";
+  else if (!minLength(data.username, 3)) errors.username = "Lietotājvārdam jābūt 3-20 simbolu garam";
+  else if (!maxLength(data.username, 20)) errors.username = "Lietotājvārdam jābūt 3-20 simbolu garam";
 
   if (allowPasswordEdit && data.password !== undefined) {
-    if (!isRequired(data.password)) errors.password = "Parole ir obligāta";
-    else if (!minLength(data.password, 8))
-      errors.password = "Parolei jābūt vismaz 8 simboliem";
-    else if (!maxLength(data.password, 64))
-      errors.password = "Parole nedrīkst pārsniegt 64 simbolus";
+    if (!isRequired(data.password)) errors.password = "Parolei jābūt 8-64 simbolu garai";
+    else if (!minLength(data.password, 8)) errors.password = "Parolei jābūt 8-64 simbolu garai";
+    else if (!maxLength(data.password, 64)) errors.password = "Parolei jābūt 8-64 simbolu garai";
 
-    if (!isRequired(data.repeatPassword))
-      errors.repeatPassword = "Atkārtotā parole ir obligāta";
-    else if (data.repeatPassword !== data.password)
-      errors.repeatPassword = "Paroles nesakrīt";
+    if (!isRequired(data.repeatPassword)) errors.repeatPassword = "Parolei jābūt 8-64 simbolu garai";
+    else if (!minLength(data.repeatPassword, 8)) errors.repeatPassword = "Parolei jābūt 8-64 simbolu garai";
+    else if (!maxLength(data.repeatPassword, 64)) errors.repeatPassword = "Parolei jābūt 8-64 simbolu garai";
+    else if (data.repeatPassword !== data.password) errors.repeatPassword = "Paroles nesakrīt";
   }
 
   return errors;
@@ -83,18 +76,10 @@ export const companyRules = (companies, company) => {
 
   const name = company.name?.trim() || "";
 
-  if (!isRequired(name)) errors.name = "Nosaukums nedrīkst būt tukšs";
-  else if (!minLength(name, 3))
-    errors.name = "Nosaukumam jāsatur vismaz 3 simboli";
-  else if (!maxLength(name, 30))
-    errors.name = "Nosaukums nedrīkst pārsniegt 30 simbolus";
-  else if (
-    companies.some(
-      (c) =>
-        c.name.trim().toLowerCase() === name.toLowerCase() &&
-        c.id !== company.id
-    )
-  )
+  if (!isRequired(name)) errors.name = "Uzņēmuma nosaukumam jābūt 3-30 simbolu garam";
+  else if (!minLength(name, 3)) errors.name = "Uzņēmuma nosaukumam jābūt 3-30 simbolu garam";
+  else if (!maxLength(name, 30)) errors.name = "Uzņēmuma nosaukumam jābūt 3-30 simbolu garam";
+  else if (companies.some((c) => c.name.trim().toLowerCase() === name.toLowerCase() && c.id !== company.id))
     errors.name = "Uzņēmums ar šādu nosaukumu jau eksistē";
 
   return errors;
@@ -103,15 +88,13 @@ export const companyRules = (companies, company) => {
 // ACCOUNTS validācijas noteikumi
 export const accountRules = (accounts, account) => {
   const errors = {};
-  if (!isRequired(account.code)) errors.code = "Kods ir obligāts";
-  else if (!isDigitsOnly(account.code))
-    errors.code = "Kods drīkst saturēt tikai ciparus";
-  else if (!uniqueInArray(accounts, "code", account.code, account.id))
-    errors.code = "Kods jau eksistē";
+  if (!isRequired(account.code)) errors.code = "Kodam jābūt 1-21 ciparu garam";
+  else if (!isDigitsOnly(account.code)) errors.code = "Kodam jābūt 1-21 ciparu garam";
+  else if (account.code.length > 21) errors.code = "Kodam jābūt 1-21 ciparu garam";
+  else if (!uniqueInArray(accounts, "code", account.code, account.id)) errors.code = "Kods jau eksistē";
 
-  if (!isRequired(account.name)) errors.name = "Nosaukums ir obligāts";
-  else if (account.name.length > 255)
-    errors.name = "Nosaukums nedrīkst pārsniegt 255 simbolus";
+  if (!isRequired(account.name)) errors.name = "Koda nosaukumam jābūt 1-255 simbolu garam";
+  else if (account.name.length > 255) errors.name = "Koda nosaukumam jābūt 1-255 simbolu garam";
 
   if (!isRequired(account.type)) errors.type = "Tips ir obligāts";
   if (!isRequired(account.category)) errors.category = "Kategorija ir obligāta";
@@ -126,16 +109,16 @@ export const partnerRules = (partners, partner) => {
   const isCompany = partner.kind_name === "Juridiska persona";
 
   if (!partner.name.trim()) {
-    errors.name = "Nosaukums/Vārds ir obligāts";
+    errors.name = "Nosaukumam vai vārdam jābūt 1-255 simbolu garam";
   } else if (partner.name.trim().length > 255) {
-    errors.name = "Nosaukums/Vārds nedrīkst pārsniegt 255 simbolus";
+    errors.name = "Nosaukumam vai vārdam jābūt 1-255 simbolu garam";
   }
 
   if (!isCompany) {
     if (!partner.title.trim()) {
-      errors.title = "Uzvārds ir obligāts";
+      errors.title = "Uzvārdam jābūt 1-50 simbolu garam";
     } else if (partner.title.trim().length > 50) {
-      errors.title = "Uzvārds nedrīkst pārsniegt 50 simbolus";
+      errors.title = "Uzvārdam jābūt 1-50 simbolu garam";
     }
   } else {
     if (partner.title.trim() && partner.title.trim().length > 50) {
@@ -154,26 +137,17 @@ export const partnerRules = (partners, partner) => {
   }
 
   if (partner.reg_nr && partner.reg_nr.length > 50) {
-    errors.reg_nr =
-      "Reģistrācijas nr./Personas kods nedrīkst pārsniegt 50 simbolus";
-  } else if (
-    partner.reg_nr &&
-    partners.some(
-      (p) => p.id !== partner.id && p.partner_reg_nr === partner.reg_nr
-    )
-  ) {
-    errors.reg_nr =
-      "Partneris ar šādu reģistrācijas nr./Personas kodu jau eksistē";
+    errors.reg_nr = "Reģistrācijas nr./Personas kods nedrīkst pārsniegt 50 simbolus";
+  } else if (partner.reg_nr && partners.some((p) => p.id !== partner.id && p.partner_reg_nr === partner.reg_nr)) {
+    errors.reg_nr = "Partneris ar šādu reģistrācijas nr./Personas kodu jau eksistē";
   }
 
   if (partner.isVatEditable) {
     if (partner.vat_nr.length < 4) {
-      errors.vat_nr = "PVN numurs ir obligāts";
+      errors.vat_nr = "PVN numuram jābūt 1-47 simbolu garam";
     } else if (partner.vat_nr.length > 47) {
-      errors.vat_nr = "PVN numurs nedrīkst pārsniegt 47 simbolus";
-    } else if (
-      partners.some((p) => p.id !== partner.id && p.vat_nr === partner.vat_nr)
-    ) {
+      errors.vat_nr = "PVN numuram jābūt 1-47 simbolu garam";
+    } else if (partners.some((p) => p.id !== partner.id && p.vat_nr === partner.vat_nr)) {
       errors.vat_nr = "Partneris ar šādu PVN numuru jau eksistē";
     }
   }
@@ -185,28 +159,26 @@ export const partnerRules = (partners, partner) => {
 export const documentRules = (documents, doc) => {
   const errors = {};
 
-  if (!isRequired(doc.doc_id)) {
-    errors.doc_id = "Dokumenta numurs ir obligāts";
-  } else if (!minLength(doc.doc_id, 1)) {
-    errors.doc_id = "Dokumenta numuram jābūt vismaz 1 simbolam";
-  } else if (!maxLength(doc.doc_id, 50)) {
-    errors.doc_id = "Dokumenta numurs nedrīkst pārsniegt 50 simbolus";
+  if (!maxLength(doc.doc_id, 50)) {
+    errors.doc_id = "Finanšu dokumenta numurs nedrīkst pārsniegt 50 simbolus";
   }
 
   if (!isRequired(doc.doc_date)) {
-    errors.doc_date = "Datums ir obligāts";
+    errors.doc_date = "Finanšu dokumenta datums ir obligāts";
   }
 
   if (!isRequired(doc.doc_amount)) {
-    errors.doc_amount = "Summa ir obligāta";
+    errors.doc_amount = "Nederīgs summas formāts";
   } else if (isNaN(Number(doc.doc_amount))) {
-    errors.doc_amount = "Summai jābūt skaitlim";
+    errors.doc_amount = "Nederīgs summas formāts";
   } else if (Number(doc.doc_amount) === 0) {
-    errors.doc_amount = "Summa nedrīkst būt 0";
+    errors.doc_amount = "Nederīgs summas formāts";
+  } else if (!max17DigitsBeforeDecimal(doc.doc_amount)) {
+    errors.doc_amount = "Nederīgs summas formāts";
   }
 
   if (doc.doc_comments && !maxLength(doc.doc_comments, 255)) {
-    errors.doc_comments = "Komentārs nedrīkst pārsniegt 255 simbolus";
+    errors.doc_comments = "Piezīmes nedrīkst pārsniegt 255 simbolus";
   }
 
   const duplicate = documents.some((d) => {
@@ -222,7 +194,7 @@ export const documentRules = (documents, doc) => {
   });
 
   if (duplicate) {
-    errors.doc_id = "Šāds dokuments jau eksistē";
+    errors.doc_id = "Šāds finanšu dokuments jau eksistē";
   }
 
   return errors;
@@ -233,24 +205,22 @@ export const documentLineRules = (line) => {
   const errors = {};
 
   if (!line.line_amount && line.line_amount !== 0) {
-    errors.line_amount = "Summa ir obligāta";
+    errors.line_amount = "Nederīgs summas formāts";
   } else if (isNaN(Number(line.line_amount))) {
-    errors.line_amount = "Summai jābūt skaitlim";
+    errors.line_amount = "Nederīgs summas formāts";
+  } else if (!max17DigitsBeforeDecimal(line.line_amount)) {
+    errors.line_amount = "Nederīgs summas formāts";
   }
 
-  if (
-    line.line_vat_rate !== "" &&
-    line.line_vat_rate !== null &&
-    line.line_vat_rate !== undefined
-  ) {
+  if (line.line_vat_rate !== "" && line.line_vat_rate !== null && line.line_vat_rate !== undefined) {
     const rate = Number(line.line_vat_rate);
     if (!Number.isInteger(rate) || rate < 1 || rate > 100) {
-      errors.line_vat_rate = "PVN likmei jābūt no 1 līdz 100";
+      errors.line_vat_rate = "PVN likmei jābūt pozitīvam, veselam skaitlim no 1 līdz 100";
     }
   }
 
   if (line.line_comments && !maxLength(line.line_comments, 255)) {
-    errors.line_comments = "Komentārs nedrīkst pārsniegt 255 simbolus";
+    errors.line_comments = "Piezīmes nedrīkst pārsniegt 255 simbolus";
   }
 
   return errors;

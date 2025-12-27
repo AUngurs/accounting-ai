@@ -7,7 +7,7 @@ export const authCompanyAccess = async (req, res, next) => {
 
     // Ja parametra nav, request ir nederīgs
     if (!companyId) {
-      return res.status(400).json({ error: "Company ID not provided" });
+      return res.status(400).json({ error: "Neparedzēta servera kļūda" });
     }
 
     // Pārbauda, vai šis uzņēmums pieder autentificētajam lietotājam
@@ -16,7 +16,7 @@ export const authCompanyAccess = async (req, res, next) => {
 
     // Ja rowCount === 0, lietotājam nav piekļuves šim uzņēmumam
     if (result.rows.length === 0) {
-      return res.status(403).json({ error: "Access denied" });
+      return res.status(403).json({ error: "Neparedzēta servera kļūda" });
     }
 
     // Saglabā uzņēmuma ID request objektā, lai nākamie endpointi varētu to izmantot
@@ -25,6 +25,6 @@ export const authCompanyAccess = async (req, res, next) => {
     next();
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };

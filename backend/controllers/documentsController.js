@@ -3,6 +3,7 @@ import fs from "fs";
 import { parseStringPromise, Builder } from "xml2js";
 import multer from "multer";
 import path from "path";
+import { error } from "console";
 
 // Multer konfigurācija – augšupielādētie faili tiek saglabāti uploads/ mapē
 // Multer automātiski pievieno informāciju par failu objektā req.file
@@ -37,10 +38,10 @@ export const getDocuments = async (req, res) => {
     // Atlasa visus dokumentus, sakārtojot pēc datuma (jaunākie augšā)
     const docsResult = await pool.query("SELECT * FROM documents WHERE company_id = $1 ORDER BY doc_date DESC", [companyID]);
 
-    res.json(docsResult.rows);
+    res.status(200).json(docsResult.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -59,7 +60,7 @@ export const createDocument = async (req, res) => {
 
     // Pārbauda obligātos laukus
     if (!doc_id || !doc_date || !doc_type_abbrev || !doc_group_abbrev || !doc_currency || !doc_amount) {
-      return res.status(400).json({ error: "Some fields are required" });
+      return res.status(400).json({ error: "Neparedzēta servera kļūda" });
     }
 
     // PDF faila ceļš (ja fails nav pievienots, paliek null)
@@ -118,8 +119,8 @@ export const createDocument = async (req, res) => {
 
     res.status(201).json(newDocument);
   } catch (err) {
-    console.error("Kļūda pievienojot dokumentu:", err);
-    res.status(500).json({ error: "Neizdevās pievienot dokumentu" });
+    console.error(err);
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -166,7 +167,7 @@ export const importXmlDocuments = [
 
   async (req, res) => {
     // Ja fails nav augšupielādēts – pārtrauc izpildi
-    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+    if (!req.file) return res.status(400).json({ error: "Neparedzēta servera kļūda" });
 
     try {
       const companyID = req.params.companyId;
@@ -315,10 +316,10 @@ export const importXmlDocuments = [
       // Dzēš pagaidu XML failu
       fs.unlinkSync(req.file.path);
 
-      res.json({ newDocuments, skippedCount });
+      res.status(201).json({ newDocuments, skippedCount });
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: "Failed to import XML" });
+      res.status(500).json({ error: "Neparedzēta servera kļūda" });
     }
   },
 ];
@@ -334,10 +335,10 @@ export const getDocument = async (req, res) => {
     // Atlasa konkrētu dokumentu uzņēmuma ietvaros
     const docResult = await pool.query("SELECT * FROM documents WHERE company_id = $1 AND id = $2", [companyID, document_id]);
 
-    res.json(docResult.rows);
+    res.status(200).json(docResult.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -354,13 +355,13 @@ export const updateDocumentAccounted = async (req, res) => {
     const result = await pool.query("UPDATE documents SET is_accounted=$1 WHERE id=$2 RETURNING *", [is_accounted, document_id]);
 
     // Ja dokumentu neatrada – atgriež 404
-    if (result.rowCount === 0) return res.status(404).json({ error: "Dokuments nav atrasts" });
+    if (result.rowCount === 0) return res.status(404).json({ error: "Neparedzēta servera kļūda" });
 
     // Atgriež atjaunināto dokumentu
     res.status(200).json(result.rows[0]);
   } catch (err) {
-    console.error("Kļūda atjauninot is_accounted:", err);
-    res.status(500).json({ error: "Neizdevās atjaunināt is_accounted" });
+    console.error(err);
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -376,7 +377,7 @@ export const editDocument = async (req, res) => {
 
     // Pārbauda obligātos laukus
     if (!doc_id || !doc_date || !doc_type_abbrev || !doc_group_abbrev || !doc_currency || !doc_amount) {
-      return res.status(400).json({ error: "Some fields are required" });
+      return res.status(400).json({ error: "Neparedzēta servera kļūda" });
     }
 
     // Iegūst dokumenta rindas, lai aprēķinātu is_accounted
@@ -421,13 +422,13 @@ export const editDocument = async (req, res) => {
     );
 
     // Ja dokumentu neatrada – atgriež 404
-    if (result.rowCount === 0) return res.status(404).json({ error: "Dokuments nav atrasts" });
+    if (result.rowCount === 0) return res.status(404).json({ error: "Neparedzēta servera kļūda" });
 
     // Atgriež atjaunināto dokumentu
     res.status(200).json(result.rows[0]);
   } catch (err) {
-    console.error("Kļūda rediģējot dokumentu:", err);
-    res.status(500).json({ error: "Neizdevās rediģēt dokumentu" });
+    console.error(err);
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -444,10 +445,10 @@ export const getLines = async (req, res) => {
       documentID,
     ]);
 
-    res.json(linesResult.rows);
+    res.status(200).json(linesResult.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -541,10 +542,10 @@ export const editLines = async (req, res) => {
     // Iegūst visas rindas pēc izmaiņām, lai atgrieztu klientam
     const { rows: allLines } = await pool.query(`SELECT * FROM document_lines WHERE document_id = $1 ORDER BY id`, [document_id]);
 
-    res.json({ updated: updatedLines, inserted: insertedLines, deleted, allLines });
+    res.status(200).json({ updated: updatedLines, inserted: insertedLines, deleted, allLines });
   } catch (err) {
-    console.error("Kļūda rediģējot kontējumus:", err);
-    res.status(500).json({ error: "Neizdevās rediģēt kontējumus" });
+    console.error(err);
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -558,27 +559,27 @@ export const deleteDocument = async (req, res) => {
   try {
     // Iegūst PDF ceļu, ja tāds ir
     const docResult = await pool.query("SELECT pdf_path FROM documents WHERE id = $1", [document_id]);
-    if (docResult.rowCount === 0) return res.status(404).json({ message: "Document not found" });
+    if (docResult.rowCount === 0) return res.status(404).json({ error: "Neparedzēta servera kļūda" });
     const pdfPath = docResult.rows[0].pdf_path;
 
     // Dzēš visus dokumenta kontējumus
     await pool.query("DELETE FROM document_lines WHERE document_id = $1", [document_id]);
 
     // Dzēš dokumenta ierakstu
-    await pool.query("DELETE FROM documents WHERE id = $1", [document_id]);
+    const result = await pool.query("DELETE FROM documents WHERE id = $1", [document_id]);
 
     // Ja bija PDF fails, dzēš no failu sistēmas
     if (pdfPath) {
       const fullPath = path.join(process.cwd(), pdfPath);
       fs.unlink(fullPath, (err) => {
-        if (err) console.error("Failed to delete PDF file:", err);
+        if (err) console.error(err);
       });
     }
 
-    res.status(200).json({ message: "Document successfully deleted" });
+    res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "System error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -590,7 +591,7 @@ export const bulkDeleteDocuments = async (req, res) => {
   const { ids } = req.body;
 
   // Pārbauda, vai ID masīvs ir derīgs
-  if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ message: "Nav norādīti dokumentu ID" });
+  if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ error: "Neparedzēta servera kļūda" });
 
   try {
     // Iegūst PDF ceļus dokumentiem
@@ -607,14 +608,14 @@ export const bulkDeleteDocuments = async (req, res) => {
     pdfPaths.forEach((pdfPath) => {
       const fullPath = path.join(process.cwd(), pdfPath);
       fs.unlink(fullPath, (err) => {
-        if (err) console.error("Failed to delete PDF file:", err);
+        if (err) console.error(err);
       });
     });
 
     res.status(200).json({ deletedCount: result.rowCount });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "System error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -629,7 +630,7 @@ export const exportDocuments = async (req, res) => {
 
     // Pārbauda, vai ir norādīti dokumentu ID
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).json({ error: "No document IDs provided" });
+      return res.status(400).json({ error: "Neparedzēta servera kļūda" });
     }
 
     // Iegūst dokumentus ar partneru informāciju
@@ -649,7 +650,7 @@ export const exportDocuments = async (req, res) => {
     const { rows: docs } = await pool.query(docQuery, [companyId, ids]);
 
     if (docs.length === 0) {
-      return res.status(404).json({ error: "No documents found" });
+      return res.status(404).json({ error: "Neparedzēta servera kļūda" });
     }
 
     // Iegūst visus kontējumu ierakstus atlasītajiem dokumentiem
@@ -745,6 +746,6 @@ export const exportDocuments = async (req, res) => {
     return res.send(xml);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "System error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };

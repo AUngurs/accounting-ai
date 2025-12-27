@@ -8,10 +8,10 @@ export const getCompanies = async (req, res) => {
     // Atgriež tikai lietotāja uzņēmumus, sakārtotus pēc nosaukuma
     const result = await pool.query("SELECT id, name FROM companies WHERE user_id = $1 ORDER BY name", [userId]);
 
-    res.json(result.rows);
+    res.status(200).json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -20,18 +20,13 @@ export const addCompany = async (req, res) => {
     const userId = req.user.userId;
     const { name } = req.body;
 
-    // Pārbauda, vai nosaukums ir ievadīts
-    if (!name) {
-      return res.status(400).json({ error: "Company name is required" });
-    }
-
     // Ievieto jaunu uzņēmumu un atgriež tā ID un nosaukumu
     const result = await pool.query("INSERT INTO companies (name, user_id) VALUES ($1, $2) RETURNING id, name", [name, userId]);
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -40,11 +35,6 @@ export const editCompany = async (req, res) => {
     const userId = req.user.userId;
     const companyId = req.params.companyId;
     const { name } = req.body;
-
-    // Pārbauda, vai nosaukums ir ievadīts
-    if (!name) {
-      return res.status(400).json({ error: "Company name is required" });
-    }
 
     // Atjaunina uzņēmumu, kas pieder konkrētajam lietotājam
     const result = await pool.query(
@@ -57,13 +47,13 @@ export const editCompany = async (req, res) => {
 
     // Ja rowCount === 0, uzņēmums ar šādu ID nepieder lietotājam vai neeksistē
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Company not found" });
+      return res.status(404).json({ error: "Neparedzēta servera kļūda" });
     }
 
-    res.json(result.rows[0]);
+    res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -75,12 +65,12 @@ export const deleteCompany = async (req, res) => {
     const result = await pool.query("DELETE FROM companies WHERE id = $1 RETURNING *", [companyId]);
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ message: "Company not found" });
+      return res.status(404).json({ error: "Neparedzēta servera kļūda" });
     }
 
-    res.status(200).json({ message: "Company successfully deleted" });
+    res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };

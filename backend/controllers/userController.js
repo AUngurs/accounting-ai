@@ -8,7 +8,7 @@ export const editUser = async (req, res) => {
 
     // Username obligāts, atgriež kļūdu, ja tukšs
     if (!username) {
-      return res.status(400).json({ error: "Username is required" });
+      return res.status(400).json({ error: "Neparedzēta servera kļūda" });
     }
 
     let result;
@@ -17,7 +17,7 @@ export const editUser = async (req, res) => {
     if (password) {
       // Paroles tiek salīdzinātas
       if (password !== repeatPassword) {
-        return res.status(400).json({ error: "Passwords do not match" });
+        return res.status(400).json({ error: "Neparedzēta servera kļūda" });
       }
 
       // Paroli hashē ar bcrypt
@@ -45,13 +45,13 @@ export const editUser = async (req, res) => {
 
     // Ja lietotājs neeksistē, atgriež 404
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Neparedzēta servera kļūda" });
     }
 
-    res.json(result.rows[0]);
+    res.status(200).json(result.rows[0]);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ error: "Server error" });
+    console.error(err);
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -68,12 +68,12 @@ export const deleteUser = async (req, res) => {
     );
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Neparedzēta servera kļūda" });
     }
 
-    res.json(result.rows[0]);
+    res.status(200).json(result.rows[0]);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ error: "Server error" });
+    console.error(err);
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };

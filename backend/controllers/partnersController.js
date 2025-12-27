@@ -2,6 +2,7 @@ import pool from "../db.js";
 import fs from "fs";
 import { parseStringPromise, Builder } from "xml2js";
 import multer from "multer";
+import { error } from "console";
 
 const upload = multer({ dest: "uploads/" });
 
@@ -10,34 +11,23 @@ export const getPartners = async (req, res) => {
     const companyID = req.params.companyId;
 
     // Iegūst visus partnerus konkrētam uzņēmumam, sakārtotus pēc formatted_name
-    const partnersResult = await pool.query(
-      "SELECT * FROM partners WHERE company_id = $1 ORDER BY formatted_name",
-      [companyID]
-    );
+    const partnersResult = await pool.query("SELECT * FROM partners WHERE company_id = $1 ORDER BY formatted_name", [companyID]);
 
-    res.json(partnersResult.rows);
+    res.status(200).json(partnersResult.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
 export const createPartner = async (req, res) => {
   try {
     const company_id = req.params.companyId;
-    const {
-      kind_name,
-      title,
-      name,
-      reg_nr,
-      vat_type,
-      vat_country_code,
-      vat_nr,
-    } = req.body;
+    const { kind_name, title, name, reg_nr, vat_type, vat_country_code, vat_nr } = req.body;
 
     // Pārbauda obligātos laukus
     if (!kind_name || !name) {
-      return res.status(400).json({ error: "Some fields are required" });
+      return res.status(400).json({ error: "Neparedzēta servera kļūda" });
     }
 
     // Izveido formatted_name (title ir vai nu SIA/AS/cits, vai uzvārds)
@@ -55,23 +45,13 @@ export const createPartner = async (req, res) => {
          partner_vat_type, vat_country_code, vat_nr, company_id, formatted_name)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
-      [
-        kind_name,
-        title || "",
-        name,
-        reg_nr || "",
-        vat_type || "",
-        vat_country_code || "",
-        vat_nr || "",
-        company_id,
-        formatted_name,
-      ]
+      [kind_name, title || "", name, reg_nr || "", vat_type || "", vat_country_code || "", vat_nr || "", company_id, formatted_name]
     );
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -80,7 +60,7 @@ export const importPartners = [
   upload.single("xmlFile"),
 
   async (req, res) => {
-    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+    if (!req.file) return res.status(400).json({ error: "Neparedzēta servera kļūda" });
 
     try {
       const companyID = req.params.companyId;
@@ -105,31 +85,21 @@ export const importPartners = [
         const isCompany = partner.PartnerKindName === "Juridiska persona";
 
         // Atbilstoši veidam sagatavo title, name, reg_nr
-        const partnerTitle = isCompany
-          ? (partner.PartnerTitle || "").trim()
-          : (partner.PartnerSurname || "").trim();
-        const partnerName = isCompany
-          ? (partner.PartnerName || "").trim()
-          : (partner.PartnerFirstName || "").trim();
-        const partnerRegNr = isCompany
-          ? (partner.PartnerRegistrationNo || "").trim()
-          : (partner.PartnerPersonalIdentityNo || "").trim();
+        const partnerTitle = isCompany ? (partner.PartnerTitle || "").trim() : (partner.PartnerSurname || "").trim();
+        const partnerName = isCompany ? (partner.PartnerName || "").trim() : (partner.PartnerFirstName || "").trim();
+        const partnerRegNr = isCompany ? (partner.PartnerRegistrationNo || "").trim() : (partner.PartnerPersonalIdentityNo || "").trim();
 
         // Formatē nosaukumu atkarībā no veida
         let formattedName = "";
         if (isCompany) {
-          formattedName = partnerTitle
-            ? `${partnerName}, ${partnerTitle}`
-            : partnerName;
+          formattedName = partnerTitle ? `${partnerName}, ${partnerTitle}` : partnerName;
         } else {
           formattedName = `${partnerTitle} ${partnerName}`.trim();
         }
 
         // Sagatavo VAT informāciju
         const vatInfoRaw = partner.PartnerVatNo;
-        const vatInfo = Array.isArray(vatInfoRaw)
-          ? vatInfoRaw[0]
-          : vatInfoRaw || {};
+        const vatInfo = Array.isArray(vatInfoRaw) ? vatInfoRaw[0] : vatInfoRaw || {};
 
         // Datubāzes ievietošanas vaicājums
         const insertQuery = `
@@ -169,10 +139,10 @@ export const importPartners = [
       // Pagaidu fails vairs nav vajadzīgs, to izdzēš
       fs.unlinkSync(req.file.path);
 
-      res.json({ newPartners, skippedCount });
+      res.status(201).json({ newPartners, skippedCount });
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: "Failed to import XML" });
+      res.status(500).json({ error: "Neparedzēta servera kļūda" });
     }
   },
 ];
@@ -184,21 +154,16 @@ export const exportPartners = async (req, res) => {
 
     // Pārbauda, vai ir izvēlēti partneru ID
     if (!ids?.length) {
-      return res.status(400).json({ error: "No partners selected" });
+      return res.status(400).json({ error: "Neparedzēta servera kļūda" });
     }
 
     // Iegūst atlasītos partnerus no DB
-    const { rows: partners } = await pool.query(
-      `SELECT * FROM partners WHERE company_id = $1 AND id = ANY($2::int[])`,
-      [companyID, ids]
-    );
+    const { rows: partners } = await pool.query(`SELECT * FROM partners WHERE company_id = $1 AND id = ANY($2::int[])`, [companyID, ids]);
 
     // Pārveido partnerus uz XML struktūru
     const partnerXmlArray = partners.map((p) => {
       const isCompany = p.partner_kind_name === "Juridiska persona";
-      const isPerson =
-        p.partner_kind_name === "Fiziska persona" ||
-        p.partner_kind_name === "Darbinieks";
+      const isPerson = p.partner_kind_name === "Fiziska persona" || p.partner_kind_name === "Darbinieks";
 
       // Bloks XML ierakstam
       const partnerBlock = {
@@ -267,16 +232,13 @@ export const exportPartners = async (req, res) => {
 
     // Iestata atbilstošus headerus faila lejupielādei
     res.setHeader("Content-Type", "application/xml");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=partners_export_${companyID}.xml`
-    );
+    res.setHeader("Content-Disposition", `attachment; filename=partners_export_${companyID}.xml`);
 
     // Sūta XML klientam
     res.send(xml);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to export selected partners" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -284,18 +246,10 @@ export const exportPartners = async (req, res) => {
 export const editPartner = async (req, res) => {
   try {
     const { partner_id } = req.params;
-    const {
-      kind_name,
-      title,
-      name,
-      reg_nr,
-      vat_type,
-      vat_country_code,
-      vat_nr,
-    } = req.body;
+    const { kind_name, title, name, reg_nr, vat_type, vat_country_code, vat_nr } = req.body;
 
     if (!kind_name || !name) {
-      return res.status(400).json({ error: "Some fields are required" });
+      return res.status(400).json({ error: "Neparedzēta servera kļūda" });
     }
 
     // Formatē partnera vārdu atkarībā no veida
@@ -319,27 +273,17 @@ export const editPartner = async (req, res) => {
            formatted_name = $8
        WHERE id = $9
        RETURNING *`,
-      [
-        kind_name,
-        title || "",
-        name,
-        reg_nr || "",
-        vat_type || "",
-        vat_country_code || "",
-        vat_nr || "",
-        formatted_name,
-        partner_id,
-      ]
+      [kind_name, title || "", name, reg_nr || "", vat_type || "", vat_country_code || "", vat_nr || "", formatted_name, partner_id]
     );
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Partner not found" });
+      return res.status(404).json({ error: "Neparedzēta servera kļūda" });
     }
 
     res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to edit partner" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -347,19 +291,16 @@ export const editPartner = async (req, res) => {
 export const deletePartner = async (req, res) => {
   const { partner_id } = req.params;
   try {
-    const result = await pool.query(
-      "DELETE FROM partners WHERE id = $1 RETURNING *",
-      [partner_id]
-    );
+    const result = await pool.query("DELETE FROM partners WHERE id = $1 RETURNING *", [partner_id]);
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ message: "Partner not found" });
+      return res.status(404).json({ error: "Neparedzēta servera kļūda" });
     }
 
-    res.status(200).json({ message: "Partner successfully deleted" });
+    res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Failed to delete partner" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
 
@@ -369,21 +310,16 @@ export const bulkDeletePartners = async (req, res) => {
 
   // Pārbauda ievadi
   if (!Array.isArray(ids) || ids.length === 0) {
-    return res.status(400).json({ message: "Nav norādīti partneru ID" });
+    return res.status(400).json({ error: "Neparedzēta servera kļūda" });
   }
 
   try {
     // Dzēš visus partnerus ar dotajiem ID
-    const result = await pool.query(
-      "DELETE FROM partners WHERE id = ANY($1) RETURNING *",
-      [ids]
-    );
+    const result = await pool.query("DELETE FROM partners WHERE id = ANY($1) RETURNING *", [ids]);
 
-    res
-      .status(200)
-      .json({ deletedCount: result.rowCount, deletedRows: result.rows });
+    res.status(200).json({ deletedCount: result.rowCount, deletedRows: result.rows });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Failed to delete selected partners" });
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };

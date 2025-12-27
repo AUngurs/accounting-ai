@@ -7,8 +7,6 @@ import os from "os";
 import { exec } from "child_process";
 import vision from "@google-cloud/vision";
 
-dotenv.config();
-
 // Inicializē Google Cloud Vision klientu OCR vajadzībām
 const visionClient = new vision.ImageAnnotatorClient();
 
@@ -189,8 +187,8 @@ Piemēri:
 
     return standardized;
   } catch (err) {
-    console.error("Failed to parse AI response:", response.choices[0].message.content);
-    throw new Error("AI returned invalid JSON");
+    console.error("Failed to parse AI response: ", response.choices[0].message.content);
+    throw new Error("Neparedzēta servera kļūda");
   }
 }
 
@@ -203,7 +201,7 @@ Piemēri:
  */
 export const importPdf = async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ error: "PDF file is required" });
+    if (!req.file) return res.status(400).json({ error: "Neparedzēta servera kļūda" });
 
     const companyName = req.body.companyName;
 
@@ -227,9 +225,9 @@ export const importPdf = async (req, res) => {
     // Sauc LLM, lai strukturētu PDF datus JSON formātā
     const aiResult = await callLLM(finalText, companyName);
 
-    res.json({ documents: aiResult });
-  } catch (error) {
-    console.error("PDF import error:", error);
-    res.status(500).json({ error: "Failed to import or parse PDF" });
+    res.status(200).json({ documents: aiResult });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Neparedzēta servera kļūda" });
   }
 };
