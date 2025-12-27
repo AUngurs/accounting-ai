@@ -11,14 +11,23 @@ export default function User() {
   const navigate = useNavigate();
   const { user, setUser, logout } = useAuth();
 
-  const [formData, setFormData] = useState({ email: "", username: "", password: "", repeatPassword: "" });
+  const [formData, setFormData] = useState({
+    email: "",
+    username: "",
+    password: "",
+    repeatPassword: "",
+  });
   const [allowPasswordEdit, setAllowPasswordEdit] = useState(false);
   const [formErrors, setFormErrors] = useState({});
 
   // Inicializē formu ar esošajiem lietotāja datiem
   useEffect(() => {
     if (user) {
-      setFormData((prev) => ({ ...prev, email: user.email || "", username: user.username || "" }));
+      setFormData((prev) => ({
+        ...prev,
+        email: user.email || "",
+        username: user.username || "",
+      }));
     }
   }, [user]);
 
@@ -77,7 +86,15 @@ export default function User() {
   return (
     <React.Fragment>
       <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh", backgroundColor: "#021526" }}>
-        <div className="card p-4 shadow" style={{ width: "100%", maxWidth: "400px", borderRadius: "10px", maxHeight: "90vh" }}>
+        <div
+          className="card p-4 shadow"
+          style={{
+            width: "100%",
+            maxWidth: "400px",
+            borderRadius: "10px",
+            maxHeight: "90vh",
+          }}
+        >
           <Form noValidate>
             {/* E-pasts nevar tikt mainīts */}
             <Form.Group className="mb-2">
@@ -90,6 +107,7 @@ export default function User() {
               <Form.Control
                 type="text"
                 name="username"
+                autoComplete="off"
                 value={formData.username}
                 onChange={handleChange}
                 isInvalid={!!formErrors.username} // Parāda kļūdu vizuāli

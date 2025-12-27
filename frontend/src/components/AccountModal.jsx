@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { accountRules } from "../utils/Validators";
 
@@ -47,7 +47,12 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
     }
 
     // Saglabā konta datus, nogriež liekās atstarpes
-    onSave({ ...account, ...formData, code: formData.code.trim(), name: formData.name.trim() });
+    onSave({
+      ...account,
+      ...formData,
+      code: formData.code.trim(),
+      name: formData.name.trim(),
+    });
     handleClose(); // Aizver modal logu pēc saglabāšanas
   };
 
@@ -76,7 +81,14 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
             <Form.Label>
               Kods <span style={{ color: "red" }}>*</span>
             </Form.Label>
-            <Form.Control type="text" name="code" value={formData.code} onChange={handleChange} isInvalid={!!formErrors.code} />
+            <Form.Control
+              type="text"
+              name="code"
+              autoComplete="off"
+              value={formData.code}
+              onChange={handleChange}
+              isInvalid={!!formErrors.code}
+            />
             <Form.Control.Feedback type="invalid">{formErrors.code}</Form.Control.Feedback>
           </Form.Group>
 
@@ -85,7 +97,14 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
             <Form.Label>
               Nosaukums <span style={{ color: "red" }}>*</span>
             </Form.Label>
-            <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} isInvalid={!!formErrors.name} />
+            <Form.Control
+              type="text"
+              name="name"
+              autoComplete="off"
+              value={formData.name}
+              onChange={handleChange}
+              isInvalid={!!formErrors.name}
+            />
             <Form.Control.Feedback type="invalid">{formErrors.name}</Form.Control.Feedback>
           </Form.Group>
 

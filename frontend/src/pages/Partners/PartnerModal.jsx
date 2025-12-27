@@ -103,7 +103,12 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
   const handleSubmit = () => {
     const combinedVatNr = isVatEditable ? formData.vat_country_code + vatNrInput.trim() : "";
 
-    const dataToValidate = { ...partner, ...formData, vat_nr: combinedVatNr, isVatEditable };
+    const dataToValidate = {
+      ...partner,
+      ...formData,
+      vat_nr: combinedVatNr,
+      isVatEditable,
+    };
     const errors = partnerRules(partners, dataToValidate);
 
     if (Object.keys(errors).length > 0) {
@@ -166,7 +171,7 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
             <Form.Control.Feedback type="invalid">{formErrors.kind_name}</Form.Control.Feedback>
           </Form.Group>
 
-          {/* Nosaukums/Uzvārds */}
+          {/* Tiesiskā forma/Uzvārds */}
           <Form.Group className="mb-2">
             <Form.Label>
               {labels.title} {!isCompany && <span style={{ color: "red" }}>*</span>}
@@ -174,6 +179,7 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
             <Form.Control
               type="text"
               name="title"
+              autoComplete="off"
               value={formData.title}
               onChange={handleChange}
               isInvalid={!!formErrors.title}
@@ -182,19 +188,33 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
             <Form.Control.Feedback type="invalid">{formErrors.title}</Form.Control.Feedback>
           </Form.Group>
 
-          {/* Vārds/Nosaukums */}
+          {/* Nosaukums/Vārds */}
           <Form.Group className="mb-2">
             <Form.Label>
               {labels.name} <span style={{ color: "red" }}>*</span>
             </Form.Label>
-            <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} isInvalid={!!formErrors.name} />
+            <Form.Control
+              type="text"
+              name="name"
+              autoComplete="off"
+              value={formData.name}
+              onChange={handleChange}
+              isInvalid={!!formErrors.name}
+            />
             <Form.Control.Feedback type="invalid">{formErrors.name}</Form.Control.Feedback>
           </Form.Group>
 
           {/* Reģistrācijas numurs/Personas kods */}
           <Form.Group className="mb-2">
             <Form.Label>{labels.reg_nr}</Form.Label>
-            <Form.Control type="text" name="reg_nr" value={formData.reg_nr} onChange={handleChange} isInvalid={!!formErrors.reg_nr} />
+            <Form.Control
+              type="text"
+              name="reg_nr"
+              autoComplete="off"
+              value={formData.reg_nr}
+              onChange={handleChange}
+              isInvalid={!!formErrors.reg_nr}
+            />
             <Form.Control.Feedback type="invalid">{formErrors.reg_nr}</Form.Control.Feedback>
           </Form.Group>
 
@@ -249,6 +269,7 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
               type="text"
               name="vat_nr_input"
               value={vatNrInput}
+              autoComplete="off"
               onChange={handleVatNrChange}
               isInvalid={!!formErrors.vat_nr}
               placeholder="Numurs bez valsts koda"

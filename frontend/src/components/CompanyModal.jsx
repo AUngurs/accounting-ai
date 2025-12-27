@@ -73,6 +73,7 @@ export default function EditCompanyModal({ show, handleClose, company, onSave, o
             <Form.Control
               type="text"
               name="name"
+              autoComplete="off"
               value={formData.name}
               onChange={handleChange}
               isInvalid={!!formErrors.name}

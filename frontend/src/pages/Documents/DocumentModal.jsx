@@ -181,16 +181,36 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
       </Modal.Header>
 
       <Modal.Body>
-        <div ref={formRef} style={{ display: hasPdf ? "flex" : "block", flexDirection: "row", gap: hasPdf ? "1rem" : "0" }}>
+        <div
+          ref={formRef}
+          style={{
+            display: hasPdf ? "flex" : "block",
+            flexDirection: "row",
+            gap: hasPdf ? "1rem" : "0",
+          }}
+        >
           {/* Formas panelis */}
-          <div style={{ flex: hasPdf ? 1 : "unset", maxWidth: hasPdf ? "100%" : "600px", margin: hasPdf ? 0 : "auto" }}>
+          <div
+            style={{
+              flex: hasPdf ? 1 : "unset",
+              maxWidth: hasPdf ? "100%" : "600px",
+              margin: hasPdf ? 0 : "auto",
+            }}
+          >
             <Form style={{ flex: 1 }}>
               {/* Dokumenta numurs */}
               <Form.Group className="mb-2">
                 <Form.Label>
                   Dokumenta numurs <span style={{ color: "red" }}>*</span>
                 </Form.Label>
-                <Form.Control type="text" name="doc_id" value={formData.doc_id} onChange={handleChange} isInvalid={!!formErrors.doc_id} />
+                <Form.Control
+                  type="text"
+                  name="doc_id"
+                  autoComplete="off"
+                  value={formData.doc_id}
+                  onChange={handleChange}
+                  isInvalid={!!formErrors.doc_id}
+                />
                 <Form.Control.Feedback type="invalid">{formErrors.doc_id}</Form.Control.Feedback>
               </Form.Group>
 
@@ -276,6 +296,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
                 </Form.Label>
                 <AmountInput
                   name="doc_amount"
+                  autoComplete="off"
                   value={formData.doc_amount}
                   onChange={(val) => setFormData({ ...formData, doc_amount: val })}
                   isInvalid={!!formErrors.doc_amount}
@@ -313,6 +334,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
                   as="textarea"
                   rows={3}
                   name="doc_comments"
+                  autoComplete="off"
                   value={formData.doc_comments}
                   onChange={handleChange}
                   isInvalid={!!formErrors.doc_comments}
