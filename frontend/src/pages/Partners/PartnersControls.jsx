@@ -28,7 +28,7 @@ export default function PartnersControls({ handleCreateClick, handleImport, hand
 
   const handleTypeSelect = () => {
     if (fileInputRef.current) {
-      fileInputRef.current.accept = ".xml"; // Pieļauj tikai XML importam
+      fileInputRef.current.accept = ".xml"; // Pieļauj tikai XML importu
       fileInputRef.current.click();
     }
   };

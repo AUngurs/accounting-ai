@@ -37,7 +37,7 @@ export const useDocuments = (companyId) => {
       .catch((err) => console.error(err));
   }, [companyId]);
 
-  // Funkcija, kas fetchē dokumentus no backend
+  // Funkcija, kas iegūst dokumentus no backend
   const fetchDocuments = useCallback(async () => {
     try {
       const res = await axiosInstance.get(`/companies/${companyId}/documents`);
@@ -127,7 +127,7 @@ export const useDocuments = (companyId) => {
       notify.success("Finanšu dokuments veiksmīgi pievienots!");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Kļūda pievienojot dokumentu");
+      alert("Kļūda pievienojot dokumentu");
     }
   };
 
@@ -139,7 +139,7 @@ export const useDocuments = (companyId) => {
       notify.success("Finanšu dokuments veiksmīgi rediģēts!");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Kļūda saglabājot dokumentu");
+      alert("Kļūda saglabājot dokumentu");
     }
   };
 
@@ -152,11 +152,11 @@ export const useDocuments = (companyId) => {
   const handleDelete = async (id) => {
     try {
       await axiosInstance.delete(`/companies/${companyId}/documents/${id}`);
-      setDocsData((prev) => prev.filter((doc) => doc.id !== id)); // Noņem dzēsto dokumentu no lokālā state
+      setDocsData((prev) => prev.filter((doc) => doc.id !== id)); // Noņem dzēsto dokumentu no lokālā stāvokļa
       notify.success("Finanšu dokuments veiksmīgi dzēsts!");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Dzēšana neizdevās!");
+      alert("Dzēšana neizdevās!");
     }
   };
 
@@ -164,11 +164,7 @@ export const useDocuments = (companyId) => {
   const handleExport = async () => {
     try {
       const idsToExport = Array.from(selectedDocs);
-      const res = await axiosInstance.post(
-        `/companies/${companyId}/documents/export`,
-        { ids: idsToExport },
-        { responseType: "blob" } // Blob nepieciešams faila lejupielādei
-      );
+      const res = await axiosInstance.post(`/companies/${companyId}/documents/export`, { ids: idsToExport }, { responseType: "blob" });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -218,7 +214,6 @@ export const useDocuments = (companyId) => {
 
   // Importē dokumentus no XML faila
   const handleXmlImport = async (file) => {
-    if (!file) return alert("Izvēlieties XML datni (failu)!"); // Ja nav faila, atgādinājums
     setLoading(true); // Ieslēdz loading indikatoru
 
     const formData = new FormData();
@@ -243,15 +238,14 @@ export const useDocuments = (companyId) => {
       }
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Import failed!");
+      alert("Neparedzēta servera kļūda!");
     } finally {
-      setTimeout(() => setLoading(false), 200); // Nedaudz aizkavē izslēgšanu, lai UX būtu plūdenāks
+      setTimeout(() => setLoading(false), 200);
     }
   };
 
   // Importē PDF failu un mēģina atpazīt dokumentu informāciju ar AI
   const handlePdfImport = async (file) => {
-    if (!file) return alert("Izvēlieties PDF datni!");
     setLoading(true);
 
     const formData = new FormData();
@@ -287,8 +281,8 @@ export const useDocuments = (companyId) => {
         setShowModal(true);
       }
     } catch (err) {
-      console.error("PDF import failed:", err);
-      alert(err.response?.data?.error || "Neizdevās importēt PDF!");
+      console.error(err);
+      alert("Neizdevās importēt PDF!");
     } finally {
       setTimeout(() => setLoading(false), 200);
     }
@@ -300,14 +294,10 @@ export const useDocuments = (companyId) => {
 
     try {
       const ids = Array.from(selectedDocs);
-
       await axiosInstance.post(`/companies/${companyId}/documents/bulk-delete`, { ids });
-
-      // Noņem dzēstos dokumentus lokāli
-      setDocsData((prev) => prev.filter((doc) => !selectedDocs.has(doc.id)));
-
-      notify.success(`Veiksmīgi dzēsti ${ids.length} finanšu dokumenti!`);
+      setDocsData((prev) => prev.filter((doc) => !selectedDocs.has(doc.id))); // Noņem dzēstos dokumentus lokāli
       setSelectedDocs(new Set()); // Notīra atlasītos dokumentus
+      notify.success(`Veiksmīgi dzēsti ${ids.length} finanšu dokumenti!`);
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Dzēšana neizdevās!");

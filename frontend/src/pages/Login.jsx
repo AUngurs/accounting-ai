@@ -51,6 +51,7 @@ export default function Login() {
             <Form.Control
               type="text"
               name="email"
+              autoComplete="off"
               value={formData.email}
               onChange={handleChange}
               isInvalid={!!formErrors.email} // Parāda kļūdu vizuāli

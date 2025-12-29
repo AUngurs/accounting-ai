@@ -200,9 +200,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
             <Form style={{ flex: 1 }}>
               {/* Dokumenta numurs */}
               <Form.Group className="mb-2">
-                <Form.Label>
-                  Dokumenta numurs <span style={{ color: "red" }}>*</span>
-                </Form.Label>
+                <Form.Label>Dokumenta numurs</Form.Label>
                 <Form.Control
                   type="text"
                   name="doc_id"

@@ -4,22 +4,10 @@ import bcrypt from "bcryptjs";
 export const editUser = async (req, res) => {
   try {
     const userId = req.user.userId; // Lietotāja ID no autentifikācijas middleware
-    const { username, password, repeatPassword } = req.body;
-
-    // Username obligāts, atgriež kļūdu, ja tukšs
-    if (!username) {
-      return res.status(400).json({ error: "Neparedzēta servera kļūda" });
-    }
-
+    const { username, password } = req.body;
     let result;
-
     // Ja tiek mainīta parole
     if (password) {
-      // Paroles tiek salīdzinātas
-      if (password !== repeatPassword) {
-        return res.status(400).json({ error: "Neparedzēta servera kļūda" });
-      }
-
       // Paroli hashē ar bcrypt
       const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -43,11 +31,6 @@ export const editUser = async (req, res) => {
       );
     }
 
-    // Ja lietotājs neeksistē, atgriež 404
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Neparedzēta servera kļūda" });
-    }
-
     res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error(err);
@@ -66,10 +49,6 @@ export const deleteUser = async (req, res) => {
        RETURNING id, email, username`,
       [userId]
     );
-
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Neparedzēta servera kļūda" });
-    }
 
     res.status(200).json(result.rows[0]);
   } catch (err) {

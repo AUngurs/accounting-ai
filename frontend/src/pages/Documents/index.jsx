@@ -134,7 +134,7 @@ export default function Documents() {
         handleClose={closeModal}
         pdfFile={pdfFile}
         documentData={selectedDocument}
-        onSave={selectedDocument?.isNewImport ? handleCreate : handleSave} // Ja importēts jauns dokuments -> create, savādāk save
+        onSave={!selectedDocument || selectedDocument?.isNewImport ? handleCreate : handleSave} // Ja importēts jauns dokuments -> create, savādāk save
         onDelete={handleDelete}
         partners={partnersData}
         documents={docsData}

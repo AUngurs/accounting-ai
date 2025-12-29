@@ -41,7 +41,7 @@ export default function PartnersTableHeader({
             Tips {sortConfig.key === "partner_kind_name" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
           </th>
           <th style={{ cursor: "pointer", borderBottom: "none" }} onClick={() => handleSort("partner_reg_nr")}>
-            Reģ. Nr. {sortConfig.key === "partner_reg_nr" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
+            Reģ. Nr./Personas kods {sortConfig.key === "partner_reg_nr" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
           </th>
           <th style={{ cursor: "pointer", borderBottom: "none" }} onClick={() => handleSort("vat_nr")}>
             PVN Nr. {sortConfig.key === "vat_nr" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}

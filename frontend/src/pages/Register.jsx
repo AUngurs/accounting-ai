@@ -54,6 +54,7 @@ export default function Register() {
             <Form.Control
               type="text"
               name="email"
+              autoComplete="off"
               value={formData.email}
               onChange={handleChange}
               isInvalid={!!formErrors.email} // Parāda kļūdu vizuāli

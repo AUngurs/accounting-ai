@@ -29,7 +29,7 @@ export const setAccounts = async (req, res) => {
     // Konti tiek atgriezti sakārtoti pēc koda
     const result = await pool.query("SELECT * FROM accounts WHERE company_id = $1 ORDER BY code", [companyID]);
 
-    res.json({ accounts: result.rows });
+    res.status(200).json({ accounts: result.rows });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Neparedzēta servera kļūda" });
@@ -43,7 +43,7 @@ export const getAccounts = async (req, res) => {
     // Konti tiek atgriezti sakārtoti pēc koda
     const accountsResult = await pool.query("SELECT * FROM accounts WHERE company_id = $1 ORDER BY code", [companyID]);
 
-    res.json(accountsResult.rows);
+    res.status(200).json(accountsResult.rows);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Neparedzēta servera kļūda" });
@@ -54,11 +54,6 @@ export const editAccount = async (req, res) => {
   try {
     const { account_id } = req.params;
     const { code, name, type, category } = req.body;
-
-    // Visi lauki ir obligāti
-    if (!code || !name || !type || !category) {
-      return res.status(400).json({ error: "All fields are required" });
-    }
 
     // RETURNING * ļauj uzreiz atgriezt atjaunināto kontu
     const result = await pool.query(
@@ -72,11 +67,6 @@ export const editAccount = async (req, res) => {
       [code, name, type, category, account_id]
     );
 
-    // Ja netika atjaunināta neviena rinda, konts ar šādu ID neeksistē
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Neparedzēta servera kļūda" });
-    }
-
     res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error(err);
@@ -86,14 +76,8 @@ export const editAccount = async (req, res) => {
 
 export const deleteAccount = async (req, res) => {
   const { account_id } = req.params;
-
   try {
-    // RETURNING tiek izmantots, lai varētu noteikt, vai konts vispār eksistēja
     const result = await pool.query("DELETE FROM accounts WHERE id = $1 RETURNING *", [account_id]);
-
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Neparedzēta servera kļūda" });
-    }
 
     res.status(200).json(result.rows[0]);
   } catch (err) {
@@ -103,16 +87,12 @@ export const deleteAccount = async (req, res) => {
 };
 
 export const importAccounts = [
+  // Upload middleware. "xlsxFile" ir lauka nosaukums iekš form-data. Pievieno req.file
   upload.single("xlsxFile"),
 
   async (req, res) => {
     try {
       const companyID = req.params.companyId;
-
-      // XLSX fails ir obligāts
-      if (!req.file) {
-        return res.status(400).json({ error: "Neparedzēta servera kļūda" });
-      }
 
       // XLSX fails tiek nolasīts no pagaidu mapes
       const workbook = XLSX.readFile(req.file.path);

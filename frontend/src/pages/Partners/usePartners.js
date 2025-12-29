@@ -91,7 +91,7 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       notify.success("Partneris veiksmīgi dzēsts!");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Dzēšana neizdevās!");
+      alert("Dzēšana neizdevās!");
     }
   };
 
@@ -120,7 +120,7 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       }
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Importēšana neizdevās.");
+      alert("Importēšana neizdevās.");
     } finally {
       setTimeout(() => setLoading(false), 200);
     }

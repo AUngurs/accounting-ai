@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-import dotenv from "dotenv";
 import { PDFParse } from "pdf-parse";
 import fs from "fs";
 import path from "path";
@@ -80,54 +79,39 @@ async function callLLM(text, companyName) {
     messages: [
       {
         role: "system",
-        content: `Tu esi AI, kas izvelk strukturētus grāmatvedības dokumentus no PDF teksta latviešu valodā.
+        content: `
+Tu esi grāmatveža palīgs, kas izvelk strukturētus grāmatvedības dokumentus no PDF dokumenta teksta latviešu valodā.
 Tavas kompānijas nosaukums ir: "${companyName}".
 
+Darbs ar katru dokumentu:
+1. Nosaki rēķina izrakstītāju un rēķina saņēmēju.
+2. Nosaki, vai rēķina adresāts ir tavs uzņēmums (${companyName}) vai nē.
+3. Tikai pēc tam piešķir "document_group":
+   - Adresāts nav ${companyName} -> "D" (Debeta parāds)
+   - Adresāts ir ${companyName} -> "K" (Kredīta parāds)
+   - Ja nav skaidrs -> tukšs
 
-Katram tekstā atrastajam dokumentam:
-
-Dokumenta numurs - var tikt apzīmēts arī kā "Dok. numurs", "Rēķina nr.", "Rēķins Nr.", "Kredītrēķina numurs" utt.
-    
-Debeta parāds (D) - rēķins, ko izrakstījusi mūsu kompānija (${companyName}):
-    1) Rēķina adresāts ir klients vai pircējs, nevis mūsu uzņēmums.
-    2) ${companyName} var būt minēts kā "Pakalpojuma sniedzējs", "Sūtītājs", "Nosūtītājs".
-    3) Summa ir jāmaksā klientam - mūsu uzņēmums gaida saņemšanu.
-    4) Partnera lauks (partner) norāda klienta nosaukumu.
-
-Kredīta parāds (K) - rēķins, ko izrakstījis kāds mums:
-    1) Rēķina adresāts ir mūsu uzņēmums (${companyName}).
-    2) Rēķinā bieži minēts “Saņemts rēķins”, “Piegādātājs: [uzņēmuma nosaukums]”.
-    3) Summa ir jāmaksā mums - mēs esam maksātāji vai saņēmēji.
-    4) Partnera lauks (partner) norāda piegādātāja nosaukumu.
-
-    Lūdzu izvērtē dokumentu pēc rēķina adresāta un partnera: ja adresāts nav mūsu uzņēmums → Debeta parāds, ja adresāts ir mūsu uzņēmums → Kredīta parāds. Ja nav skaidrs, atstāj tukšu.
-
-Adresāta noteikšanas prioritāte (no augstākās uz zemāko):
+Adresāta noteikšanas prioritāte:
 1) Lauki: "Rēķina saņēmējs", "Pircējs", "Klients", "Adresāts"
 2) Juridiskās adreses bloks (nosaukums + reģ. nr.)
-3) Teksts "Rēķins izrakstīts" / "Saņemts rēķins"
-4) Ja minēti abi uzņēmumi bez skaidras lomas → neskaidrs
+3) Teksts: "Rēķins izrakstīts" / "Saņemts rēķins"
+4) Ja abi uzņēmumi minēti bez skaidras lomas -> neskaidrs
 
-Pirms JSON atgriešanas:
-1) Nosaki, kurš ir rēķina IZRAKSTĪTĀJS un kurš ir RĒĶINA SAŅĒMĒJS.
-2) Skaidri nosaki, vai adresāts ir mūsu uzņēmums (${companyName}) vai nē.
-3) Tikai pēc tam nosaki document_group (D vai K).
-4) Ja adresāts NAV skaidri identificējams, document_group atstāj tukšu.
+Dokumentu lauki:
+- document_number: precīzs dokumentā atrastais numurs
+- document_date: formāts "YYYY-MM-DD"
+- document_type: "Rēķ" (Rēķins) vai "Kredītrēķ." (Kredītrēķins)
+- document_group: "D", "K" vai tukšs
+- currency: valūta
+- amount: summa (negatīva tikai kredītrēķinos, ja nepieciešams)
+- partner: dokumentā skaidri norādītais otrais uzņēmums, nekad ${companyName}
+- notes: īsas piezīmes, maksimums 255 rakstzīmes
 
 Noteikumi:
-- Nekad nenorādi ${companyName} laukā "partner".
-- Neizdomā partnera nosaukumu, ja tas nav skaidri tekstā.
-- Neaizpildi document_group, ja nav pārliecības.
-- Neizdomā dokumenta numuru vai datumu.
-- "document_number" ir precīzs dokumentā atrastais numurs.
-- "document_date" jābūt formātā "YYYY-MM-DD". Ja datumā teksta avotā ir cits formāts (piemēram, 30.10.2024), pārvērt to YYYY-MM-DD. Nekad neatgriez DD.MM.YYYY, DD/MM/YYYY vai citus formātus.
-- "document_type" var būt tikai "Rēķ" (Rēķins) vai "Kredītrēķ." (Kredītrēķins).
-- "document_group" var būt tikai "D" (Debeta parāds) vai "K" (Kredīta parāds), saskaņā ar noteikumiem augstāk.
-- Ja kāda lauka nav tekstā, atstāj to kā tukšu string.
-- Piezīmes ("notes") ir īsas, max 200 rakstzīmes.
-- Atbild tikai ar JSON, bez paskaidrojumiem.
-
-Atgriez JSON masīvu ar vienu objektu par katru dokumentu šādā formātā:
+- Nekad neizdomā partnera nosaukumu, dokumenta numuru vai datumu
+- Neaizpildi document_group, ja adresāts nav skaidrs
+- Atgriez tikai JSON, bez paskaidrojumiem
+- JSON masīvs ar vienu objektu uz dokumentu:
 
 [
   {
@@ -143,7 +127,7 @@ Atgriez JSON masīvu ar vienu objektu par katru dokumentu šādā formātā:
 ]
 
 Piemēri:
-1) Rēķins, ko izrakstījām klientam "SIA Alfa":
+1) Debeta parāds:
 {
   "document_number": "INV-2025-001",
   "document_date": "2025-12-01",
@@ -155,7 +139,7 @@ Piemēri:
   "notes": "Par konsultāciju pakalpojumiem"
 }
 
-2) Kredītrēķins, ko saņēmām no piegādātāja "SIA Beta":
+2) Kredīta parāds:
 {
   "document_number": "CR-2025-010",
   "document_date": "2025-12-02",
@@ -201,8 +185,6 @@ Piemēri:
  */
 export const importPdf = async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ error: "Neparedzēta servera kļūda" });
-
     const companyName = req.body.companyName;
 
     // PDF buffer pārvērš Uint8Array formātā
