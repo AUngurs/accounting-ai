@@ -136,7 +136,7 @@ export const importAccounts = [
       // Konti tiek atgriezti sakārtoti pēc koda
       const result = await pool.query("SELECT * FROM accounts WHERE company_id = $1 ORDER BY code", [companyID]);
 
-      res.status(200).json(result.rows[0]);
+      res.status(200).json(result.rows);
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Neparedzēta servera kļūda" });

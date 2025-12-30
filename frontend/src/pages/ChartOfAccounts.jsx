@@ -52,10 +52,10 @@ export default function ChartOfAccounts() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       const data = res.data;
-      setAccounts(data.accounts); // atjauno kontus ar importēto datu sarakstu
+      setAccounts(data); // atjauno kontus ar importēto datu sarakstu
       fileInputRef.current.value = ""; // notīra file input vizuāli
       setFile(null); // notīra faila stāvokli
-      notify.success(`Veiksmīgi importēti ${data.accounts.length} konti!`);
+      notify.success(`Veiksmīgi importēti ${data.length} konti!`);
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Importēšana neizdevās.");
