@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataroot>
+   <tjDocument Version="TJ5.5.101" />
+   <tjResponse Name="FinancialDoc" Operation="Read" Version="TJ7.0.112" Structure="Tree">
+      <FinancialDoc>
+         <DocNo>PIR</DocNo>
+         <DocDate>2025-11-01T00:00:00</DocDate>
+         <DocTypeAbbreviation>Rēķ</DocTypeAbbreviation>
+         <DocGroupAbbreviation>K</DocGroupAbbreviation>
+         <DocCurrency>EUR</DocCurrency>
+         <DocAmount>605</DocAmount>
+         <DocAmountLockedNoticeID>0</DocAmountLockedNoticeID>
+         <DocCompanyVatNoCountryCode>LV</DocCompanyVatNoCountryCode>
+         <DocCompanyVatNo>LV4000xxxxxxx</DocCompanyVatNo>
+         <DocPartnerName>Test Company, SIA</DocPartnerName>
+         <DocPartnerRegistrationNo>30004000</DocPartnerRegistrationNo>
+         <DocPartnerVatNoCountryCode>LV</DocPartnerVatNoCountryCode>
+         <DocPartnerVatNo>LV30004000</DocPartnerVatNo>
+         <DocDisbursementTerm>2025-11-15T00:00:00</DocDisbursementTerm>
+         <DocDisbursementNoticeID>0</DocDisbursementNoticeID>
+         <DocComments>Prece</DocComments>
+         <FinancialDocLine>
+            <LineSupplementaryNoticeID>1</LineSupplementaryNoticeID>
+            <LineCurrency>EUR</LineCurrency>
+            <LineAmount>500</LineAmount>
+            <LineDebetAccountCode>7110</LineDebetAccountCode>
+            <LineCreditAccountCode>5310</LineCreditAccountCode>
+            <LineVatRate>21</LineVatRate>
+            <LineComments>Prece</LineComments>
+         </FinancialDocLine>
+         <FinancialDocLine>
+            <LineSupplementaryNoticeID>1</LineSupplementaryNoticeID>
+            <LineCurrency>EUR</LineCurrency>
+            <LineAmount>105</LineAmount>
+            <LineDebetAccountCode>5721</LineDebetAccountCode>
+            <LineCreditAccountCode>5310</LineCreditAccountCode>
+            <LineVatRate>21</LineVatRate>
+            <LineComments>PVN</LineComments>
+         </FinancialDocLine>
+      </FinancialDoc>
+      <FinancialDoc>
+         <DocNo>8888</DocNo>
+         <DocDate>2020-06-15T00:00:00</DocDate>
+         <DocTypeAbbreviation>Grām.</DocTypeAbbreviation>
+         <DocGroupAbbreviation>-</DocGroupAbbreviation>
+         <DocCurrency>EUR</DocCurrency>
+         <DocAmount>500</DocAmount>
+         <DocAmountLockedNoticeID>0</DocAmountLockedNoticeID>
+         <DocCompanyVatNoCountryCode>LV</DocCompanyVatNoCountryCode>
+         <DocCompanyVatNo>LV4000xxxxxxx</DocCompanyVatNo>
+         <DocPartnerName>2nd Imported Company, AS</DocPartnerName>
+         <DocPartnerRegistrationNo>55504440</DocPartnerRegistrationNo>
+         <DocDisbursementTerm>2020-06-29T00:00:00</DocDisbursementTerm>
+         <DocDisbursementNoticeID>0</DocDisbursementNoticeID>
+         <DocComments>Grāmatojuma kontējums</DocComments>
+         <FinancialDocLine>
+            <LineSupplementaryNoticeID>1</LineSupplementaryNoticeID>
+            <LineCurrency>EUR</LineCurrency>
+            <LineAmount>500</LineAmount>
+            <LineDebetAccountCode>5530</LineDebetAccountCode>
+            <LineCreditAccountCode>5610</LineCreditAccountCode>
+            <LineComments>Grāmatojuma kontējums</LineComments>
+         </FinancialDocLine>
+      </FinancialDoc>
+      <FinancialDoc>
+         <DocNo>-</DocNo>
+         <DocDate>2025-12-31T00:00:00</DocDate>
+         <DocTypeAbbreviation>Kredītrēķ.</DocTypeAbbreviation>
+         <DocGroupAbbreviation>K</DocGroupAbbreviation>
+         <DocCurrency>EUR</DocCurrency>
+         <DocAmount>-100</DocAmount>
+         <DocAmountLockedNoticeID>0</DocAmountLockedNoticeID>
+         <DocCompanyVatNoCountryCode>LV</DocCompanyVatNoCountryCode>
+         <DocCompanyVatNo>LV4000xxxxxxx</DocCompanyVatNo>
+         <DocDisbursementTerm>2020-06-29T00:00:00</DocDisbursementTerm>
+         <DocDisbursementNoticeID>0</DocDisbursementNoticeID>
+         <DocComments>Kredītrēķins</DocComments>
+         <FinancialDocLine>
+            <LineSupplementaryNoticeID>1</LineSupplementaryNoticeID>
+            <LineCurrency>EUR</LineCurrency>
+            <LineAmount>-100</LineAmount>
+            <LineDebetAccountCode>8290</LineDebetAccountCode>
+            <LineCreditAccountCode>5310</LineCreditAccountCode>
+            <LineComments>Kredītrēķina kontējums</LineComments>
+         </FinancialDocLine>
+      </FinancialDoc>
+   </tjResponse>
+</dataroot>

@@ -182,15 +182,16 @@ export const documentRules = (documents, doc) => {
   }
 
   const duplicate = documents.some((d) => {
-    if (doc.id && d.id === doc.id) return false;
-    return (
-      d.doc_id?.trim().toLowerCase() === doc.doc_id?.trim().toLowerCase() &&
-      d.doc_date === doc.doc_date &&
-      d.doc_type_abbrev === doc.doc_type_abbrev &&
-      d.doc_group_abbrev === doc.doc_group_abbrev &&
-      Number(d.doc_amount) === Number(doc.doc_amount) &&
-      d.partner_id === doc.partner_id
-    );
+    const checks = {
+      doc_id: d.doc_id?.trim().toLowerCase() === doc.doc_id?.trim().toLowerCase(),
+      doc_date: d.doc_date === doc.doc_date,
+      doc_type_abbrev: d.doc_type_abbrev === doc.doc_type_abbrev,
+      doc_group_abbrev: d.doc_group_abbrev === doc.doc_group_abbrev,
+      doc_amount: Number(d.doc_amount) === Number(doc.doc_amount),
+      partner_id: Number(d.partner_id) === Number(doc.partner_id),
+    };
+
+    return Object.values(checks).every(Boolean);
   });
 
   if (duplicate) {
@@ -204,9 +205,11 @@ export const documentRules = (documents, doc) => {
 export const documentLineRules = (line) => {
   const errors = {};
 
-  if (!line.line_amount && line.line_amount !== 0) {
+  if (!isRequired(line.line_amount)) {
     errors.line_amount = "Nederīgs summas formāts";
   } else if (isNaN(Number(line.line_amount))) {
+    errors.line_amount = "Nederīgs summas formāts";
+  } else if (Number(line.line_amount) === 0) {
     errors.line_amount = "Nederīgs summas formāts";
   } else if (!max17DigitsBeforeDecimal(line.line_amount)) {
     errors.line_amount = "Nederīgs summas formāts";

@@ -683,7 +683,7 @@ export const exportDocuments = async (req, res) => {
     res.setHeader("Content-Disposition", "attachment; filename=financial_documents.xml");
     res.setHeader("Content-Type", "application/xml");
 
-    return res.send(xml);
+    return res.status(200).send(xml);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Neparedzēta servera kļūda" });

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataroot>
+  <tjDocument Version="TJ5.5.101"/>
+  <tjResponse Name="FinancialDoc" Operation="Insert" Version="TJ7.0.112" Structure="Tree">
+    <FinancialDoc>
+      <DocNo>001</DocNo>
+      <DocDate>2025-12-15</DocDate>
+      <DocTypeAbbreviation>Rēķ</DocTypeAbbreviation>
+      <DocGroupAbbreviation>K</DocGroupAbbreviation>
+      <DocCurrency>EUR</DocCurrency>
+      <DocAmount>100.00</DocAmount>
+      <DocAmountLockedNoticeID>0</DocAmountLockedNoticeID>
+      <DocPartnerName>Test Company, SIA</DocPartnerName>
+      <DocPartnerRegistrationNo>30004000</DocPartnerRegistrationNo>
+      <DocPartnerVatNo>LV30004000</DocPartnerVatNo>
+      <DocPartnerVatNoCountryCode>LV</DocPartnerVatNoCountryCode>
+      <DocDisbursementNoticeID>0</DocDisbursementNoticeID>
+      <DocComments>First document</DocComments>
+    </FinancialDoc>
+    <FinancialDoc>
+      <DocNo>002</DocNo>
+      <DocDate>2025-12-15</DocDate>
+      <DocTypeAbbreviation>Rēķ</DocTypeAbbreviation>
+      <DocGroupAbbreviation>K</DocGroupAbbreviation>
+      <DocCurrency>EUR</DocCurrency>
+      <DocAmount>200.00</DocAmount>
+      <DocAmountLockedNoticeID>0</DocAmountLockedNoticeID>
+      <DocPartnerName>Test Company, SIA</DocPartnerName>
+      <DocPartnerRegistrationNo>30004000</DocPartnerRegistrationNo>
+      <DocPartnerVatNo>LV30004000</DocPartnerVatNo>
+      <DocPartnerVatNoCountryCode>LV</DocPartnerVatNoCountryCode>
+      <DocDisbursementNoticeID>0</DocDisbursementNoticeID>
+      <DocComments>Second document</DocComments>
+    </FinancialDoc>
+  </tjResponse>
+</dataroot>

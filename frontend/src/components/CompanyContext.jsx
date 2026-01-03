@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from "react";
+import { createContext, useState, useContext, useEffect, useCallback } from "react";
 
 // Izveido Company kontekstu, lai dalītos ar uzņēmumu datiem visā aplikācijā
 const CompanyContext = createContext();

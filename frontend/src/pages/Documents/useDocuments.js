@@ -34,7 +34,10 @@ export const useDocuments = (companyId) => {
     axiosInstance
       .get(`/companies/${companyId}/partners`)
       .then((res) => setPartnersData(res.data))
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        console.error(err);
+        notify.error("Neparedzēta servera kļūda");
+      });
   }, [companyId]);
 
   // Funkcija, kas iegūst dokumentus no backend
@@ -44,6 +47,7 @@ export const useDocuments = (companyId) => {
       setDocsData(res.data);
     } catch (err) {
       console.error(err);
+      notify.error("Neparedzēta servera kļūda");
     }
   }, [companyId]);
 
@@ -127,7 +131,7 @@ export const useDocuments = (companyId) => {
       notify.success("Finanšu dokuments veiksmīgi pievienots!");
     } catch (err) {
       console.error(err);
-      alert("Kļūda pievienojot dokumentu");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
@@ -139,7 +143,7 @@ export const useDocuments = (companyId) => {
       notify.success("Finanšu dokuments veiksmīgi rediģēts!");
     } catch (err) {
       console.error(err);
-      alert("Kļūda saglabājot dokumentu");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
@@ -156,7 +160,7 @@ export const useDocuments = (companyId) => {
       notify.success("Finanšu dokuments veiksmīgi dzēsts!");
     } catch (err) {
       console.error(err);
-      alert("Dzēšana neizdevās!");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
@@ -174,7 +178,7 @@ export const useDocuments = (companyId) => {
       link.remove();
     } catch (err) {
       console.error(err);
-      alert("Eksports neizdevās");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
@@ -238,7 +242,7 @@ export const useDocuments = (companyId) => {
       }
     } catch (err) {
       console.error(err);
-      alert("Neparedzēta servera kļūda!");
+      notify.error("Neparedzēta servera kļūda");
     } finally {
       setTimeout(() => setLoading(false), 200);
     }
@@ -282,7 +286,7 @@ export const useDocuments = (companyId) => {
       }
     } catch (err) {
       console.error(err);
-      alert("Neizdevās importēt PDF!");
+      notify.error("Neparedzēta servera kļūda");
     } finally {
       setTimeout(() => setLoading(false), 200);
     }
@@ -300,7 +304,7 @@ export const useDocuments = (companyId) => {
       notify.success(`Veiksmīgi dzēsti ${ids.length} finanšu dokumenti!`);
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Dzēšana neizdevās!");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 

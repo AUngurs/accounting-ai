@@ -43,7 +43,6 @@ export default function EditCompanyModal({ show, handleClose, company, onSave, o
 
     // Saglabā uzņēmuma datus, nogriež liekās atstarpes
     onSave({ ...company, ...formData, name: formData.name.trim() });
-    handleClose(); // Aizver modal pēc saglabāšanas
   };
 
   // Apstrādā uzņēmuma dzēšanu ar apstiprinājuma logu

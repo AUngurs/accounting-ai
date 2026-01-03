@@ -3,6 +3,7 @@ import axiosInstance from "../../api/axiosInstance";
 import { Table, Collapse, Card, Form, Button } from "react-bootstrap";
 import { documentLineRules } from "../../utils/Validators";
 import AmountInput from "../../utils/AmountInput";
+import { notify } from "../../utils/Notify";
 
 // DocumentLines komponente nodrošina dokumenta kontējuma rindu pārvaldību un rediģēšanu
 export default function DocumentLines({ companyId, documentId, onUpdateAccounted }) {
@@ -32,17 +33,21 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
     axiosInstance
       .get(`/companies/${companyId}/accounts`)
       .then((res) => setAccounts(res.data))
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        console.error(err);
+        notify.error("Neparedzēta servera kļūda");
+      });
   }, [companyId]);
 
   // Iegūst dokumenta rindas no servera
   useEffect(() => {
-    if (!documentId) return;
+    if (!documentId || !companyId) return;
     axiosInstance
       .get(`/companies/${companyId}/documents/${documentId}/lines`)
       .then((res) => setLines(res.data))
       .catch((err) => {
         console.error(err);
+        notify.error("Neparedzēta servera kļūda");
       });
   }, [companyId, documentId]);
 
@@ -125,7 +130,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
       setEditedLines([]); // Notīra rediģēto rindu stāvokli
     } catch (err) {
       console.error(err);
-      alert("Neizdevās saglabāt izmaiņas."); // Attēlo kļūdu lietotājam
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
@@ -155,7 +160,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                   {!isEditing ? (
                     <div className="d-flex justify-content-evenly">
                       <Button
-                        className="custom-light-hover"
+                        className="custom-light-hover edit-mode-button"
                         style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
                         onClick={() => {
                           setIsEditing(true); // Aktivizē rediģēšanas režīmu
@@ -182,7 +187,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     <div className="d-flex justify-content-evenly">
                       {/* Poga saglabāšanai */}
                       <Button
-                        className="custom-light-hover"
+                        className="custom-light-hover edit-mode-button"
                         style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
                         onClick={handleSave} // Saglabā izmaiņas
                       >
@@ -226,6 +231,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                       <React.Fragment>
                         <Form.Select
                           size="sm"
+                          name="currency"
                           value={line.line_currency}
                           onChange={(e) => updateLine(index, "line_currency", e.target.value)} // Atjauno valūtu
                           isInvalid={!!lineErrors[line.id]?.line_currency} // Parāda kļūdu, ja tāda ir
@@ -249,6 +255,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                       <React.Fragment>
                         <AmountInput
                           size="sm"
+                          name="amount"
                           value={line.line_amount}
                           onChange={(val) => updateLine(index, "line_amount", val)} // Atjauno summu
                           isInvalid={!!lineErrors[line.id]?.line_amount} // Parāda kļūdu
@@ -266,6 +273,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                       <React.Fragment>
                         <Form.Select
                           size="sm"
+                          name="debet"
                           value={line.line_debet_account || ""}
                           onChange={(e) => updateLine(index, "line_debet_account", e.target.value)} // Atjauno debetu
                           isInvalid={!!lineErrors[line.id]?.line_debet_account}
@@ -289,6 +297,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                       <React.Fragment>
                         <Form.Select
                           size="sm"
+                          name="credit"
                           value={line.line_credit_account || ""}
                           onChange={(e) => updateLine(index, "line_credit_account", e.target.value)} // Atjauno kredītu
                           isInvalid={!!lineErrors[line.id]?.line_credit_account}
@@ -312,6 +321,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                       <React.Fragment>
                         <Form.Control
                           size="sm"
+                          name="vat"
                           type="number"
                           min="0"
                           value={line.line_vat_rate || ""}
@@ -333,6 +343,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                       <React.Fragment>
                         <Form.Control
                           size="sm"
+                          name="comments"
                           type="text"
                           value={line.line_comments || ""}
                           onChange={(e) => updateLine(index, "line_comments", e.target.value)} // Atjauno piezīmes
@@ -440,7 +451,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                       disabled={!placeholderActive}
                     />
                   </td>
-                  <td className="text-center">
+                  <td className="text-center add-line-btn">
                     {/* Poga jaunas rindas pievienošanai */}
                     <Button
                       size="sm"

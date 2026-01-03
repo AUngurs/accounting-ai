@@ -40,7 +40,12 @@ export default function Sidebar() {
         </button>
 
         {/* Poga uzņēmumu maiņai, novietota apakšā ar mt-auto */}
-        <button className="btn custom-dark-hover mt-auto" onClick={() => navigate("/companies")}>
+        <button
+          className="btn custom-dark-hover mt-auto"
+          onClick={() => {
+            navigate("/companies");
+          }}
+        >
           <MdExitToApp className="me-2" />
           Mani uzņēmumi
         </button>

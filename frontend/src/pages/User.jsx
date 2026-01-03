@@ -65,7 +65,7 @@ export default function User() {
       navigate("/companies"); // Atgriežas uz uzņēmumu sarakstu
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Kļūda saglabājot lietotāju");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
@@ -79,7 +79,7 @@ export default function User() {
       navigate("/login");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Kļūda dzēšot lietotāju");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 

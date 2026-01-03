@@ -207,6 +207,10 @@ export const importPdf = async (req, res) => {
     // Sauc LLM, lai strukturētu PDF datus JSON formātā
     const aiResult = await callLLM(finalText, companyName);
 
+    if (!Array.isArray(aiResult) || aiResult.length === 0) {
+      throw new Error("No results");
+    }
+
     res.status(200).json({ documents: aiResult });
   } catch (err) {
     console.error(err);

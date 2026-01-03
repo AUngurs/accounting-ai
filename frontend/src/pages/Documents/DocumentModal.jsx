@@ -133,7 +133,6 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
       setFormErrors(errors);
       return; // Nepārsūta datus, ja ir kļūdas
     }
-
     onSave({ ...documentData, ...formData, file: localPdfFile });
     handleClose();
   };

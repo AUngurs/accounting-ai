@@ -24,7 +24,10 @@ export default function Companies() {
     axiosInstance
       .get("/companies")
       .then((res) => updateCompanies(res.data))
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        console.error(err);
+        notify.error("Neparedzēta servera kļūda");
+      });
   }, [updateCompanies]);
 
   // Izvēlas uzņēmumu un pāriet uz dokumentu lapu
@@ -51,6 +54,7 @@ export default function Companies() {
       notify.success("Uzņēmums pievienots!");
     } catch (err) {
       console.error(err);
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
@@ -66,7 +70,7 @@ export default function Companies() {
       notify.success("Uzņēmums veiksmīgi rediģēts!");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Kļūda saglabājot kontu");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
@@ -78,7 +82,7 @@ export default function Companies() {
       notify.success("Uzņēmums veiksmīgi dzēsts!");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Dzēšana neizdevās!");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
@@ -127,7 +131,7 @@ export default function Companies() {
         <button className="btn custom-dark-hover mt-3 mb-1 w-100" onClick={() => setShowModal(true)}>
           <FaPlus className="me-1" /> Pievienot uzņēmumu
         </button>
-        <button className="btn custom-red-hover w-100" onClick={handleLogout}>
+        <button className="btn custom-red-hover w-100 logout-button" onClick={handleLogout}>
           <MdExitToApp className="me-1" /> Iziet
         </button>
       </div>

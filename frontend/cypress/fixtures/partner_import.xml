@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataroot>
+   <tjDocument Version="TJ5.5.101" />
+   <tjResponse Name="Partner" Operation="Read" Version="TJ7.0.112" Structure="Tree">
+      <Partner>
+         <PartnerKindName>Juridiska persona</PartnerKindName>
+         <PartnerName>Noliktava (galvenā)</PartnerName>
+         <PartnerTaxpayerType>Apliekama persona, LV</PartnerTaxpayerType>
+         <PartnerPaymentFormTypeName>priekšapmaksa</PartnerPaymentFormTypeName>
+         <PartnerLockedNoticeID>0</PartnerLockedNoticeID>
+         <PartnerProductWarehouseNoticeID>1</PartnerProductWarehouseNoticeID>
+         <PartnerTimberForwarderNoticeID>0</PartnerTimberForwarderNoticeID>
+         <PartnerDebtAmountSumLVL>0</PartnerDebtAmountSumLVL>
+         <PartnerDebtAdminProcesName>Nav uzsākts</PartnerDebtAdminProcesName>
+         <PartnerCreditStatussBlocked />
+         <PartnerDebtAdminProcesOrder>1</PartnerDebtAdminProcesOrder>
+      </Partner>
+      <Partner>
+         <PartnerKindName>Juridiska persona</PartnerKindName>
+         <PartnerTitle>SIA</PartnerTitle>
+         <PartnerName>Test Company</PartnerName>
+         <PartnerRegistrationNo>30004000</PartnerRegistrationNo>
+         <PartnerTaxpayerType>Apliekama persona, LV</PartnerTaxpayerType>
+         <PartnerLockedNoticeID>0</PartnerLockedNoticeID>
+         <PartnerProductWarehouseNoticeID>0</PartnerProductWarehouseNoticeID>
+         <PartnerTimberForwarderNoticeID>0</PartnerTimberForwarderNoticeID>
+         <PartnerCreditStatussBlocked />
+         <PartnerVatNo>
+            <VatNo>LV30004000</VatNo>
+            <VatNoCountryCode>LV</VatNoCountryCode>
+            <VatNoDefaultNoticeID>1</VatNoDefaultNoticeID>
+         </PartnerVatNo>
+      </Partner>
+      <Partner>
+         <PartnerKindName>Juridiska persona</PartnerKindName>
+         <PartnerTitle>AS</PartnerTitle>
+         <PartnerName>2nd Imported Company</PartnerName>
+         <PartnerRegistrationNo>55504440</PartnerRegistrationNo>
+         <PartnerTaxpayerType>Apliekama persona, LV</PartnerTaxpayerType>
+         <PartnerLockedNoticeID>0</PartnerLockedNoticeID>
+         <PartnerProductWarehouseNoticeID>0</PartnerProductWarehouseNoticeID>
+         <PartnerTimberForwarderNoticeID>0</PartnerTimberForwarderNoticeID>
+         <PartnerCreditStatussBlocked />
+      </Partner>
+      <Partner>
+         <PartnerKindName>Fiziska persona</PartnerKindName>
+         <PartnerFirstName>Name</PartnerFirstName>
+         <PartnerSurname>Surname</PartnerSurname>
+         <PartnerPersonalIdentityNo>120990-44444</PartnerPersonalIdentityNo>
+         <PartnerTaxpayerType>Apliekama persona, LV</PartnerTaxpayerType>
+         <PartnerLockedNoticeID>0</PartnerLockedNoticeID>
+         <PartnerProductWarehouseNoticeID>0</PartnerProductWarehouseNoticeID>
+         <PartnerTimberForwarderNoticeID>0</PartnerTimberForwarderNoticeID>
+         <PartnerExpenseAccountHolderNoticeID>0</PartnerExpenseAccountHolderNoticeID>
+         <PartnerCreditStatussBlocked />
+         <PhysicalPersonBirthDate>1990-09-12T00:00:00</PhysicalPersonBirthDate>
+      </Partner>
+   </tjResponse>
+</dataroot>

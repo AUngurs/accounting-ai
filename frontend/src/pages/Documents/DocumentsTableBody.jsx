@@ -40,7 +40,7 @@ export default function FinancialDocsTableBody({
     visibleRows.push(
       <React.Fragment key={doc.id}>
         {/* Galvenā rinda */}
-        <tr onClick={() => setOpenDocId(isOpen ? null : doc.id)} style={{ cursor: "pointer" }}>
+        <tr className="document-row" onClick={() => setOpenDocId(isOpen ? null : doc.id)} style={{ cursor: "pointer" }}>
           {/* Checkbox izvēlei */}
           <td style={{ textAlign: "center" }}>
             <input
@@ -55,7 +55,7 @@ export default function FinancialDocsTableBody({
               onClick={(e) => e.stopPropagation()} // Neļauj checkbox clickam triggerēt rindu click
             />
           </td>
-          <td>{doc.doc_date}</td>
+          <td className="doc-date-td">{doc.doc_date}</td>
           <td>{doc.doc_id}</td>
           <td>{partnerMap[doc.partner_id] || ""}</td>
           <td>{doc.doc_type_abbrev}</td>

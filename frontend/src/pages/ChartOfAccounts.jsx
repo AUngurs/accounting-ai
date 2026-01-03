@@ -22,7 +22,10 @@ export default function ChartOfAccounts() {
     axiosInstance
       .get(`/companies/${companyId}/accounts`)
       .then((res) => setAccounts(res.data))
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        console.error(err);
+        notify.error("Neparedzēta servera kļūda");
+      });
   }, [companyId]);
 
   // Iestata noklusējuma kontus, izdzēšot pašreizējos
@@ -34,7 +37,7 @@ export default function ChartOfAccounts() {
       notify.success("Noklusējuma konti veiksmīgi iestatīti!");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Kļūda iestatot noklusējuma kontus");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
@@ -58,7 +61,7 @@ export default function ChartOfAccounts() {
       notify.success(`Veiksmīgi importēti ${data.length} konti!`);
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Importēšana neizdevās.");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
@@ -80,7 +83,7 @@ export default function ChartOfAccounts() {
       notify.success("Konts veiksmīgi rediģēts!");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Kļūda saglabājot kontu");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
@@ -92,7 +95,7 @@ export default function ChartOfAccounts() {
       notify.success("Konts veiksmīgi dzēsts!");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Dzēšana neizdevās!");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 

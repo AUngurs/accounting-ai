@@ -222,7 +222,7 @@ export const exportPartners = async (req, res) => {
     res.setHeader("Content-Disposition", `attachment; filename=partners_export_${companyID}.xml`);
 
     // Sūta XML klientam
-    res.send(xml);
+    res.status(200).send(xml);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Neparedzēta servera kļūda" });

@@ -21,6 +21,7 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       setPartnersData(res.data);
     } catch (err) {
       console.error(err);
+      notify.error("Neparedzēta servera kļūda");
     }
   }, [companyId]);
 
@@ -67,7 +68,7 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       notify.success("Partneris veiksmīgi pievienots!");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Kļūda pievienojot partneri");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
@@ -79,7 +80,7 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       notify.success("Partneris veiksmīgi rediģēts!");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Kļūda saglabājot partneri");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
@@ -91,7 +92,7 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       notify.success("Partneris veiksmīgi dzēsts!");
     } catch (err) {
       console.error(err);
-      alert("Dzēšana neizdevās!");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
@@ -120,7 +121,7 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       }
     } catch (err) {
       console.error(err);
-      alert("Importēšana neizdevās.");
+      notify.error("Neparedzēta servera kļūda");
     } finally {
       setTimeout(() => setLoading(false), 200);
     }
@@ -144,7 +145,7 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       link.remove();
     } catch (err) {
       console.error(err);
-      alert("Eksports neizdevās");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
@@ -165,7 +166,7 @@ export const usePartners = (companyId, ROW_HEIGHT, VISIBLE_ROWS, scrollTop) => {
       notify.success(`Veiksmīgi dzēsti ${deletedCount} partneri!`);
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Dzēšana neizdevās!");
+      notify.error("Neparedzēta servera kļūda");
     }
   };
 
