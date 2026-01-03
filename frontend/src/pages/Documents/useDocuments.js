@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import axiosInstance from "../../api/axiosInstance";
 import { notify } from "../../utils/Notify";
 import { useCompany } from "../../components/CompanyContext";
@@ -6,6 +6,7 @@ import Fuse from "fuse.js";
 import { useLoading } from "../../components/LoadingContext";
 
 export const useDocuments = (companyId) => {
+  const [accounts, setAccounts] = useState([]);
   const [docsData, setDocsData] = useState([]);
   const [partnersData, setPartnersData] = useState([]);
   const [selectedDocs, setSelectedDocs] = useState(new Set());
@@ -40,6 +41,17 @@ export const useDocuments = (companyId) => {
       });
   }, [companyId]);
 
+  // Iegūst kontu plānu no backend
+  useEffect(() => {
+    axiosInstance
+      .get(`/companies/${companyId}/accounts`)
+      .then((res) => setAccounts(res.data))
+      .catch((err) => {
+        console.error(err);
+        notify.error("Neparedzēta servera kļūda");
+      });
+  }, [companyId]);
+
   // Funkcija, kas iegūst dokumentus no backend
   const fetchDocuments = useCallback(async () => {
     try {
@@ -57,10 +69,12 @@ export const useDocuments = (companyId) => {
   }, [fetchDocuments]);
 
   // Mapē partneru ID uz nosaukumiem ērtākai piekļuvei
-  const partnerMap = partnersData.reduce((map, p) => {
-    map[p.id] = p.formatted_name || "";
-    return map;
-  }, {});
+  const partnerMap = useMemo(() => {
+    return partnersData.reduce((map, p) => {
+      map[p.id] = p.formatted_name || "";
+      return map;
+    }, {});
+  }, [partnersData]);
 
   // Filtrē dokumentus pēc izvēlētajiem filtriem
   const filteredDocs = docsData.filter((doc) => {
@@ -309,6 +323,7 @@ export const useDocuments = (companyId) => {
   };
 
   return {
+    accounts,
     docsData,
     partnersData,
     selectedDocs,

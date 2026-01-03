@@ -18,6 +18,7 @@ export default function FinancialDocsTableBody({
   sortedDocs, // Sakārtoto dokumentu masīvs
   handleUpdateAccounted, // Callback, lai atjauninātu is_accounted statusu
   visibleRowsCount, // Cik redzamas rindas vienlaikus (virtualizācijai)
+  accounts, // Kontu plāns
 }) {
   // Aprēķina kopējo rindu skaitu tabulā (katrs dokuments aizņem 2 rindas: galveno + Collapse)
   const totalRows = sortedDocs.length * 2;
@@ -96,7 +97,9 @@ export default function FinancialDocsTableBody({
           <td colSpan={9} style={{ padding: 0, border: 0 }}>
             <Collapse in={isOpen}>
               <div>
-                <DocumentLines companyId={companyId} documentId={doc.id} onUpdateAccounted={handleUpdateAccounted} />
+                {isOpen && (
+                  <DocumentLines companyId={companyId} documentId={doc.id} onUpdateAccounted={handleUpdateAccounted} accounts={accounts} />
+                )}
               </div>
             </Collapse>
           </td>

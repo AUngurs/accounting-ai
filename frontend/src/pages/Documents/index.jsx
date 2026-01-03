@@ -18,6 +18,7 @@ export default function Documents() {
 
   // Izsauc custom hook, kas satur visu dokumentu loģiku
   const {
+    accounts, // Kontu plāns
     pdfFile, // PDF fails, ko rāda modal
     setPdfFile, // Funkcija PDF faila iestatīšanai
     selectedDocument, // Pašreiz izvēlētais dokuments modal logam
@@ -117,6 +118,7 @@ export default function Documents() {
             sortedDocs={sortedDocs}
             handleUpdateAccounted={handleUpdateAccounted}
             visibleRowsCount={visibleRowsCount}
+            accounts={accounts}
           />
         </Table>
       </VirtualizedTableContainer>

@@ -6,10 +6,9 @@ import AmountInput from "../../utils/AmountInput";
 import { notify } from "../../utils/Notify";
 
 // DocumentLines komponente nodrošina dokumenta kontējuma rindu pārvaldību un rediģēšanu
-export default function DocumentLines({ companyId, documentId, onUpdateAccounted }) {
+export default function DocumentLines({ companyId, documentId, onUpdateAccounted, accounts }) {
   // Stāvokļi dokumenta rindām, ielādes statusam, kontiem, rediģēšanas statusam un jaunajām rindām
   const [lines, setLines] = useState([]);
-  const [accounts, setAccounts] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editedLines, setEditedLines] = useState([]);
   const [placeholderActive, setPlaceholderActive] = useState(false);
@@ -27,17 +26,6 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
 
   // Pieejamās valūtas rindām
   const lineCurrencyOptions = ["EUR", "DKK", "GBP", "LVL", "NOK", "PLN", "RUB", "SEK", "USD"];
-
-  // Iegūst kontu plānu no servera
-  useEffect(() => {
-    axiosInstance
-      .get(`/companies/${companyId}/accounts`)
-      .then((res) => setAccounts(res.data))
-      .catch((err) => {
-        console.error(err);
-        notify.error("Neparedzēta servera kļūda");
-      });
-  }, [companyId]);
 
   // Iegūst dokumenta rindas no servera
   useEffect(() => {
