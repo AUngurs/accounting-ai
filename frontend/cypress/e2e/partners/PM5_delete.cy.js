@@ -41,7 +41,9 @@ describe("Delete partner", () => {
       forceNetworkError: true,
     }).as("deletePartnerRequest");
 
-    cy.get("button").contains("Dzēst").click();
+    cy.get(".modal").within(() => {
+      cy.get("button").contains("Dzēst").click();
+    });
 
     cy.on("window:confirm", () => true);
 
@@ -69,12 +71,15 @@ describe("Delete partner", () => {
     cy.get("tbody tr td div button").eq(0).click();
     cy.intercept("DELETE", "http://localhost:5001/api/companies/*/partners/*").as("deletePartnerRequest");
 
-    cy.get("button").contains("Dzēst").click();
+    cy.get(".modal").within(() => {
+      cy.get("button").contains("Dzēst").click();
+    });
 
     cy.on("window:confirm", () => true);
 
     cy.wait("@deletePartnerRequest");
     cy.get("body").find(".Toastify__toast", { timeout: 3000 }).should("contain", "Partneris veiksmīgi dzēsts!");
+    cy.get(".modal-backdrop").should("not.exist");
     cy.url().should("include", "/partners");
   });
 

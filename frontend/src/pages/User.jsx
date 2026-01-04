@@ -98,15 +98,16 @@ export default function User() {
           <Form noValidate>
             {/* E-pasts nevar tikt mainīts */}
             <Form.Group className="mb-2">
-              <Form.Label>E-pasts</Form.Label>
-              <Form.Control name="email" value={formData.email} disabled></Form.Control>
+              <Form.Label htmlFor="email">E-pasts</Form.Label>
+              <Form.Control name="email" id="email" value={formData.email} autoComplete="off" disabled></Form.Control>
             </Form.Group>
 
             <Form.Group className="mb-2">
-              <Form.Label>Lietotājvārds</Form.Label>
+              <Form.Label htmlFor="username">Lietotājvārds</Form.Label>
               <Form.Control
                 type="text"
                 name="username"
+                id="username"
                 autoComplete="off"
                 value={formData.username}
                 onChange={handleChange}
@@ -125,10 +126,11 @@ export default function User() {
             />
 
             <Form.Group className="mb-2">
-              <Form.Label>Jauna parole</Form.Label>
+              <Form.Label htmlFor="password">Jauna parole</Form.Label>
               <Form.Control
                 type="password"
                 name="password"
+                id="password"
                 value={formData.password}
                 onChange={handleChange}
                 isInvalid={!!formErrors.password}
@@ -138,10 +140,11 @@ export default function User() {
             </Form.Group>
 
             <Form.Group className="mb-2">
-              <Form.Label>Atkārtota jauna parole</Form.Label>
+              <Form.Label htmlFor="repeatPassword">Atkārtota jauna parole</Form.Label>
               <Form.Control
                 type="password"
                 name="repeatPassword"
+                id="repeatPassword"
                 value={formData.repeatPassword}
                 onChange={handleChange}
                 isInvalid={!!formErrors.repeatPassword}

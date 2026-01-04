@@ -5,7 +5,8 @@ import AmountInput from "../../utils/AmountInput";
 import { Document, Page, pdfjs } from "react-pdf";
 
 // Iestata PDF.js worker, lai varētu renderēt PDF failus
-pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
+//pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
 // Dokumenta tipu izvēles opcijas
 const docTypeOptions = [
@@ -137,9 +138,6 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
     handleClose();
   };
 
-  // Atcelt formas izmaiņas
-  const handleCancel = () => handleClose();
-
   // Dzēst dokumentu
   const handleDelete = () => {
     if (!window.confirm("Vai tiešām vēlaties dzēst šo dokumentu?")) return;
@@ -174,7 +172,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
   const hasPdf = !!localPdfFile;
 
   return (
-    <Modal show={show} onHide={handleCancel} size={hasPdf ? "xl" : "md"}>
+    <Modal show={show} onHide={handleClose} size={hasPdf ? "xl" : "md"}>
       <Modal.Header closeButton>
         <Modal.Title>{isEditMode ? "Rediģēt dokumentu" : "Pievienot jaunu dokumentu"}</Modal.Title>
       </Modal.Header>
@@ -199,10 +197,11 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
             <Form style={{ flex: 1 }}>
               {/* Dokumenta numurs */}
               <Form.Group className="mb-2">
-                <Form.Label>Dokumenta numurs</Form.Label>
+                <Form.Label htmlFor="doc_id">Dokumenta numurs</Form.Label>
                 <Form.Control
                   type="text"
                   name="doc_id"
+                  id="doc_id"
                   autoComplete="off"
                   value={formData.doc_id}
                   onChange={handleChange}
@@ -213,12 +212,13 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
 
               {/* Datums */}
               <Form.Group className="mb-2">
-                <Form.Label>
+                <Form.Label htmlFor="doc_date">
                   Datums <span style={{ color: "red" }}>*</span>
                 </Form.Label>
                 <Form.Control
                   type="date"
                   name="doc_date"
+                  id="doc_date"
                   value={formData.doc_date.slice(0, 10)} // Izgriež tikai YYYY-MM-DD formātu
                   onChange={handleChange}
                   isInvalid={!!formErrors.doc_date}
@@ -228,11 +228,12 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
 
               {/* Dokumenta tips */}
               <Form.Group className="mb-2">
-                <Form.Label>
+                <Form.Label htmlFor="doc_type_abbrev">
                   Dokumenta tips <span style={{ color: "red" }}>*</span>
                 </Form.Label>
                 <Form.Select
                   name="doc_type_abbrev"
+                  id="doc_type_abbrev"
                   value={formData.doc_type_abbrev}
                   onChange={handleChange}
                   isInvalid={!!formErrors.doc_type_abbrev}
@@ -248,11 +249,12 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
 
               {/* Dokumenta grupa */}
               <Form.Group className="mb-2">
-                <Form.Label>
+                <Form.Label htmlFor="doc_group_abbrev">
                   Dokumenta grupa <span style={{ color: "red" }}>*</span>
                 </Form.Label>
                 <Form.Select
                   name="doc_group_abbrev"
+                  id="doc_group_abbrev"
                   value={formData.doc_group_abbrev}
                   onChange={handleChange}
                   isInvalid={!!formErrors.doc_group_abbrev}
@@ -268,11 +270,12 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
 
               {/* Valūta */}
               <Form.Group className="mb-2">
-                <Form.Label>
+                <Form.Label htmlFor="doc_currency">
                   Valūta <span style={{ color: "red" }}>*</span>
                 </Form.Label>
                 <Form.Select
                   name="doc_currency"
+                  id="doc_currency"
                   value={formData.doc_currency}
                   onChange={handleChange}
                   isInvalid={!!formErrors.doc_currency}
@@ -288,11 +291,12 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
 
               {/* Summa */}
               <Form.Group className="mb-2">
-                <Form.Label>
+                <Form.Label htmlFor="doc_amount">
                   Summa <span style={{ color: "red" }}>*</span>
                 </Form.Label>
                 <AmountInput
                   name="doc_amount"
+                  id="doc_amount"
                   autoComplete="off"
                   value={formData.doc_amount}
                   onChange={(val) => setFormData({ ...formData, doc_amount: val })}
@@ -303,9 +307,10 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
 
               {/* Partneris */}
               <Form.Group className="mb-2">
-                <Form.Label>Partneris</Form.Label>
+                <Form.Label htmlFor="partner_id">Partneris</Form.Label>
                 <Form.Select
                   name="partner_id"
+                  id="partner_id"
                   value={formData.partner_id || ""}
                   onChange={handleChange}
                   isInvalid={!!formErrors.partner_id}
@@ -326,11 +331,12 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
 
               {/* Piezīmes */}
               <Form.Group className="mb-3">
-                <Form.Label>Piezīmes</Form.Label>
+                <Form.Label htmlFor="doc_comments">Piezīmes</Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={3}
                   name="doc_comments"
+                  id="doc_comments"
                   autoComplete="off"
                   value={formData.doc_comments}
                   onChange={handleChange}
@@ -375,7 +381,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
             Dzēst
           </Button>
         )}
-        <Button className="custom-dark-hover" onClick={handleCancel}>
+        <Button className="custom-dark-hover" onClick={handleClose}>
           Atcelt
         </Button>
         <Button className="custom-dark-hover" onClick={handleSubmit}>

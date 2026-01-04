@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dataroot>
+  <tjDocument Version="TJ5.5.101"/>
+  <tjResponse Name="Partner" Operation="Insert" Version="TJ7.0.112" Structure="Tree">
+    <Partner>
+      <PartnerKindName>Juridiska persona</PartnerKindName>
+      <PartnerTitle>AS</PartnerTitle>
+      <PartnerName>Second Company</PartnerName>
+      <PartnerRegistrationNo>90009999</PartnerRegistrationNo>
+      <PartnerTaxpayerType>Apliekama persona, LV</PartnerTaxpayerType>
+      <PartnerLockedNoticeID>0</PartnerLockedNoticeID>
+      <PartnerProductWarehouseNoticeID>0</PartnerProductWarehouseNoticeID>
+      <PartnerTimberForwarderNoticeID>0</PartnerTimberForwarderNoticeID>
+      <PartnerCreditStatussBlocked/>
+      <PartnerVatNo>
+        <VatNo>LV90009999</VatNo>
+        <VatNoCountryCode>LV</VatNoCountryCode>
+      </PartnerVatNo>
+    </Partner>
+    <Partner>
+      <PartnerKindName>Juridiska persona</PartnerKindName>
+      <PartnerTitle>SIA</PartnerTitle>
+      <PartnerName>First Company</PartnerName>
+      <PartnerRegistrationNo>20001000</PartnerRegistrationNo>
+      <PartnerTaxpayerType>Apliekama persona, LV</PartnerTaxpayerType>
+      <PartnerLockedNoticeID>0</PartnerLockedNoticeID>
+      <PartnerProductWarehouseNoticeID>0</PartnerProductWarehouseNoticeID>
+      <PartnerTimberForwarderNoticeID>0</PartnerTimberForwarderNoticeID>
+      <PartnerCreditStatussBlocked/>
+      <PartnerVatNo>
+        <VatNo>LV20001000</VatNo>
+        <VatNoCountryCode>LV</VatNoCountryCode>
+      </PartnerVatNo>
+    </Partner>
+  </tjResponse>
+</dataroot>

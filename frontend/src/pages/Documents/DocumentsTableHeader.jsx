@@ -72,6 +72,7 @@ export default function FinancialDocsTableHeader({
           <th style={{ borderBottom: "none" }}></th>
           <th style={{ borderBottom: "none" }}>
             <input
+              name="date-from"
               type="date"
               className="form-control form-control-sm"
               value={filters.dateFrom}
@@ -84,6 +85,7 @@ export default function FinancialDocsTableHeader({
           <th style={{ borderBottom: "none" }}></th>
           <th style={{ borderBottom: "none" }}>
             <AmountInput
+              name="amount-from"
               size="sm"
               placeholder="No"
               value={filters.amountMin}
@@ -99,6 +101,7 @@ export default function FinancialDocsTableHeader({
           <th></th>
           <th>
             <input
+              name="date-to"
               type="date"
               className="form-control form-control-sm"
               value={filters.dateTo}
@@ -107,6 +110,7 @@ export default function FinancialDocsTableHeader({
           </th>
           <th>
             <input
+              name="doc-id"
               type="text"
               className="form-control form-control-sm"
               placeholder="Dokumenta nr."
@@ -117,6 +121,7 @@ export default function FinancialDocsTableHeader({
           <th>
             {/* Partnera filtrs ar sakārtotu select */}
             <select
+              name="partner-id"
               className="form-select form-select-sm"
               value={filters.partnerId}
               onChange={(e) => setFilters({ ...filters, partnerId: e.target.value })}
@@ -135,6 +140,7 @@ export default function FinancialDocsTableHeader({
           <th>
             {/* Dokumenta tipa filtrs */}
             <select
+              name="doc-type"
               className="form-select form-select-sm"
               value={filters.docType}
               onChange={(e) => setFilters({ ...filters, docType: e.target.value })}
@@ -150,6 +156,7 @@ export default function FinancialDocsTableHeader({
           <th>
             {/* Valūtas filtrs */}
             <select
+              name="doc-currency"
               className="form-select form-select-sm"
               value={filters.currency}
               onChange={(e) => setFilters({ ...filters, currency: e.target.value })}
@@ -165,6 +172,7 @@ export default function FinancialDocsTableHeader({
           <th>
             {/* AmountInput filtrs "Līdz" */}
             <AmountInput
+              name="amount-to"
               size="sm"
               placeholder="Līdz"
               value={filters.amountMax}
@@ -173,6 +181,7 @@ export default function FinancialDocsTableHeader({
           </th>
           <th>
             <input
+              name="doc-comments"
               type="text"
               className="form-control form-control-sm"
               placeholder="Meklēt..."

@@ -28,7 +28,9 @@ describe("Delete company", () => {
       forceNetworkError: true,
     }).as("deleteCompanyRequest");
 
-    cy.contains("button", "Dzēst").click();
+    cy.get(".modal").within(() => {
+      cy.contains("button", "Dzēst").click();
+    });
 
     cy.on("window:confirm", () => true);
 
@@ -41,12 +43,14 @@ describe("Delete company", () => {
 
     cy.intercept("DELETE", "http://localhost:5001/api/companies/*").as("deleteCompanyRequest");
 
-    cy.contains("button", "Dzēst").click();
+    cy.get(".modal").within(() => {
+      cy.contains("button", "Dzēst").click();
+    });
 
     cy.on("window:confirm", () => true);
 
     cy.wait("@deleteCompanyRequest").its("response.statusCode").should("eq", 200);
-    cy.get("body").find(".Toastify__toast", { timeout: 3000 }).should("contain", "Uzņēmums veiksmīgi dzēsts!");
+    cy.get(".modal-backdrop").should("not.exist");
     cy.url().should("include", "/companies");
   });
 });

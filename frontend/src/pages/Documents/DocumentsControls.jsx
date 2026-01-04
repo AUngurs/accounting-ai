@@ -64,12 +64,7 @@ export default function DocumentsControls({
       </Button>
 
       {/* Slēpts file input, ko kontrolē ar ref */}
-      <Form.Control
-        type="file"
-        ref={fileInputRef}
-        style={{ display: "none" }}
-        onChange={handleFileChange}
-      />
+      <Form.Control type="file" ref={fileInputRef} style={{ display: "none" }} onChange={handleFileChange} />
 
       <InputGroup className="w-auto">
         {/* Ja fails vēl nav izvēlēts, rāda dropdown importam */}
@@ -80,12 +75,8 @@ export default function DocumentsControls({
             </Dropdown.Toggle>
 
             <Dropdown.Menu>
-              <Dropdown.Item onClick={() => handleTypeSelect("pdf")}>
-                PDF
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => handleTypeSelect("xml")}>
-                XML
-              </Dropdown.Item>
+              <Dropdown.Item onClick={() => handleTypeSelect("pdf")}>PDF</Dropdown.Item>
+              <Dropdown.Item onClick={() => handleTypeSelect("xml")}>XML</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         )}
@@ -96,8 +87,7 @@ export default function DocumentsControls({
             <Button className="custom-red-hover" onClick={handleCancel}>
               Atcelt
             </Button>
-            <Form.Control value={file.name} readOnly className="bg-light" />{" "}
-            {/* Rāda izvēlēto failu */}
+            <Form.Control name="imported-file" value={file.name} readOnly className="bg-light" /> {/* Rāda izvēlēto failu */}
             <Button className="custom-dark-hover" onClick={handleImportClick}>
               Importēt
             </Button>

@@ -37,8 +37,10 @@ Cypress.Commands.add("createCompany", (companyName) => {
 
   cy.intercept("POST", "http://localhost:5001/api/companies").as("addCompanyRequest");
 
-  cy.get('input[name="name"]').clear().type(companyName);
-  cy.get(".modal button").contains("Pievienot").click();
+  cy.get(".modal").within(() => {
+    cy.get('input[name="name"]').clear().type(companyName);
+    cy.contains("button", "Pievienot").click();
+  });
 
   cy.wait("@addCompanyRequest").its("response.statusCode").should("eq", 201);
 
@@ -54,17 +56,22 @@ Cypress.Commands.add("createPartner", ({ title, name, regNr, enableVatEdit, vatN
 
   cy.intercept("POST", "http://localhost:5001/api/companies/*/partners").as("addPartnerRequest");
 
-  cy.get('input[name="title"]').clear().type(title);
-  cy.get('input[name="name"]').clear().type(name);
-  cy.get('input[name="reg_nr"]').clear().type(regNr);
-  if (enableVatEdit) cy.get("#enableVatEdit").check();
-  if (enableVatEdit) cy.get('input[name="vat_nr_input"]').clear().type(vatNr);
-  cy.get('button[type="submit"]').click();
+  cy.get(".modal").within(() => {
+    cy.get('input[name="title"]').clear().type(title);
+    cy.get('input[name="name"]').clear().type(name);
+    cy.get('input[name="reg_nr"]').clear().type(regNr);
+
+    if (enableVatEdit) {
+      cy.get("#enableVatEdit").check();
+      cy.get('input[name="vat_nr_input"]').clear().type(vatNr);
+    }
+
+    cy.get('button[type="submit"]').click();
+  });
 
   cy.wait("@addPartnerRequest").its("response.statusCode").should("eq", 201);
 
   cy.get(".modal-backdrop").should("not.exist");
-
   cy.url().should("include", "/partners");
 });
 
@@ -81,18 +88,21 @@ Cypress.Commands.add("setAccounts", () => {
 });
 
 Cypress.Commands.add("createDocument", ({ id, date, amount, comments }) => {
-  cy.get("button").contains("Jauns").click();
+  cy.contains("button", "Jauns").click();
 
   cy.get(".modal").should("be.visible");
 
   cy.intercept("POST", "http://localhost:5001/api/companies/*/documents").as("addDocumentRequest");
 
-  cy.get('input[name="doc_id"]').clear().type(id);
-  cy.get('input[name="doc_date"]').clear().type(date);
-  cy.get('input[name="doc_amount"]').clear().type(amount);
-  cy.get('select[name="partner_id"]').select(1);
-  cy.get('textarea[name="doc_comments"]').clear().type(comments);
-  cy.get("button").contains("Pievienot").click();
+  cy.get(".modal").within(() => {
+    cy.get('input[name="doc_id"]').clear().type(id);
+    cy.get('input[name="doc_date"]').clear().type(date);
+    cy.get('input[name="doc_amount"]').clear().type(amount);
+    cy.get('select[name="partner_id"]').select(1);
+    cy.get('textarea[name="doc_comments"]').clear().type(comments);
+
+    cy.contains("button", "Pievienot").click();
+  });
 
   cy.wait("@addDocumentRequest").its("response.statusCode").should("eq", 201);
 

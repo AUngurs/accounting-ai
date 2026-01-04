@@ -79,12 +79,13 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
         >
           {/* Koda lauks ar validācijas atgriezenisko saiti */}
           <Form.Group className="mb-2">
-            <Form.Label>
+            <Form.Label htmlFor="code">
               Kods <span style={{ color: "red" }}>*</span>
             </Form.Label>
             <Form.Control
               type="text"
               name="code"
+              id="code"
               autoComplete="off"
               value={formData.code}
               onChange={handleChange}
@@ -95,12 +96,13 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
 
           {/* Nosaukuma lauks ar validācijas atgriezenisko saiti */}
           <Form.Group className="mb-2">
-            <Form.Label>
+            <Form.Label htmlFor="name">
               Nosaukums <span style={{ color: "red" }}>*</span>
             </Form.Label>
             <Form.Control
               type="text"
               name="name"
+              id="name"
               autoComplete="off"
               value={formData.name}
               onChange={handleChange}
@@ -111,10 +113,10 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
 
           {/* Analītiskais/Sintētiskais select lauks */}
           <Form.Group className="mb-2">
-            <Form.Label>
+            <Form.Label htmlFor="type">
               Analītiskais/Sintētiskais <span style={{ color: "red" }}>*</span>
             </Form.Label>
-            <Form.Select name="type" value={formData.type} onChange={handleChange} isInvalid={!!formErrors.type}>
+            <Form.Select name="type" id="type" value={formData.type} onChange={handleChange} isInvalid={!!formErrors.type}>
               {typeOptions.map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
@@ -126,10 +128,10 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
 
           {/* Aktīva/Pasīva/Operāciju select lauks */}
           <Form.Group className="mb-2">
-            <Form.Label>
+            <Form.Label htmlFor="category">
               Aktīva/Pasīva/Operāciju <span style={{ color: "red" }}>*</span>
             </Form.Label>
-            <Form.Select name="category" value={formData.category} onChange={handleChange} isInvalid={!!formErrors.category}>
+            <Form.Select name="category" id="category" value={formData.category} onChange={handleChange} isInvalid={!!formErrors.category}>
               {categoryOptions.map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}

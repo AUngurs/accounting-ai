@@ -50,10 +50,11 @@ export default function Register() {
 
         <Form noValidate onSubmit={handleRegister}>
           <Form.Group className="mb-3">
-            <Form.Label>E-pasts</Form.Label>
+            <Form.Label htmlFor="email">E-pasts</Form.Label>
             <Form.Control
               type="text"
               name="email"
+              id="email"
               autoComplete="off"
               value={formData.email}
               onChange={handleChange}
@@ -63,10 +64,11 @@ export default function Register() {
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>Lietotājvārds</Form.Label>
+            <Form.Label htmlFor="username">Lietotājvārds</Form.Label>
             <Form.Control
               type="text"
               name="username"
+              id="username"
               autoComplete="off"
               value={formData.username}
               onChange={handleChange}
@@ -76,10 +78,11 @@ export default function Register() {
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>Parole</Form.Label>
+            <Form.Label htmlFor="password">Parole</Form.Label>
             <Form.Control
               type="password"
               name="password"
+              id="password"
               value={formData.password}
               onChange={handleChange}
               isInvalid={!!formErrors.password} // Parāda kļūdu vizuāli
@@ -88,10 +91,11 @@ export default function Register() {
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>Atkārtota parole</Form.Label>
+            <Form.Label htmlFor="repeatPassword">Atkārtota parole</Form.Label>
             <Form.Control
               type="password"
               name="repeatPassword"
+              id="repeatPassword"
               value={formData.repeatPassword}
               onChange={handleChange}
               isInvalid={!!formErrors.repeatPassword} // Parāda kļūdu vizuāli

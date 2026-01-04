@@ -47,7 +47,9 @@ describe("Delete document", () => {
       forceNetworkError: true,
     }).as("deleteDocumentRequest");
 
-    cy.get("button").contains("Dzēst").click();
+    cy.get(".modal").within(() => {
+      cy.get("button").contains("Dzēst").click();
+    });
 
     cy.on("window:confirm", () => true);
 
@@ -75,11 +77,14 @@ describe("Delete document", () => {
     cy.get(".document-row").eq(0).find("i").click();
     cy.intercept("DELETE", "http://localhost:5001/api/companies/*/documents/*").as("deleteDocumentRequest");
 
-    cy.get("button").contains("Dzēst").click();
+    cy.get(".modal").within(() => {
+      cy.get("button").contains("Dzēst").click();
+    });
 
     cy.on("window:confirm", () => true);
 
     cy.wait("@deleteDocumentRequest");
+    cy.get(".modal-backdrop").should("not.exist");
     cy.get("body").find(".Toastify__toast", { timeout: 3000 }).should("contain", "Finanšu dokuments veiksmīgi dzēsts!");
     cy.url().should("include", "/documents");
   });

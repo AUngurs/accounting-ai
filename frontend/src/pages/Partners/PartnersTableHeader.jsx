@@ -54,6 +54,8 @@ export default function PartnersTableHeader({
           <th></th>
           <th>
             <input
+              name="name"
+              autoComplete="off"
               type="text"
               className="form-control form-control-sm"
               placeholder="Meklēt nosaukumu"
@@ -63,6 +65,7 @@ export default function PartnersTableHeader({
           </th>
           <th>
             <select
+              name="type"
               className="form-select form-select-sm"
               value={filters.type}
               onChange={(e) => setFilters({ ...filters, type: e.target.value })}
@@ -75,6 +78,7 @@ export default function PartnersTableHeader({
           </th>
           <th>
             <input
+              name="reg-nr"
               type="text"
               className="form-control form-control-sm"
               placeholder="Reģ. Nr"
@@ -84,6 +88,7 @@ export default function PartnersTableHeader({
           </th>
           <th>
             <input
+              name="vat-nr"
               type="text"
               className="form-control form-control-sm"
               placeholder="PVN Nr"

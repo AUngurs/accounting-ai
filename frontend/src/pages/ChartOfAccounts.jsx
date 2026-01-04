@@ -143,7 +143,7 @@ export default function ChartOfAccounts() {
               <Button className="custom-red-hover" onClick={handleCancel}>
                 Atcelt
               </Button>
-              <Form.Control value={file.name} readOnly className="bg-light" />
+              <Form.Control name="imported-file" value={file.name} readOnly className="bg-light" />
               <Button className="custom-dark-hover" onClick={handleImport}>
                 Importēt
               </Button>

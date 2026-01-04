@@ -47,10 +47,11 @@ export default function Login() {
       <div className="card p-4 shadow" style={{ width: "100%", maxWidth: "400px", borderRadius: "10px" }}>
         <Form noValidate onSubmit={handleLogin}>
           <Form.Group className="mb-3">
-            <Form.Label>E-pasts</Form.Label>
+            <Form.Label htmlFor="email">E-pasts</Form.Label>
             <Form.Control
               type="text"
               name="email"
+              id="email"
               autoComplete="off"
               value={formData.email}
               onChange={handleChange}
@@ -60,10 +61,11 @@ export default function Login() {
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>Parole</Form.Label>
+            <Form.Label htmlFor="password">Parole</Form.Label>
             <Form.Control
               type="password"
               name="password"
+              id="password"
               value={formData.password}
               onChange={handleChange}
               isInvalid={!!formErrors.password} // Parāda kļūdu vizuāli

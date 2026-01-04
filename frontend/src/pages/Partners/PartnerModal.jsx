@@ -159,10 +159,16 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
         >
           {/* Partnera veids */}
           <Form.Group className="mb-2">
-            <Form.Label>
+            <Form.Label htmlFor="kind_name">
               Juridiska persona/Fiziska persona/Darbinieks <span style={{ color: "red" }}>*</span>
             </Form.Label>
-            <Form.Select name="kind_name" value={formData.kind_name} onChange={handleChange} isInvalid={!!formErrors.kind_name}>
+            <Form.Select
+              name="kind_name"
+              id="kind_name"
+              value={formData.kind_name}
+              onChange={handleChange}
+              isInvalid={!!formErrors.kind_name}
+            >
               {kindNameOptions.map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
@@ -174,12 +180,13 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
 
           {/* Tiesiskā forma/Uzvārds */}
           <Form.Group className="mb-2">
-            <Form.Label>
+            <Form.Label htmlFor="title">
               {labels.title} {!isCompany && <span style={{ color: "red" }}>*</span>}
             </Form.Label>
             <Form.Control
               type="text"
               name="title"
+              id="title"
               autoComplete="off"
               value={formData.title}
               onChange={handleChange}
@@ -191,12 +198,13 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
 
           {/* Nosaukums/Vārds */}
           <Form.Group className="mb-2">
-            <Form.Label>
+            <Form.Label htmlFor="name">
               {labels.name} <span style={{ color: "red" }}>*</span>
             </Form.Label>
             <Form.Control
               type="text"
               name="name"
+              id="name"
               autoComplete="off"
               value={formData.name}
               onChange={handleChange}
@@ -207,10 +215,11 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
 
           {/* Reģistrācijas numurs/Personas kods */}
           <Form.Group className="mb-2">
-            <Form.Label>{labels.reg_nr}</Form.Label>
+            <Form.Label htmlFor="reg_nr">{labels.reg_nr}</Form.Label>
             <Form.Control
               type="text"
               name="reg_nr"
+              id="reg_nr"
               autoComplete="off"
               value={formData.reg_nr}
               onChange={handleChange}
@@ -230,9 +239,10 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
           />
 
           <Form.Group className="mb-2">
-            <Form.Label>Nodokļu maksātāja statuss {isVatEditable && <span style={{ color: "red" }}>*</span>}</Form.Label>
+            <Form.Label htmlFor="vat_type">Nodokļu maksātāja statuss {isVatEditable && <span style={{ color: "red" }}>*</span>}</Form.Label>
             <Form.Select
               name="vat_type"
+              id="vat_type"
               value={formData.vat_type}
               onChange={handleChange}
               isInvalid={!!formErrors.vat_type}
@@ -248,9 +258,10 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
           </Form.Group>
 
           <Form.Group className="mb-2">
-            <Form.Label>PVN valsts {isVatEditable && <span style={{ color: "red" }}>*</span>}</Form.Label>
+            <Form.Label htmlFor="vat_country_code">PVN valsts {isVatEditable && <span style={{ color: "red" }}>*</span>}</Form.Label>
             <Form.Select
               name="vat_country_code"
+              id="vat_country_code"
               value={vatCountryValue}
               onChange={handleChange}
               disabled={!isVatEditable || isVatCountryDisabled}
@@ -265,10 +276,11 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
           </Form.Group>
 
           <Form.Group className="mb-2">
-            <Form.Label>PVN numurs {isVatEditable && <span style={{ color: "red" }}>*</span>}</Form.Label>
+            <Form.Label htmlFor="vat_nr_input">PVN numurs {isVatEditable && <span style={{ color: "red" }}>*</span>}</Form.Label>
             <Form.Control
               type="text"
               name="vat_nr_input"
+              id="vat_nr_input"
               value={vatNrInput}
               autoComplete="off"
               onChange={handleVatNrChange}

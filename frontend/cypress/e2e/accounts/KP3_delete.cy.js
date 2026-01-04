@@ -38,7 +38,9 @@ describe("Delete account", () => {
       forceNetworkError: true,
     }).as("deleteAccountRequest");
 
-    cy.get("button").contains("Dzēst").click();
+    cy.get(".modal").within(() => {
+      cy.get("button").contains("Dzēst").click();
+    });
 
     cy.on("window:confirm", () => true);
 
@@ -50,11 +52,14 @@ describe("Delete account", () => {
     cy.get("tbody tr td div button").eq(0).click();
     cy.intercept("DELETE", "http://localhost:5001/api/companies/*/accounts/*").as("deleteAccountRequest");
 
-    cy.get("button").contains("Dzēst").click();
+    cy.get(".modal").within(() => {
+      cy.get("button").contains("Dzēst").click();
+    });
 
     cy.on("window:confirm", () => true);
 
     cy.wait("@deleteAccountRequest").its("response.statusCode").should("eq", 200);
+    cy.get(".modal-backdrop").should("not.exist");
     cy.url().should("include", "/accounts");
   });
 });

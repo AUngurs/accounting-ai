@@ -197,6 +197,10 @@ export const importPdf = async (req, res) => {
     // Pārbauda, vai nepieciešams OCR
     let finalText = needsOCR(extractedText) ? await runOCR(req.file.buffer) : extractedText;
 
+    if (finalText.length === 0) {
+      throw new Error("No results");
+    }
+
     // Attīra tekstu no liekām atstarpēm un sapludina vārdus/numurus
     finalText = finalText
       .replace(/(\d)\s+(\d)/g, "$1$2")

@@ -68,10 +68,11 @@ export default function EditCompanyModal({ show, handleClose, company, onSave, o
         >
           {/* Uzņēmuma nosaukuma lauks ar validācijas atgriezenisko saiti */}
           <Form.Group className="mb-2">
-            <Form.Label>Uzņēmuma nosaukums</Form.Label>
+            <Form.Label htmlFor="name">Uzņēmuma nosaukums</Form.Label>
             <Form.Control
               type="text"
               name="name"
+              id="name"
               autoComplete="off"
               value={formData.name}
               onChange={handleChange}
