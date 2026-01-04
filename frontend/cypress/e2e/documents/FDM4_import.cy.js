@@ -39,7 +39,7 @@ describe("Import documents", () => {
     cy.get("a").contains("XML").click();
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[FDM4_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.get('input[type="file"]').selectFile("cypress/fixtures/document_import.xml", { force: true });
 
     cy.intercept("POST", "http://localhost:5001/api/companies/*/documents/importxml", { forceNetworkError: true }).as(
@@ -52,7 +52,7 @@ describe("Import documents", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("ERR6 - Neparedzēta servera kļūda [Nepareiza formatējuma XML fails]", () => {
+  it("[FDM4_T2] ERR6 - Neparedzēta servera kļūda [Nepareiza formatējuma XML fails]", () => {
     cy.get('input[type="file"]').selectFile("cypress/fixtures/incorrect_document_import.xml", { force: true });
 
     cy.intercept("POST", "http://localhost:5001/api/companies/*/documents/importxml").as("importDocumentsRequest");
@@ -63,7 +63,7 @@ describe("Import documents", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Veiksmīga finanšu dokumentu importēšana", () => {
+  it("[FDM4_T3] Veiksmīga finanšu dokumentu importēšana", () => {
     cy.get('input[type="file"]').selectFile("cypress/fixtures/document_import.xml", { force: true });
 
     cy.intercept("POST", "http://localhost:5001/api/companies/*/documents/importxml").as("importDocumentsRequest");

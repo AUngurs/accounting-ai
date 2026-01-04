@@ -9,7 +9,7 @@ describe("Logout", () => {
     registeredUser = { email: uniqueEmail, password: "ValidPassword123!" };
   });
 
-  it("Veiksmīga atteikšanās no sistēmas", () => {
+  it("[LM4_T1] Veiksmīga atteikšanās no sistēmas", () => {
     cy.login({ email: registeredUser.email, password: registeredUser.password });
 
     cy.get("button.logout-button").click();

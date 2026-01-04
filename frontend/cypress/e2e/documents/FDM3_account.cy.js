@@ -46,7 +46,7 @@ describe("Account document", () => {
     cy.get(".add-line-btn").click();
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[FDM3_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.intercept("PUT", "http://localhost:5001/api/companies/*/documents/*/lines", {
       forceNetworkError: true,
     }).as("editDocumentLinesRequest");
@@ -71,7 +71,7 @@ describe("Account document", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("ERR24 - Nederīgs summas formāts", () => {
+  it("[FDM3_T2] ERR24 - Nederīgs summas formāts", () => {
     cy.get('input[name="amount"]').eq(0).clear().type("0");
     cy.get('select[name="debet"]').eq(0).select(1);
     cy.get('select[name="credit"]').eq(0).select(1);
@@ -83,7 +83,7 @@ describe("Account document", () => {
     cy.get(".invalid-feedback").should("contain", "Nederīgs summas formāts");
   });
 
-  it("ERR26 - Piezīmes nedrīkst pārsniegt 255 simbolus", () => {
+  it("[FDM3_T3] ERR26 - Piezīmes nedrīkst pārsniegt 255 simbolus", () => {
     cy.get('input[name="amount"]').eq(0).clear().type("500");
     cy.get('select[name="debet"]').eq(0).select(1);
     cy.get('select[name="credit"]').eq(0).select(1);
@@ -100,7 +100,7 @@ describe("Account document", () => {
     cy.get(".invalid-feedback").should("contain", "Piezīmes nedrīkst pārsniegt 255 simbolus");
   });
 
-  it("ERR27 - PVN likmei jābūt pozitīvam, veselam skaitlim no 1 līdz 100", () => {
+  it("[FDM3_T4] ERR27 - PVN likmei jābūt pozitīvam, veselam skaitlim no 1 līdz 100", () => {
     cy.get('input[name="amount"]').eq(0).clear().type("605");
     cy.get('select[name="debet"]').eq(0).select(1);
     cy.get('select[name="credit"]').eq(0).select(1);
@@ -112,7 +112,7 @@ describe("Account document", () => {
     cy.get(".invalid-feedback").should("contain", "PVN likmei jābūt pozitīvam, veselam skaitlim no 1 līdz 100");
   });
 
-  it("Veiksmīga finanšu dokumenta kontēšana", () => {
+  it("[FDM3_T5] Veiksmīga finanšu dokumenta kontēšana", () => {
     cy.intercept("PUT", "http://localhost:5001/api/companies/*/documents/*/lines").as("editDocumentLinesRequest");
 
     cy.get('input[name="amount"]').eq(0).clear().type("500");

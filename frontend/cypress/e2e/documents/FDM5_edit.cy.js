@@ -37,7 +37,7 @@ describe("Edit document", () => {
     cy.visit("/documents");
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[FDM5_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.get(".document-row").eq(0).find("i").click();
     cy.intercept("PUT", "http://localhost:5001/api/companies/*/documents/*", {
       forceNetworkError: true,
@@ -56,7 +56,7 @@ describe("Edit document", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("ERR22 - Finanšu dokumenta numurs nedrīkst pārsniegt 50 simbolus", () => {
+  it("[FDM5_T2] ERR22 - Finanšu dokumenta numurs nedrīkst pārsniegt 50 simbolus", () => {
     cy.get(".document-row").eq(0).find("i").click();
     cy.get(".modal").within(() => {
       cy.get('input[name="doc_id"]').clear().type("Text exceeding fifty characters to trigger validation error");
@@ -70,7 +70,7 @@ describe("Edit document", () => {
     });
   });
 
-  it("ERR23 - Finanšu dokumenta datums ir obligāts", () => {
+  it("[FDM5_T3] ERR23 - Finanšu dokumenta datums ir obligāts", () => {
     cy.get(".document-row").eq(0).find("i").click();
     cy.get(".modal").within(() => {
       cy.get('input[name="doc_id"]').clear().type("1001");
@@ -84,7 +84,7 @@ describe("Edit document", () => {
     });
   });
 
-  it("ERR24 - Nederīgs summas formāts", () => {
+  it("[FDM5_T4] ERR24 - Nederīgs summas formāts", () => {
     cy.get(".document-row").eq(0).find("i").click();
     cy.get(".modal").within(() => {
       cy.get('input[name="doc_id"]').clear().type("1002");
@@ -98,7 +98,7 @@ describe("Edit document", () => {
     });
   });
 
-  it("ERR25 - Šāds finanšu dokuments jau eksistē", () => {
+  it("[FDM5_T5] ERR25 - Šāds finanšu dokuments jau eksistē", () => {
     cy.get(".document-row").eq(0).find("i").click();
     cy.get(".modal").within(() => {
       cy.get('input[name="doc_id"]').clear().type("0001");
@@ -112,7 +112,7 @@ describe("Edit document", () => {
     });
   });
 
-  it("ERR26 - Piezīmes nedrīkst pārsniegt 255 simbolus", () => {
+  it("[FDM5_T6] ERR26 - Piezīmes nedrīkst pārsniegt 255 simbolus", () => {
     cy.get(".document-row").eq(0).find("i").click();
     cy.get(".modal").within(() => {
       cy.get('input[name="doc_id"]').clear().type("1003");
@@ -129,7 +129,7 @@ describe("Edit document", () => {
     });
   });
 
-  it("Veiksmīga finanšu dokumenta rediģēšana", () => {
+  it("[FDM5_T7] Veiksmīga finanšu dokumenta rediģēšana", () => {
     cy.get(".document-row").eq(0).find("i").click();
     cy.intercept("PUT", "http://localhost:5001/api/companies/*/documents/*").as("editDocumentRequest");
 

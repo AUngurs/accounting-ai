@@ -21,7 +21,7 @@ describe("Delete company", () => {
     cy.login({ email: registeredUser.email, password: registeredUser.password });
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[UM4_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.contains("li", "Delete Company 1").find("button").click();
 
     cy.intercept("DELETE", "http://localhost:5001/api/companies/*", {
@@ -38,7 +38,7 @@ describe("Delete company", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Uzņēmums veiksmīgi dzēsts", () => {
+  it("[UM4_T2] Uzņēmums veiksmīgi dzēsts", () => {
     cy.contains("li", "Delete Company 2").find("button").click();
 
     cy.intercept("DELETE", "http://localhost:5001/api/companies/*").as("deleteCompanyRequest");

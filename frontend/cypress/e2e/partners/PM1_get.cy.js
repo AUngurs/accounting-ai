@@ -21,7 +21,7 @@ describe("Get partner list", () => {
     cy.get("span").click();
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[PM1_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.intercept("GET", "http://localhost:5001/api/companies/*/partners", {
       forceNetworkError: true,
     }).as("getPartnersRequest");
@@ -32,7 +32,7 @@ describe("Get partner list", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Veiksmīga partneru datu iegūšana", () => {
+  it("[PM1_T2] Veiksmīga partneru datu iegūšana", () => {
     cy.intercept("GET", "http://localhost:5001/api/companies/*/partners").as("getPartnersRequest");
 
     cy.visit("/partners");

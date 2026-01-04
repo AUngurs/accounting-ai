@@ -32,7 +32,7 @@ describe("Import accounts", () => {
     cy.visit("/accounts");
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[KP5_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.intercept("POST", "http://localhost:5001/api/companies/*/accounts/set", { forceNetworkError: true }).as("setAccountsRequest");
 
     cy.get("button").contains("Iestatīt noklusējuma kontus").click();
@@ -43,7 +43,7 @@ describe("Import accounts", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Veiksmīga noklusējuma kontu iestatīšana", () => {
+  it("[KP5_T2] Veiksmīga noklusējuma kontu iestatīšana", () => {
     cy.intercept("POST", "http://localhost:5001/api/companies/*/accounts/set").as("setAccountsRequest");
 
     cy.get("button").contains("Iestatīt noklusējuma kontus").click();

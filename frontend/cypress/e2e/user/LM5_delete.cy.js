@@ -13,7 +13,7 @@ describe("Delete user", () => {
     cy.visit("/user");
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[LM5_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.intercept("DELETE", "http://localhost:5001/api/user/*", {
       forceNetworkError: true,
     }).as("deleteUserRequest");
@@ -26,7 +26,7 @@ describe("Delete user", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Lietotāja konts veiksmīgi dzēsts", () => {
+  it("[LM5_T2] Lietotāja konts veiksmīgi dzēsts", () => {
     cy.intercept("DELETE", "http://localhost:5001/api/user/*").as("deleteUserRequest");
 
     cy.contains("button", "Dzēst").click();

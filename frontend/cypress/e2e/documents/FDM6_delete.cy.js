@@ -41,7 +41,7 @@ describe("Delete document", () => {
     cy.visit("/documents");
   });
 
-  it("ERR6 - Neparedzēta servera kļūda [SK-DOC-EDIT]", () => {
+  it("[FDM6_T1] ERR6 - Neparedzēta servera kļūda [SK-DOC-EDIT]", () => {
     cy.get(".document-row").eq(0).find("i").click();
     cy.intercept("DELETE", "http://localhost:5001/api/companies/*/documents/*", {
       forceNetworkError: true,
@@ -57,7 +57,7 @@ describe("Delete document", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("ERR6 - Neparedzēta servera kļūda [SK-DOC]", () => {
+  it("[FDM6_T2] ERR6 - Neparedzēta servera kļūda [SK-DOC]", () => {
     cy.get("tbody tr td input[type='checkbox']").eq(0).click();
     cy.get("tbody tr td input[type='checkbox']").eq(1).click();
 
@@ -73,7 +73,7 @@ describe("Delete document", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Veiksmīga finanšu dokumenta dzēšana [SK-DOC-EDIT]", () => {
+  it("[FDM6_T3] Veiksmīga finanšu dokumenta dzēšana [SK-DOC-EDIT]", () => {
     cy.get(".document-row").eq(0).find("i").click();
     cy.intercept("DELETE", "http://localhost:5001/api/companies/*/documents/*").as("deleteDocumentRequest");
 
@@ -89,7 +89,7 @@ describe("Delete document", () => {
     cy.url().should("include", "/documents");
   });
 
-  it("Veiksmīga finanšu dokumentu dzēšana [SK-DOC]", () => {
+  it("[FDM6_T4] Veiksmīga finanšu dokumentu dzēšana [SK-DOC]", () => {
     cy.get("tbody tr td input[type='checkbox']").eq(0).click();
     cy.get("tbody tr td input[type='checkbox']").eq(1).click();
 

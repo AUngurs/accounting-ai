@@ -32,7 +32,7 @@ describe("Delete account", () => {
     cy.visit("/accounts");
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[KP3_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.get("tbody tr td div button").eq(0).click();
     cy.intercept("DELETE", "http://localhost:5001/api/companies/*/accounts/*", {
       forceNetworkError: true,
@@ -48,7 +48,7 @@ describe("Delete account", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Veiksmīga konta dzēšana", () => {
+  it("[KP3_T2] Veiksmīga konta dzēšana", () => {
     cy.get("tbody tr td div button").eq(0).click();
     cy.intercept("DELETE", "http://localhost:5001/api/companies/*/accounts/*").as("deleteAccountRequest");
 

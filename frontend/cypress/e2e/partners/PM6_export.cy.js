@@ -36,7 +36,7 @@ describe("Export partners", () => {
     cy.get("tbody tr td input[type='checkbox']").eq(1).click();
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[PM6_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.intercept("POST", "http://localhost:5001/api/companies/*/partners/export", { forceNetworkError: true }).as("exportPartnersRequest");
 
     cy.get("button").contains("Eksportēt").click();
@@ -45,7 +45,7 @@ describe("Export partners", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Veiksmīga partneru eksportēšana", () => {
+  it("[PM6_T2] Veiksmīga partneru eksportēšana", () => {
     cy.intercept("POST", "http://localhost:5001/api/companies/*/partners/export").as("exportPartnersRequest");
 
     cy.get("button").contains("Eksportēt").click();

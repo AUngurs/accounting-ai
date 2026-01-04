@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 // VirtualizedTableContainer komponente nodrošina virtuālu tabulas rindu attēlošanu
 // Aprēķina, cik rindu var redzēt vienlaikus, un nodrošina scroll stāvokļa izsekošanu

@@ -34,7 +34,7 @@ describe("Edit partner", () => {
     cy.visit("/partners");
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[PM4_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.contains("tr", "Error Company, ZS").find("i").click();
     cy.intercept("PUT", "http://localhost:5001/api/companies/*/partners/*", {
       forceNetworkError: true,
@@ -53,7 +53,7 @@ describe("Edit partner", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("ERR11 - Nosaukumam vai vārdam jābūt 1-255 simbolu garam", () => {
+  it("[PM4_T2] ERR11 - Nosaukumam vai vārdam jābūt 1-255 simbolu garam", () => {
     cy.contains("tr", "Test Company, SIA").find("i").click();
     cy.get(".modal").within(() => {
       cy.get('input[name="name"]').clear();
@@ -62,7 +62,7 @@ describe("Edit partner", () => {
     });
   });
 
-  it("ERR12 - Uzvārdam jābūt 1-50 simbolu garam", () => {
+  it("[PM4_T3] ERR12 - Uzvārdam jābūt 1-50 simbolu garam", () => {
     cy.contains("tr", "Test Company, SIA").find("i").click();
     cy.get(".modal").within(() => {
       cy.get('select[name="kind_name"]').select("Fiziska persona");
@@ -74,7 +74,7 @@ describe("Edit partner", () => {
     });
   });
 
-  it("ERR13 - Tiesiskā forma nedrīkst pārsniegt 50 simbolus", () => {
+  it("[PM4_T4] ERR13 - Tiesiskā forma nedrīkst pārsniegt 50 simbolus", () => {
     cy.contains("tr", "Test Company, SIA").find("i").click();
     cy.get(".modal").within(() => {
       cy.get('input[name="title"]').clear().type("Text exceeding fifty characters to trigger validation error");
@@ -83,7 +83,7 @@ describe("Edit partner", () => {
     });
   });
 
-  it("ERR14 - Šāds partneris jau eksistē", () => {
+  it("[PM4_T5] ERR14 - Šāds partneris jau eksistē", () => {
     cy.contains("tr", "Test Company, SIA").find("i").click();
     cy.get(".modal").within(() => {
       cy.get('input[name="title"]').clear().type("AS");
@@ -95,7 +95,7 @@ describe("Edit partner", () => {
     });
   });
 
-  it("ERR15 - Reģistrācijas nr./Personas kods nedrīkst pārsniegt 50 simbolus", () => {
+  it("[PM4_T6] ERR15 - Reģistrācijas nr./Personas kods nedrīkst pārsniegt 50 simbolus", () => {
     cy.contains("tr", "Test Company, SIA").find("i").click();
     cy.get(".modal").within(() => {
       cy.get('input[name="reg_nr"]').clear().type("Text exceeding fifty characters to trigger validation error");
@@ -104,7 +104,7 @@ describe("Edit partner", () => {
     });
   });
 
-  it("ERR16 - Partneris ar šādu reģistrācijas nr./Personas kodu jau eksistē", () => {
+  it("[PM4_T7] ERR16 - Partneris ar šādu reģistrācijas nr./Personas kodu jau eksistē", () => {
     cy.contains("tr", "Test Company, SIA").find("i").click();
     cy.get(".modal").within(() => {
       cy.get('input[name="title"]').clear().type("AS");
@@ -115,7 +115,7 @@ describe("Edit partner", () => {
     });
   });
 
-  it("ERR17 - PVN numuram jābūt 1-47 simbolu garam", () => {
+  it("[PM4_T8] ERR17 - PVN numuram jābūt 1-47 simbolu garam", () => {
     cy.contains("tr", "Test Company, SIA").find("i").click();
     cy.get(".modal").within(() => {
       cy.get("#enableVatEdit").check();
@@ -125,7 +125,7 @@ describe("Edit partner", () => {
     });
   });
 
-  it("ERR18 - Partneris ar šādu PVN numuru jau eksistē", () => {
+  it("[PM4_T9] ERR18 - Partneris ar šādu PVN numuru jau eksistē", () => {
     cy.contains("tr", "Test Company, SIA").find("i").click();
     cy.get(".modal").within(() => {
       cy.get("#enableVatEdit").check();
@@ -135,7 +135,7 @@ describe("Edit partner", () => {
     });
   });
 
-  it("Veiksmīga uzņēmuma rediģēšana", () => {
+  it("[PM4_T10] Veiksmīga uzņēmuma rediģēšana", () => {
     cy.contains("tr", "Edited Company, ZS").find("i").click();
     cy.intercept("PUT", "http://localhost:5001/api/companies/*/partners/*").as("editPartnerRequest");
 

@@ -34,7 +34,7 @@ describe("Add partner", () => {
     cy.get("button").contains("Jauns").click();
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[PM2_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.intercept("POST", "http://localhost:5001/api/companies/*/partners", {
       forceNetworkError: true,
     }).as("addPartnerRequest");
@@ -52,7 +52,7 @@ describe("Add partner", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("ERR11 - Nosaukumam vai vārdam jābūt 1-255 simbolu garam", () => {
+  it("[PM2_T2] ERR11 - Nosaukumam vai vārdam jābūt 1-255 simbolu garam", () => {
     cy.get(".modal").within(() => {
       cy.get('input[name="reg_nr"]').type("40005060");
       cy.get("#enableVatEdit").check();
@@ -62,7 +62,7 @@ describe("Add partner", () => {
     });
   });
 
-  it("ERR12 - Uzvārdam jābūt 1-50 simbolu garam", () => {
+  it("[PM2_T3] ERR12 - Uzvārdam jābūt 1-50 simbolu garam", () => {
     cy.get(".modal").within(() => {
       cy.get('select[name="kind_name"]').select("Fiziska persona");
       cy.get('input[name="name"]').type("Valid name");
@@ -72,7 +72,7 @@ describe("Add partner", () => {
     });
   });
 
-  it("ERR13 - Tiesiskā forma nedrīkst pārsniegt 50 simbolus", () => {
+  it("[PM2_T4] ERR13 - Tiesiskā forma nedrīkst pārsniegt 50 simbolus", () => {
     cy.get(".modal").within(() => {
       cy.get('input[name="title"]').type("Text exceeding fifty characters to trigger validation error");
       cy.get('input[name="name"]').type("Valid name");
@@ -84,7 +84,7 @@ describe("Add partner", () => {
     });
   });
 
-  it("ERR14 - Šāds partneris jau eksistē", () => {
+  it("[PM2_T5] ERR14 - Šāds partneris jau eksistē", () => {
     cy.get(".modal").within(() => {
       cy.get('input[name="title"]').type("SIA");
       cy.get('input[name="name"]').type("Test Company");
@@ -94,7 +94,7 @@ describe("Add partner", () => {
     });
   });
 
-  it("ERR15 - Reģistrācijas nr./Personas kods nedrīkst pārsniegt 50 simbolus", () => {
+  it("[PM2_T6] ERR15 - Reģistrācijas nr./Personas kods nedrīkst pārsniegt 50 simbolus", () => {
     cy.get(".modal").within(() => {
       cy.get('input[name="title"]').type("Valid title");
       cy.get('input[name="name"]').type("Valid name");
@@ -104,7 +104,7 @@ describe("Add partner", () => {
     });
   });
 
-  it("ERR16 - Partneris ar šādu reģistrācijas nr./Personas kodu jau eksistē", () => {
+  it("[PM2_T7] ERR16 - Partneris ar šādu reģistrācijas nr./Personas kodu jau eksistē", () => {
     cy.get(".modal").within(() => {
       cy.get('input[name="title"]').type("AS");
       cy.get('input[name="name"]').type("Unique Company");
@@ -116,7 +116,7 @@ describe("Add partner", () => {
     });
   });
 
-  it("ERR17 - PVN numuram jābūt 1-47 simbolu garam", () => {
+  it("[PM2_T8] ERR17 - PVN numuram jābūt 1-47 simbolu garam", () => {
     cy.get(".modal").within(() => {
       cy.get('input[name="title"]').type("SIA");
       cy.get('input[name="name"]').type("Valid Company");
@@ -128,7 +128,7 @@ describe("Add partner", () => {
     });
   });
 
-  it("ERR18 - Partneris ar šādu PVN numuru jau eksistē", () => {
+  it("[PM2_T9] ERR18 - Partneris ar šādu PVN numuru jau eksistē", () => {
     cy.get(".modal").within(() => {
       cy.get('input[name="title"]').type("ZS");
       cy.get('input[name="name"]').type("Valid Company");
@@ -140,7 +140,7 @@ describe("Add partner", () => {
     });
   });
 
-  it("Veiksmīga partnera pievienošana", () => {
+  it("[PM2_T10] Veiksmīga partnera pievienošana", () => {
     cy.intercept("POST", "http://localhost:5001/api/companies/*/partners").as("addPartnerRequest");
 
     cy.get(".modal").within(() => {

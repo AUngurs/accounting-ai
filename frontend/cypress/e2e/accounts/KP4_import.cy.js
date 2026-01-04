@@ -35,7 +35,7 @@ describe("Import accounts", () => {
     cy.get("a").contains("Excel").click();
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[KP4_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.get('input[type="file"]').selectFile("cypress/fixtures/accounts_import.xlsx", { force: true });
 
     cy.intercept("POST", "http://localhost:5001/api/companies/*/accounts/import", { forceNetworkError: true }).as("importAccountsRequest");
@@ -48,7 +48,7 @@ describe("Import accounts", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("ERR6 - Neparedzēta servera kļūda [Nepareiza formatējuma XLSX fails]", () => {
+  it("[KP4_T2] ERR6 - Neparedzēta servera kļūda [Nepareiza formatējuma XLSX fails]", () => {
     cy.get('input[type="file"]').selectFile("cypress/fixtures/incorrect_accounts_import.xlsx", { force: true });
 
     cy.intercept("POST", "http://localhost:5001/api/companies/*/accounts/import").as("importAccountsRequest");
@@ -60,7 +60,7 @@ describe("Import accounts", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Veiksmīga kontu importēšana", () => {
+  it("[KP4_T3] Veiksmīga kontu importēšana", () => {
     cy.get('input[type="file"]').selectFile("cypress/fixtures/accounts_import.xlsx", { force: true });
 
     cy.intercept("POST", "http://localhost:5001/api/companies/*/accounts/import").as("importAccountsRequest");

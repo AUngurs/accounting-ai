@@ -21,7 +21,7 @@ describe("Get document list", () => {
     cy.get("span").click();
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[FDM1_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.intercept("GET", "http://localhost:5001/api/companies/*/documents", {
       forceNetworkError: true,
     }).as("getDocumentsRequest");
@@ -32,7 +32,7 @@ describe("Get document list", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Veiksmīga finanšu dokumentu datu iegūšana", () => {
+  it("[FDM1_T2] Veiksmīga finanšu dokumentu datu iegūšana", () => {
     cy.intercept("GET", "http://localhost:5001/api/companies/*/partners").as("getDocumentsRequest");
 
     cy.visit("/documents");

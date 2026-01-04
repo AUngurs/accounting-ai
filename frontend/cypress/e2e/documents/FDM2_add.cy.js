@@ -38,7 +38,7 @@ describe("Add document", () => {
     cy.get("button").contains("Jauns").click();
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[FDM2_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.intercept("POST", "http://localhost:5001/api/companies/*/documents", {
       forceNetworkError: true,
     }).as("addDocumentRequest");
@@ -56,7 +56,7 @@ describe("Add document", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("ERR22 - Finanšu dokumenta numurs nedrīkst pārsniegt 50 simbolus", () => {
+  it("[FDM2_T2] ERR22 - Finanšu dokumenta numurs nedrīkst pārsniegt 50 simbolus", () => {
     cy.get(".modal").within(() => {
       cy.get('input[name="doc_id"]').clear().type("Text exceeding fifty characters to trigger validation error");
       cy.get('input[name="doc_date"]').clear().type("2025-12-15");
@@ -69,7 +69,7 @@ describe("Add document", () => {
     });
   });
 
-  it("ERR23 - Finanšu dokumenta datums ir obligāts", () => {
+  it("[FDM2_T3] ERR23 - Finanšu dokumenta datums ir obligāts", () => {
     cy.get(".modal").within(() => {
       cy.get('input[name="doc_id"]').clear().type("1001");
       cy.get('input[name="doc_amount"]').clear().type("199.99");
@@ -81,7 +81,7 @@ describe("Add document", () => {
     });
   });
 
-  it("ERR24 - Nederīgs summas formāts", () => {
+  it("[FDM2_T4] ERR24 - Nederīgs summas formāts", () => {
     cy.get(".modal").within(() => {
       cy.get('input[name="doc_id"]').clear().type("1002");
       cy.get('input[name="doc_date"]').clear().type("2025-12-15");
@@ -94,7 +94,7 @@ describe("Add document", () => {
     });
   });
 
-  it("ERR25 - Šāds finanšu dokuments jau eksistē", () => {
+  it("[FDM2_T5] ERR25 - Šāds finanšu dokuments jau eksistē", () => {
     cy.get(".modal").within(() => {
       cy.get('input[name="doc_id"]').clear().type("001");
       cy.get('input[name="doc_date"]').clear().type("2025-12-15");
@@ -107,7 +107,7 @@ describe("Add document", () => {
     });
   });
 
-  it("ERR26 - Piezīmes nedrīkst pārsniegt 255 simbolus", () => {
+  it("[FDM2_T6] ERR26 - Piezīmes nedrīkst pārsniegt 255 simbolus", () => {
     cy.get(".modal").within(() => {
       cy.get('input[name="doc_id"]').clear().type("1003");
       cy.get('input[name="doc_date"]').clear().type("2025-12-15");
@@ -123,7 +123,7 @@ describe("Add document", () => {
     });
   });
 
-  it("Veiksmīga finanšu dokumenta pievienošana", () => {
+  it("[FDM2_T7] Veiksmīga finanšu dokumenta pievienošana", () => {
     cy.intercept("POST", "http://localhost:5001/api/companies/*/documents").as("addDocumentRequest");
 
     cy.get(".modal").within(() => {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useCompany } from "../../components/CompanyContext";
 import PartnersControls from "./PartnersControls";
 import PartnersTableHeader from "./PartnersTableHeader";

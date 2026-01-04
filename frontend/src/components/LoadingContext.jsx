@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from "react";
+import { createContext, useState, useContext } from "react";
 import { Spinner } from "react-bootstrap";
 
 // Izveido Loading kontekstu, lai nodrošinātu globālu ielādes stāvokļa pārvaldību
@@ -29,17 +29,17 @@ export const LoadingProvider = ({ children }) => {
   );
 };
 
-// CSS stils overlay, kas pārklāj visu ekrānu un centrē spinner
+// CSS stils overlay, kas pārklāj visu ekrānu
 const overlayStyle = {
-  position: "fixed", // Fiksē overlay virs visa satura
+  position: "fixed",
   top: 0,
   left: 0,
   width: "100vw",
   height: "100vh",
-  backgroundColor: "rgba(0,0,0,0.4)", // Puscaurspīdīgs fons
+  backgroundColor: "rgba(0,0,0,0.4)",
   display: "flex",
-  justifyContent: "center", // Horizontāli centrē spinner
-  alignItems: "center", // Vertikāli centrē spinner
-  zIndex: 9999, // Nodrošina, ka overlay ir virs citiem elementiem
-  pointerEvents: "all", // Novērš klikšķu caurlaidību
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 9999,
+  pointerEvents: "all",
 };

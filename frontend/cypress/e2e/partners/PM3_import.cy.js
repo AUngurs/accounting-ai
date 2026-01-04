@@ -35,7 +35,7 @@ describe("Import partners", () => {
     cy.get("a").contains("XML").click();
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[PM3_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.get('input[type="file"]').selectFile("cypress/fixtures/partner_import.xml", { force: true });
 
     cy.intercept("POST", "http://localhost:5001/api/companies/*/partners/import", { forceNetworkError: true }).as("importPartnersRequest");
@@ -46,7 +46,7 @@ describe("Import partners", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("ERR6 - Neparedzēta servera kļūda [Nepareiza formatējuma XML fails]", () => {
+  it("[PM3_T2] ERR6 - Neparedzēta servera kļūda [Nepareiza formatējuma XML fails]", () => {
     cy.get('input[type="file"]').selectFile("cypress/fixtures/incorrect_partner_import.xml", { force: true });
 
     cy.intercept("POST", "http://localhost:5001/api/companies/*/partners/import").as("importPartnersRequest");
@@ -57,7 +57,7 @@ describe("Import partners", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Veiksmīga partneru importēšana", () => {
+  it("[PM3_T3] Veiksmīga partneru importēšana", () => {
     cy.get('input[type="file"]').selectFile("cypress/fixtures/partner_import.xml", { force: true });
 
     cy.intercept("POST", "http://localhost:5001/api/companies/*/partners/import").as("importPartnersRequest");

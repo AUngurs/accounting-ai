@@ -4,12 +4,7 @@ import { accountRules } from "../utils/Validators";
 
 export default function AccountModal({ show, handleClose, account, onSave, onDelete, accounts }) {
   // Sākotnējie formData stāvokļa dati, kas tiek izmantoti formā
-  const [formData, setFormData] = useState({
-    code: "",
-    name: "",
-    type: "",
-    category: "",
-  });
+  const [formData, setFormData] = useState({ code: "", name: "", type: "", category: "" });
 
   // Objekts formErrors satur validācijas kļūdas katram laukam
   const [formErrors, setFormErrors] = useState({});

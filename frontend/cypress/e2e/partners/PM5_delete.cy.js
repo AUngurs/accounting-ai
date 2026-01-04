@@ -35,7 +35,7 @@ describe("Delete partner", () => {
     cy.visit("/partners");
   });
 
-  it("ERR6 - Neparedzēta servera kļūda [SK-PAR-EDIT]", () => {
+  it("[PM5_T1] ERR6 - Neparedzēta servera kļūda [SK-PAR-EDIT]", () => {
     cy.get("tbody tr td div button").eq(0).click();
     cy.intercept("DELETE", "http://localhost:5001/api/companies/*/partners/*", {
       forceNetworkError: true,
@@ -51,7 +51,7 @@ describe("Delete partner", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("ERR6 - Neparedzēta servera kļūda [SK-PAR]", () => {
+  it("[PM5_T2] ERR6 - Neparedzēta servera kļūda [SK-PAR]", () => {
     cy.get("tbody tr td input[type='checkbox']").eq(0).click();
     cy.get("tbody tr td input[type='checkbox']").eq(1).click();
 
@@ -67,7 +67,7 @@ describe("Delete partner", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Veiksmīga partnera dzēšana [SK-PAR-EDIT]", () => {
+  it("[PM5_T3] Veiksmīga partnera dzēšana [SK-PAR-EDIT]", () => {
     cy.get("tbody tr td div button").eq(0).click();
     cy.intercept("DELETE", "http://localhost:5001/api/companies/*/partners/*").as("deletePartnerRequest");
 
@@ -83,7 +83,7 @@ describe("Delete partner", () => {
     cy.url().should("include", "/partners");
   });
 
-  it("Veiksmīga partneru dzēšana [SK-PAR]", () => {
+  it("[PM5_T4] Veiksmīga partneru dzēšana [SK-PAR]", () => {
     cy.get("tbody tr td input[type='checkbox']").eq(0).click();
     cy.get("tbody tr td input[type='checkbox']").eq(1).click();
 

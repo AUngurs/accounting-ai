@@ -35,7 +35,7 @@ describe("Import documents", () => {
     cy.get("a").contains("PDF").click();
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[FDM8_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.get('input[type="file"]').selectFile("cypress/fixtures/document_import.pdf", { force: true });
 
     cy.intercept("POST", "http://localhost:5001/api/companies/*/ai/import-pdf", { forceNetworkError: true }).as("importPDFRequest");
@@ -46,7 +46,7 @@ describe("Import documents", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("ERR6 - Neparedzēta servera kļūda [Nepareiza formatējuma PDF fails]", () => {
+  it("[FDM8_T2] ERR6 - Neparedzēta servera kļūda [Nepareiza formatējuma PDF fails]", () => {
     cy.get('input[type="file"]').selectFile("cypress/fixtures/incorrect_document_import.pdf", { force: true });
 
     cy.intercept("POST", "http://localhost:5001/api/companies/*/ai/import-pdf").as("importPDFRequest");
@@ -57,7 +57,7 @@ describe("Import documents", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Veiksmīga PDF faila importēšana", () => {
+  it("[FDM8_T3] Veiksmīga PDF faila importēšana", () => {
     cy.get('input[type="file"]').selectFile("cypress/fixtures/document_import.pdf", { force: true });
 
     cy.intercept("POST", "http://localhost:5001/api/companies/*/ai/import-pdf").as("importPDFRequest");

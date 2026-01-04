@@ -15,13 +15,13 @@ describe("Edit user", () => {
     cy.visit("/user");
   });
 
-  it("ERR2 - Lietotājvārdam jābūt 3-20 simbolu garam", () => {
+  it("[LM3_T1] ERR2 - Lietotājvārdam jābūt 3-20 simbolu garam", () => {
     cy.get('input[name="username"]').clear().type("us");
     cy.contains("button", "Saglabāt").click();
     cy.get(".invalid-feedback").should("contain", "Lietotājvārdam jābūt 3-20 simbolu garam");
   });
 
-  it("ERR3 - Parolei jābūt 8-64 simbolu garai", () => {
+  it("[LM3_T2] ERR3 - Parolei jābūt 8-64 simbolu garai", () => {
     cy.get("#enablePasswordEdit").check();
     cy.get('input[name="password"]').clear().type("short");
     cy.get('input[name="repeatPassword"]').clear().type("short");
@@ -29,7 +29,7 @@ describe("Edit user", () => {
     cy.get(".invalid-feedback").should("contain", "Parolei jābūt 8-64 simbolu garai");
   });
 
-  it("ERR3 - [Atkārtotai] Parolei jābūt 8-64 simbolu garai", () => {
+  it("[LM3_T3] ERR3 - [Atkārtotai] Parolei jābūt 8-64 simbolu garai", () => {
     cy.get("#enablePasswordEdit").check();
     cy.get('input[name="password"]').clear().type("ValidPassword123!");
     cy.get('input[name="repeatPassword"]').clear().type("short");
@@ -37,7 +37,7 @@ describe("Edit user", () => {
     cy.get(".invalid-feedback").should("contain", "Parolei jābūt 8-64 simbolu garai");
   });
 
-  it("ERR4 - Paroles nesakrīt", () => {
+  it("[LM3_T4] ERR4 - Paroles nesakrīt", () => {
     cy.get("#enablePasswordEdit").check();
     cy.get('input[name="password"]').clear().type("NewValidPassword123!");
     cy.get('input[name="repeatPassword"]').clear().type("DifferentPassword123!");
@@ -45,7 +45,7 @@ describe("Edit user", () => {
     cy.get(".invalid-feedback").should("contain", "Paroles nesakrīt");
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[LM3_T5] ERR6 - Neparedzēta servera kļūda", () => {
     cy.intercept("PUT", "http://localhost:5001/api/user/*", {
       forceNetworkError: true,
     }).as("userUpdateRequest");
@@ -57,7 +57,7 @@ describe("Edit user", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Lietotāja dati veiksmīgi rediģēti", () => {
+  it("[LM3_T6] Lietotāja dati veiksmīgi rediģēti", () => {
     const newUsername = `updated_user_${new Date().getTime().toString().substring(0, 5)}`;
     const newPassword = "NewValidPassword123!";
 

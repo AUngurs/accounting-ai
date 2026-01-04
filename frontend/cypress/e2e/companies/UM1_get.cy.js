@@ -13,7 +13,7 @@ describe("Get company list", () => {
     cy.login({ email: registeredUser.email, password: registeredUser.password });
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[UM1_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.intercept("GET", "http://localhost:5001/api/companies", {
       forceNetworkError: true,
     }).as("getCompaniesRequest");
@@ -24,7 +24,7 @@ describe("Get company list", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Veiksmīga uzņēmumu datu iegūšana", () => {
+  it("[UM1_T2] Veiksmīga uzņēmumu datu iegūšana", () => {
     cy.intercept("GET", "http://localhost:5001/api/companies").as("getCompaniesRequest");
 
     cy.visit("/companies");

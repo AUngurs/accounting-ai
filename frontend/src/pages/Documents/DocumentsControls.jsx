@@ -4,12 +4,12 @@ import { FaPlus, FaUpload, FaDownload, FaTrash } from "react-icons/fa";
 
 // Komponente, kas nodrošina kontroles pogas dokumentu sarakstam: jauns, importēt, eksportēt, dzēst
 export default function DocumentsControls({
-  handleCreateClick, // Callback funkcija, kad tiek klikšķināts "Jauns"
-  handleXmlImport, // Callback XML importam
-  handlePdfImport, // Callback PDF importam
-  handleExport, // Callback eksportam
-  handleDeleteSelected, // Callback dzēšanai
-  selectedDocs, // Set vai masīvs ar izvēlētajiem dokumentiem
+  handleCreateClick,
+  handleXmlImport,
+  handlePdfImport,
+  handleExport,
+  handleDeleteSelected,
+  selectedDocs,
 }) {
   const fileInputRef = useRef(null); // Slēpta file input kontrole, ko izmanto importam
   const [fileType, setFileType] = useState(null); // Izvēlētā faila tips (pdf/xml)

@@ -23,7 +23,7 @@ describe("Add company", () => {
     cy.contains("button", "Pievienot uzņēmumu").click();
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[UM2_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.intercept("POST", "http://localhost:5001/api/companies", {
       forceNetworkError: true,
     }).as("addCompanyRequest");
@@ -37,7 +37,7 @@ describe("Add company", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("ERR9 - Uzņēmuma nosaukumam jābūt 3-30 simbolu garam", () => {
+  it("[UM2_T2] ERR9 - Uzņēmuma nosaukumam jābūt 3-30 simbolu garam", () => {
     cy.get(".modal").within(() => {
       cy.get('input[name="name"]').clear().type("co");
       cy.get("button").contains("Pievienot").click();
@@ -45,7 +45,7 @@ describe("Add company", () => {
     });
   });
 
-  it("ERR10 - Uzņēmums ar šādu nosaukumu jau eksistē", () => {
+  it("[UM2_T3] ERR10 - Uzņēmums ar šādu nosaukumu jau eksistē", () => {
     cy.get(".modal").within(() => {
       cy.get('input[name="name"]').clear().type("Valid Company");
       cy.get("button").contains("Pievienot").click();
@@ -53,7 +53,7 @@ describe("Add company", () => {
     });
   });
 
-  it("Veiksmīga uzņēmuma pievienošana", () => {
+  it("[UM2_T4] Veiksmīga uzņēmuma pievienošana", () => {
     cy.intercept("POST", "http://localhost:5001/api/companies").as("addCompanyRequest");
 
     cy.get(".modal").within(() => {

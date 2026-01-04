@@ -7,9 +7,7 @@ export default function EditCompanyModal({ show, handleClose, company, onSave, o
   const isEditMode = !!company;
 
   // Stāvoklis formā ievadītajam uzņēmuma nosaukumam
-  const [formData, setFormData] = useState({
-    name: "",
-  });
+  const [formData, setFormData] = useState({ name: "" });
 
   // Stāvoklis validācijas kļūdām
   const [formErrors, setFormErrors] = useState({});

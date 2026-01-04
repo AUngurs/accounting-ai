@@ -40,7 +40,7 @@ describe("Delete document", () => {
     cy.get("tbody tr td input[type='checkbox']").eq(1).click();
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[FDM7_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.intercept("POST", "http://localhost:5001/api/companies/*/documents/export", { forceNetworkError: true }).as(
       "exportDocumentsRequest"
     );
@@ -51,7 +51,7 @@ describe("Delete document", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Veiksmīga finanšu dokumentu eksportēšana", () => {
+  it("[FDM7_T2] Veiksmīga finanšu dokumentu eksportēšana", () => {
     cy.intercept("POST", "http://localhost:5001/api/companies/*/documents/export").as("exportDocumentsRequest");
 
     cy.get("button").contains("Eksportēt").click();

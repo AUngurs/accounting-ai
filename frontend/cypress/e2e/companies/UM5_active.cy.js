@@ -16,7 +16,7 @@ describe("Active company", () => {
     cy.url().should("include", "/login");
   });
 
-  it("Veiksmīga darbojošā uzņēmuma izvēle", () => {
+  it("[UM5_T1] Veiksmīga darbojošā uzņēmuma izvēle", () => {
     cy.login({ email: registeredUser.email, password: registeredUser.password });
 
     cy.get("span").click();

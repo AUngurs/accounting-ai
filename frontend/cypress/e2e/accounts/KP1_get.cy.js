@@ -31,7 +31,7 @@ describe("Get account list", () => {
     cy.get("span").click();
   });
 
-  it("ERR6 - Neparedzēta servera kļūda", () => {
+  it("[KP1_T1] ERR6 - Neparedzēta servera kļūda", () => {
     cy.intercept("GET", "http://localhost:5001/api/companies/*/accounts", {
       forceNetworkError: true,
     }).as("getAccountsRequest");
@@ -42,7 +42,7 @@ describe("Get account list", () => {
     cy.get(".Toastify__toast", { timeout: 3000 }).should("contain", "Neparedzēta servera kļūda");
   });
 
-  it("Veiksmīga kontu plāna datu iegūšana", () => {
+  it("[KP1_T2] Veiksmīga kontu plāna datu iegūšana", () => {
     cy.intercept("GET", "http://localhost:5001/api/companies/*/accounts").as("getAccountsRequest");
 
     cy.visit("/accounts");
