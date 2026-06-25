@@ -216,6 +216,14 @@ html, body {
   box-shadow: var(--shadow-sm);
 }
 
+.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
 /* ── Page headings ──────────────────────────── */
 
 .page-title {

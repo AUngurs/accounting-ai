@@ -9,58 +9,53 @@ import DocumentModal from "./DocumentModal";
 import { Table } from "react-bootstrap";
 
 export default function Documents() {
-  const { companyId } = useCompany(); // Iegūst pašreizējo kompānijas ID
-  const [scrollTop, setScrollTop] = useState(0); // Scroll pozīcija virtuālajā tabulā
-  const [visibleRowsCount, setVisibleRowsCount] = useState(20); // Redzamo rindu skaits
-  const [openDocId, setOpenDocId] = useState(null); // Kurš dokuments ir "atvērts" (Collapse rindiņa)
+  const { companyId } = useCompany();
+  const [scrollTop, setScrollTop] = useState(0);
+  const [visibleRowsCount, setVisibleRowsCount] = useState(20);
 
-  const ROW_HEIGHT = 24; // Katras rindas augstums pikseļos
+  const ROW_HEIGHT = 24;
 
-  // Izsauc custom hook, kas satur visu dokumentu loģiku
   const {
-    accounts, // Kontu plāns
-    pdfFile, // PDF fails, ko rāda modal
-    setPdfFile, // Funkcija PDF faila iestatīšanai
-    selectedDocument, // Pašreiz izvēlētais dokuments modal logam
+    accounts,
+    pdfFile,
+    setPdfFile,
+    selectedDocument,
     setSelectedDocument,
-    showModal, // Vai modal logs ir atvērts
+    showModal,
     setShowModal,
-    handlePdfImport, // Funkcija PDF importam
-    docCurrencyOptions, // Valūtu opcijas
-    docsData, // Visi dokumenti
-    docTypeOptions, // Dokumentu tipu opcijas
-    partnersData, // Partneru dati
-    selectedDocs, // Set ar izvēlētajiem dokumentiem
+    handlePdfImport,
+    docCurrencyOptions,
+    docsData,
+    docTypeOptions,
+    partnersData,
+    selectedDocs,
     setSelectedDocs,
-    filteredDocs, // Dokumenti pēc filtru piemērošanas
-    filters, // Filtri
+    filteredDocs,
+    filters,
     setFilters,
-    sortConfig, // Kārtošanas konfigurācija
-    sortedDocs, // Sakārtoti dokumenti
-    handleSort, // Funkcija kārtošanai
-    partnerMap, // Partneru ID -> nosaukums
-    handleCreate, // Funkcija jaunam dokumentam
-    handleSave, // Funkcija dokumenta saglabāšanai
-    handleDelete, // Funkcija dokumenta dzēšanai
-    handleExport, // Funkcija eksportam
-    handleXmlImport, // Funkcija XML importam
-    handleDeleteSelected, // Funkcija atlasīto dokumentu dzēšanai
-    handleUpdateAccounted, // Funkcija statusa "is_accounted" atjaunošanai
+    sortConfig,
+    sortedDocs,
+    handleSort,
+    partnerMap,
+    handleCreate,
+    handleSave,
+    handleDelete,
+    handleExport,
+    handleXmlImport,
+    handleDeleteSelected,
+    handleUpdateAccounted,
   } = useDocuments(companyId);
 
-  // Atver modal jauna dokumenta pievienošanai
   const handleCreateClick = () => {
     setSelectedDocument(null);
     setShowModal(true);
   };
 
-  // Atver modal dokumenta rediģēšanai
   const handleEditClick = (doc) => {
     setSelectedDocument(doc);
     setShowModal(true);
   };
 
-  // Aizver modal logu un notīra izvēlēto dokumentu un PDF failu
   const closeModal = () => {
     setSelectedDocument(null);
     setPdfFile(null);
@@ -71,7 +66,6 @@ export default function Documents() {
     <div>
       <h1 className="page-title">Finanšu dokumenti</h1>
 
-      {/* Kontroles panelis: jauns, importēt, eksportēt, dzēst */}
       <DocumentsControls
         handleCreateClick={handleCreateClick}
         handleXmlImport={handleXmlImport}
@@ -81,65 +75,58 @@ export default function Documents() {
         selectedDocs={selectedDocs}
       />
 
-      {/* Tabulas galvene ar kārtošanu un filtriem */}
-      <Table hover size="sm" className="app-table" style={{ tableLayout: "fixed", marginBottom: 0 }}>
-        <DocumentsTableHeader
-          filters={filters}
-          setFilters={setFilters}
-          sortConfig={sortConfig}
-          handleSort={handleSort}
-          partnersData={partnersData}
-          selectedDocs={selectedDocs}
-          setSelectedDocs={setSelectedDocs}
-          filteredDocs={filteredDocs}
-          docTypeOptions={docTypeOptions}
-          docCurrencyOptions={docCurrencyOptions}
-        />
-      </Table>
-
-      {/* Virtuālā tabula, lai optimizētu lielu rindu skaitu */}
-      <VirtualizedTableContainer
-        rowHeight={ROW_HEIGHT}
-        offsetPx={290} // augšējais offset (scroll pozīcijas korekcija)
-        onScrollChange={setScrollTop} // callback scroll pozīcijai
-        onVisibleRowsChange={setVisibleRowsCount} // callback redzamo rindu skaitam
-      >
+      <div className="table-card">
         <Table hover size="sm" className="app-table" style={{ tableLayout: "fixed", marginBottom: 0 }}>
-          <DocumentsTableBody
-            docsData={docsData}
-            partnerMap={partnerMap}
-            openDocId={openDocId}
-            setOpenDocId={setOpenDocId}
+          <DocumentsTableHeader
+            filters={filters}
+            setFilters={setFilters}
+            sortConfig={sortConfig}
+            handleSort={handleSort}
+            partnersData={partnersData}
             selectedDocs={selectedDocs}
             setSelectedDocs={setSelectedDocs}
-            scrollTop={scrollTop}
-            companyId={companyId}
-            handleEditClick={handleEditClick}
-            sortedDocs={sortedDocs}
-            handleUpdateAccounted={handleUpdateAccounted}
-            visibleRowsCount={visibleRowsCount}
-            accounts={accounts}
+            filteredDocs={filteredDocs}
+            docTypeOptions={docTypeOptions}
+            docCurrencyOptions={docCurrencyOptions}
           />
         </Table>
-      </VirtualizedTableContainer>
 
-      <div className="table-bottom-bar" />
+        <VirtualizedTableContainer
+          rowHeight={ROW_HEIGHT}
+          offsetPx={290}
+          onScrollChange={setScrollTop}
+          onVisibleRowsChange={setVisibleRowsCount}
+        >
+          <Table hover size="sm" className="app-table" style={{ tableLayout: "fixed", marginBottom: 0 }}>
+            <DocumentsTableBody
+              partnerMap={partnerMap}
+              selectedDocs={selectedDocs}
+              setSelectedDocs={setSelectedDocs}
+              scrollTop={scrollTop}
+              handleEditClick={handleEditClick}
+              sortedDocs={sortedDocs}
+              visibleRowsCount={visibleRowsCount}
+            />
+          </Table>
+        </VirtualizedTableContainer>
+      </div>
 
-      {/* Informācija par atlasīto dokumentu skaitu */}
       <div className="selection-count">
         Atlasīti {selectedDocs.size} no {sortedDocs.length} finanšu dokumentiem
       </div>
 
-      {/* Modal logs dokumenta pievienošanai vai rediģēšanai */}
       <DocumentModal
         show={showModal}
         handleClose={closeModal}
         pdfFile={pdfFile}
         documentData={selectedDocument}
-        onSave={!selectedDocument || selectedDocument?.isNewImport ? handleCreate : handleSave} // Ja importēts jauns dokuments -> create, savādāk save
+        onSave={!selectedDocument || selectedDocument?.isNewImport ? handleCreate : handleSave}
         onDelete={handleDelete}
         partners={partnersData}
         documents={docsData}
+        companyId={companyId}
+        accounts={accounts}
+        onUpdateAccounted={handleUpdateAccounted}
       />
     </div>
   );

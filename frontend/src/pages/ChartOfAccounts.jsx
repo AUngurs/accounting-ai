@@ -114,7 +114,7 @@ export default function ChartOfAccounts() {
         </button>
       </div>
 
-      <div className="app-card" style={{ overflow: "hidden" }}>
+      <div className="table-card">
         <table className="app-table" style={{ tableLayout: "fixed" }}>
           <colgroup>
             <col style={{ width: "8%" }} />

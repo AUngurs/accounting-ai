@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../../api/axiosInstance";
-import { Table, Collapse, Card, Form, Button } from "react-bootstrap";
+import { Table, Form, Button } from "react-bootstrap";
 import { documentLineRules } from "../../utils/Validators";
 import AmountInput from "../../utils/AmountInput";
 import { notify } from "../../utils/Notify";
 
-// DocumentLines komponente nodrošina dokumenta kontējuma rindu pārvaldību un rediģēšanu
 export default function DocumentLines({ companyId, documentId, onUpdateAccounted, accounts }) {
-  // Stāvokļi dokumenta rindām, ielādes statusam, kontiem, rediģēšanas statusam un jaunajām rindām
   const [lines, setLines] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editedLines, setEditedLines] = useState([]);
@@ -24,10 +22,8 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
   });
   const [lineErrors, setLineErrors] = useState({});
 
-  // Pieejamās valūtas rindām
   const lineCurrencyOptions = ["EUR", "DKK", "GBP", "LVL", "NOK", "PLN", "RUB", "SEK", "USD"];
 
-  // Iegūst dokumenta rindas no servera
   useEffect(() => {
     if (!documentId || !companyId) return;
     axiosInstance
@@ -39,41 +35,35 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
       });
   }, [companyId, documentId]);
 
-  // Funkcija rindas atjaunināšanai rediģēšanas režīmā
   function updateLine(index, field, value) {
     setEditedLines((prev) => {
       const updated = [...prev];
-      updated[index] = { ...updated[index], [field]: value }; // Atjaunina konkrētu lauku konkrētā rindā
+      updated[index] = { ...updated[index], [field]: value };
       return updated;
     });
   }
 
-  // Funkcija rindas dzēšanai rediģēšanas režīmā
   function deleteLine(index) {
     setEditedLines((prev) => prev.filter((_, i) => i !== index));
   }
 
-  // Funkcija visu rediģēto rindu saglabāšanai serverī
   const handleSave = async () => {
     try {
-      // Validē visas rediģētās rindas
       const errors = {};
       editedLines.forEach((line) => {
         const lineErrors = documentLineRules(line);
         if (Object.keys(lineErrors).length > 0) {
-          errors[line.id || line.tempId] = lineErrors; // Saglabā kļūdas rindas ID vai tempId
+          errors[line.id || line.tempId] = lineErrors;
         }
       });
 
       if (Object.keys(errors).length > 0) {
-        setLineErrors(errors); // Atjauno kļūdu stāvokli, ja validācija neizdevās
+        setLineErrors(errors);
         return;
       }
 
-      // Noklusējuma konts, ja rindā nav norādīts debets vai kredīts
       const defaultAccount = accounts.length > 0 ? accounts[0].code : "11";
 
-      // Sagatavo rindas payload serverim
       const linesToSave = editedLines.map((line) => ({
         ...line,
         line_debet_account: line.line_debet_account || defaultAccount,
@@ -81,11 +71,8 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
         line_vat_rate: line.line_vat_rate ? Number(line.line_vat_rate) : null,
       }));
 
-      // Atrod dzēstās rindas
       const deletedLineIds = lines.filter((line) => !linesToSave.find((l) => l.id === line.id)).map((l) => l.id);
-      // Atjaunotās rindas (ar ID, kas nav jaunas)
       const updatedLines = linesToSave.filter((l) => l.id && !l.id.toString().startsWith("new-"));
-      // Jaunās rindas (bez ID vai ar temp ID)
       const newLines = linesToSave.filter((l) => !l.id || l.id.toString().startsWith("new-"));
 
       const payload = {
@@ -94,12 +81,10 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
         deleted: deletedLineIds,
       };
 
-      // Nosūta izmaiņas serverim
       const { data } = await axiosInstance.put(`/companies/${companyId}/documents/${documentId}/lines`, payload);
 
-      const allLines = data.allLines; // Saņem visas rindas pēc saglabāšanas
+      const allLines = data.allLines;
 
-      // Aprēķina, vai dokumenta summa atbilst saglabātajām rindiņām
       const totalCents = allLines
         .filter((l) => l.line_supplementary_notice === "1")
         .reduce((sum, l) => sum + Math.round(Number(l.line_amount || 0) * 100), 0);
@@ -108,28 +93,29 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
       const docAmountCents = Math.round(Number(doc.doc_amount) * 100);
       const is_accounted = totalCents === docAmountCents;
 
-      // Atjauno dokumenta accounted statusu serverī
       const { data: updatedDoc } = await axiosInstance.put(`/companies/${companyId}/documents/${documentId}/accounted`, { is_accounted });
 
-      if (onUpdateAccounted) onUpdateAccounted(updatedDoc); // Paziņo augšējai komponentei par izmaiņām
+      if (onUpdateAccounted) onUpdateAccounted(updatedDoc);
 
-      setLines(allLines); // Atjauno rindas stāvokli
-      setIsEditing(false); // Izeja no rediģēšanas režīma
-      setEditedLines([]); // Notīra rediģēto rindu stāvokli
+      setLines(allLines);
+      setIsEditing(false);
+      setEditedLines([]);
     } catch (err) {
       console.error(err);
       notify.error("Neparedzēta servera kļūda");
     }
   };
 
-  const displayLines = isEditing ? editedLines : lines; // Nosaka, kuras rindas tiek attēlotas – rediģējamās vai sākotnējās
+  const displayLines = isEditing ? editedLines : lines;
 
   return (
-    <Collapse in={true}>
-      <Card.Body className="p-2">
-        <Form>
-          <Table hover size="sm" className="mb-0">
-            {/* Kolonu platumu definēšana */}
+    <div>
+      <div style={{ fontWeight: 600, fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+        Kontējums
+      </div>
+      <Form>
+        <div style={{ overflowX: "auto" }}>
+          <Table hover size="sm" className="app-table mb-0" style={{ minWidth: 580 }}>
             <colgroup>
               <col style={{ width: "3%" }} />
               <col style={{ width: "7%" }} />
@@ -141,47 +127,40 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
               <col style={{ width: "38px" }} />
             </colgroup>
 
-            <thead className="table-light">
+            <thead>
               <tr>
-                {/* Poga rediģēšanai vai saglabāšanai */}
                 <th className="text-center">
                   {!isEditing ? (
-                    <div className="d-flex justify-content-evenly">
-                      <Button
-                        className="btn-app-outline btn-app-sm"
-                        style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
-                        onClick={() => {
-                          setIsEditing(true); // Aktivizē rediģēšanas režīmu
-                          setLineErrors({}); // Notīra iepriekšējās kļūdas
-                          // Sagatavo rediģējamās rindas
-                          setEditedLines(
-                            lines.map((line) => ({
-                              ...line,
-                              line_debet_account: line.line_debet_account ? line.line_debet_account.toString() : "",
-                              line_credit_account: line.line_credit_account ? line.line_credit_account.toString() : "",
-                              line_currency: line.line_currency || "EUR",
-                              line_amount: line.line_amount,
-                              line_vat_rate: line.line_vat_rate || null,
-                              line_comments: line.line_comments || "",
-                              line_supplementary_notice: line.line_supplementary_notice || "0",
-                            }))
-                          );
-                        }}
-                      >
-                        <i className="bi bi-pencil-square"></i>
-                      </Button>
-                    </div>
+                    <Button
+                      className="btn-app-outline btn-app-sm"
+                      style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
+                      onClick={() => {
+                        setIsEditing(true);
+                        setLineErrors({});
+                        setEditedLines(
+                          lines.map((line) => ({
+                            ...line,
+                            line_debet_account: line.line_debet_account ? line.line_debet_account.toString() : "",
+                            line_credit_account: line.line_credit_account ? line.line_credit_account.toString() : "",
+                            line_currency: line.line_currency || "EUR",
+                            line_amount: line.line_amount,
+                            line_vat_rate: line.line_vat_rate || null,
+                            line_comments: line.line_comments || "",
+                            line_supplementary_notice: line.line_supplementary_notice || "0",
+                          }))
+                        );
+                      }}
+                    >
+                      <i className="bi bi-pencil-square"></i>
+                    </Button>
                   ) : (
-                    <div className="d-flex justify-content-evenly">
-                      {/* Poga saglabāšanai */}
-                      <Button
-                        className="btn-app-outline btn-app-sm"
-                        style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
-                        onClick={handleSave} // Saglabā izmaiņas
-                      >
-                        <i className="bi bi-check-square"></i>
-                      </Button>
-                    </div>
+                    <Button
+                      className="btn-app-outline btn-app-sm"
+                      style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
+                      onClick={handleSave}
+                    >
+                      <i className="bi bi-check-square"></i>
+                    </Button>
                   )}
                 </th>
                 <th>Valūta</th>
@@ -195,25 +174,22 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
             </thead>
 
             <tbody>
-              {/* Rindu iterācija */}
               {displayLines.map((line, index) => (
                 <tr key={line.id || `placeholder-${index}`} className="align-middle">
-                  {/* Checkbox kolonna */}
                   <td className="text-center">
                     <input
                       type="checkbox"
                       className="form-check-input"
-                      checked={line.line_supplementary_notice === "1"} // Pārbauda, vai rinda ir aktīva
+                      checked={line.line_supplementary_notice === "1"}
                       onChange={(e) =>
                         isEditing
-                          ? updateLine(index, "line_supplementary_notice", e.target.checked ? "1" : "0") // Atjauno statusu rediģēšanas laikā
+                          ? updateLine(index, "line_supplementary_notice", e.target.checked ? "1" : "0")
                           : null
                       }
-                      readOnly={!isEditing} // Padara tikai lasāmu, ja netiek rediģēts
+                      readOnly={!isEditing}
                     />
                   </td>
 
-                  {/* Valūtas kolonna */}
                   <td>
                     {isEditing ? (
                       <React.Fragment>
@@ -221,23 +197,20 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                           size="sm"
                           name="currency"
                           value={line.line_currency}
-                          onChange={(e) => updateLine(index, "line_currency", e.target.value)} // Atjauno valūtu
-                          isInvalid={!!lineErrors[line.id]?.line_currency} // Parāda kļūdu, ja tāda ir
+                          onChange={(e) => updateLine(index, "line_currency", e.target.value)}
+                          isInvalid={!!lineErrors[line.id]?.line_currency}
                         >
                           {lineCurrencyOptions.map((c) => (
-                            <option key={c} value={c}>
-                              {c}
-                            </option>
+                            <option key={c} value={c}>{c}</option>
                           ))}
                         </Form.Select>
                         <Form.Control.Feedback type="invalid">{lineErrors[line.id]?.line_currency}</Form.Control.Feedback>
                       </React.Fragment>
                     ) : (
-                      line.line_currency // Parāda valūtu tikai lasīšanas režīmā
+                      line.line_currency
                     )}
                   </td>
 
-                  {/* Summa kolonna */}
                   <td>
                     {isEditing ? (
                       <React.Fragment>
@@ -245,8 +218,8 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                           size="sm"
                           name="amount"
                           value={line.line_amount}
-                          onChange={(val) => updateLine(index, "line_amount", val)} // Atjauno summu
-                          isInvalid={!!lineErrors[line.id]?.line_amount} // Parāda kļūdu
+                          onChange={(val) => updateLine(index, "line_amount", val)}
+                          isInvalid={!!lineErrors[line.id]?.line_amount}
                         />
                         <Form.Control.Feedback type="invalid">{lineErrors[line.id]?.line_amount}</Form.Control.Feedback>
                       </React.Fragment>
@@ -255,7 +228,6 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     )}
                   </td>
 
-                  {/* Debets kolonna */}
                   <td>
                     {isEditing ? (
                       <React.Fragment>
@@ -263,13 +235,11 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                           size="sm"
                           name="debet"
                           value={line.line_debet_account || ""}
-                          onChange={(e) => updateLine(index, "line_debet_account", e.target.value)} // Atjauno debetu
+                          onChange={(e) => updateLine(index, "line_debet_account", e.target.value)}
                           isInvalid={!!lineErrors[line.id]?.line_debet_account}
                         >
                           {accounts.map((acc) => (
-                            <option key={acc.code} value={acc.code.toString()}>
-                              {acc.code} - {acc.name}
-                            </option>
+                            <option key={acc.code} value={acc.code.toString()}>{acc.code} - {acc.name}</option>
                           ))}
                         </Form.Select>
                         <Form.Control.Feedback type="invalid">{lineErrors[line.id]?.line_debet_account}</Form.Control.Feedback>
@@ -279,7 +249,6 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     )}
                   </td>
 
-                  {/* Kredīts kolonna */}
                   <td>
                     {isEditing ? (
                       <React.Fragment>
@@ -287,13 +256,11 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                           size="sm"
                           name="credit"
                           value={line.line_credit_account || ""}
-                          onChange={(e) => updateLine(index, "line_credit_account", e.target.value)} // Atjauno kredītu
+                          onChange={(e) => updateLine(index, "line_credit_account", e.target.value)}
                           isInvalid={!!lineErrors[line.id]?.line_credit_account}
                         >
                           {accounts.map((acc) => (
-                            <option key={acc.code} value={acc.code.toString()}>
-                              {acc.code} - {acc.name}
-                            </option>
+                            <option key={acc.code} value={acc.code.toString()}>{acc.code} - {acc.name}</option>
                           ))}
                         </Form.Select>
                         <Form.Control.Feedback type="invalid">{lineErrors[line.id]?.line_credit_account}</Form.Control.Feedback>
@@ -303,7 +270,6 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     )}
                   </td>
 
-                  {/* PVN kolonna */}
                   <td>
                     {isEditing ? (
                       <React.Fragment>
@@ -313,7 +279,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                           type="number"
                           min="0"
                           value={line.line_vat_rate || ""}
-                          onChange={(e) => updateLine(index, "line_vat_rate", e.target.value)} // Atjauno PVN likmi
+                          onChange={(e) => updateLine(index, "line_vat_rate", e.target.value)}
                           isInvalid={!!lineErrors[line.id]?.line_vat_rate}
                         />
                         <Form.Control.Feedback type="invalid">{lineErrors[line.id]?.line_vat_rate}</Form.Control.Feedback>
@@ -325,7 +291,6 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     )}
                   </td>
 
-                  {/* Kontējuma piezīmes kolonna */}
                   <td>
                     {isEditing ? (
                       <React.Fragment>
@@ -334,7 +299,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                           name="comments"
                           type="text"
                           value={line.line_comments || ""}
-                          onChange={(e) => updateLine(index, "line_comments", e.target.value)} // Atjauno piezīmes
+                          onChange={(e) => updateLine(index, "line_comments", e.target.value)}
                           isInvalid={!!lineErrors[line.id]?.line_comments}
                         />
                         <Form.Control.Feedback type="invalid">{lineErrors[line.id]?.line_comments}</Form.Control.Feedback>
@@ -344,7 +309,6 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     )}
                   </td>
 
-                  {/* Dzēšanas poga */}
                   <td>
                     {isEditing && (
                       <Button size="sm" className="btn-app-danger" onClick={() => deleteLine(index)}>
@@ -355,16 +319,15 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                 </tr>
               ))}
 
-              {/* Jaunas rindas pievienošanas forma */}
               {isEditing && (
                 <tr className="align-middle">
                   <td className="text-center">
                     <input
                       type="checkbox"
                       className="form-check-input"
-                      checked={newLineDraft.line_supplementary_notice === "1"} // Checkbox statusa iestatīšana
+                      checked={newLineDraft.line_supplementary_notice === "1"}
                       onChange={(e) => setNewLineDraft((prev) => ({ ...prev, line_supplementary_notice: e.target.checked ? "1" : "0" }))}
-                      disabled={!placeholderActive} // Atspējo, ja placeholder nav aktīvs
+                      disabled={!placeholderActive}
                     />
                   </td>
                   <td>
@@ -376,9 +339,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     >
                       <option value=""></option>
                       {lineCurrencyOptions.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
+                        <option key={c} value={c}>{c}</option>
                       ))}
                     </select>
                   </td>
@@ -400,9 +361,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     >
                       <option value=""></option>
                       {accounts.map((acc) => (
-                        <option key={acc.code} value={acc.code}>
-                          {acc.code} - {acc.name}
-                        </option>
+                        <option key={acc.code} value={acc.code}>{acc.code} - {acc.name}</option>
                       ))}
                     </select>
                   </td>
@@ -415,9 +374,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     >
                       <option value=""></option>
                       {accounts.map((acc) => (
-                        <option key={acc.code} value={acc.code}>
-                          {acc.code} - {acc.name}
-                        </option>
+                        <option key={acc.code} value={acc.code}>{acc.code} - {acc.name}</option>
                       ))}
                     </select>
                   </td>
@@ -440,13 +397,12 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     />
                   </td>
                   <td className="text-center add-line-btn">
-                    {/* Poga jaunas rindas pievienošanai */}
                     <Button
                       size="sm"
                       className="btn-app btn-app-sm"
                       onClick={() => {
-                        setPlaceholderActive(true); // Aktivizē placeholder
-                        setEditedLines((prev) => [...prev, { ...newLineDraft, id: `new-${Date.now()}` }]); // Pievieno jaunu rindu
+                        setPlaceholderActive(true);
+                        setEditedLines((prev) => [...prev, { ...newLineDraft, id: `new-${Date.now()}` }]);
                         setNewLineDraft({
                           id: null,
                           line_currency: "EUR",
@@ -456,8 +412,8 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                           line_vat_rate: "",
                           line_comments: "",
                           line_supplementary_notice: "1",
-                        }); // Atiestata draft
-                        setPlaceholderActive(false); // Deaktivizē placeholder
+                        });
+                        setPlaceholderActive(false);
                       }}
                     >
                       <i className="bi bi-plus-lg"></i>
@@ -467,8 +423,8 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
               )}
             </tbody>
           </Table>
-        </Form>
-      </Card.Body>
-    </Collapse>
+        </div>
+      </Form>
+    </div>
   );
 }

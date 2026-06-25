@@ -66,40 +66,38 @@ export default function Partners() {
         handleDeleteSelected={handleDeleteSelected}
       />
 
-      {/* Tabulas galvene */}
-      <Table hover size="sm" className="app-table" style={{ tableLayout: "fixed", marginBottom: 0 }}>
-        <PartnersTableHeader
-          filters={filters}
-          setFilters={setFilters}
-          sortConfig={sortConfig}
-          handleSort={handleSort}
-          selectedPartners={selectedPartners}
-          setSelectedPartners={setSelectedPartners}
-          partnersData={partnersData}
-        />
-      </Table>
-
-      {/* Virtualizētā tabula rindu attēlošanai */}
-      <VirtualizedTableContainer
-        rowHeight={ROW_HEIGHT}
-        offsetPx={280}
-        onScrollChange={setScrollTop}
-        onVisibleRowsChange={setVisibleRowsCount}
-      >
+      <div className="table-card">
         <Table hover size="sm" className="app-table" style={{ tableLayout: "fixed", marginBottom: 0 }}>
-          <PartnersTableBody
-            visibleRows={visibleRows}
-            sortedPartners={sortedPartners}
-            scrollTop={scrollTop}
+          <PartnersTableHeader
+            filters={filters}
+            setFilters={setFilters}
+            sortConfig={sortConfig}
+            handleSort={handleSort}
             selectedPartners={selectedPartners}
             setSelectedPartners={setSelectedPartners}
-            handleEditClick={handleEditClick}
-            visibleRowsCount={visibleRowsCount}
+            partnersData={partnersData}
           />
         </Table>
-      </VirtualizedTableContainer>
 
-      <div className="table-bottom-bar" />
+        <VirtualizedTableContainer
+          rowHeight={ROW_HEIGHT}
+          offsetPx={280}
+          onScrollChange={setScrollTop}
+          onVisibleRowsChange={setVisibleRowsCount}
+        >
+          <Table hover size="sm" className="app-table" style={{ tableLayout: "fixed", marginBottom: 0 }}>
+            <PartnersTableBody
+              visibleRows={visibleRows}
+              sortedPartners={sortedPartners}
+              scrollTop={scrollTop}
+              selectedPartners={selectedPartners}
+              setSelectedPartners={setSelectedPartners}
+              handleEditClick={handleEditClick}
+              visibleRowsCount={visibleRowsCount}
+            />
+          </Table>
+        </VirtualizedTableContainer>
+      </div>
 
       {/* Informācija par atlasīto partneru skaitu */}
       <div className="selection-count">
