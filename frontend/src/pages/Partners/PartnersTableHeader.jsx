@@ -20,7 +20,7 @@ export default function PartnersTableHeader({
         <col style={{ width: "38px" }} />
       </colgroup>
 
-      <thead>
+      <thead style={{ position: "sticky", top: 0, zIndex: 2 }}>
         {/* Galvenes rinda ar kolonnu nosaukumiem un kārtošanas indikatoriem */}
         <tr className="align-middle">
           <th style={{ textAlign: "center", borderBottom: "none" }}>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Modal, Button, Form } from "react-bootstrap";
+import { Modal, Form } from "react-bootstrap";
 import { accountRules } from "../utils/Validators";
 
 export default function AccountModal({ show, handleClose, account, onSave, onDelete, accounts }) {
@@ -140,15 +140,15 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
 
       {/* Modal kājenes pogas ar dzēšanas, atcelšanas un saglabāšanas funkcionalitāti */}
       <Modal.Footer>
-        <Button className="btn-app-danger" onClick={handleDelete}>
+        <button type="button" className="btn-app-danger" onClick={handleDelete}>
           Dzēst
-        </Button>
-        <Button className="btn-app-outline" onClick={handleClose}>
+        </button>
+        <button type="button" className="btn-app-outline" onClick={handleClose}>
           Atcelt
-        </Button>
-        <Button type="submit" className="btn-app" onClick={handleSubmit}>
+        </button>
+        <button type="button" className="btn-app" onClick={handleSubmit}>
           Saglabāt
-        </Button>
+        </button>
       </Modal.Footer>
     </Modal>
   );

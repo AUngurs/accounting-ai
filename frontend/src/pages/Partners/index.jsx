@@ -67,25 +67,22 @@ export default function Partners() {
       />
 
       <div className="table-card">
-        <Table hover size="sm" className="app-table" style={{ tableLayout: "fixed", marginBottom: 0 }}>
-          <PartnersTableHeader
-            filters={filters}
-            setFilters={setFilters}
-            sortConfig={sortConfig}
-            handleSort={handleSort}
-            selectedPartners={selectedPartners}
-            setSelectedPartners={setSelectedPartners}
-            partnersData={partnersData}
-          />
-        </Table>
-
         <VirtualizedTableContainer
           rowHeight={ROW_HEIGHT}
-          offsetPx={280}
+          offsetPx={175}
           onScrollChange={setScrollTop}
           onVisibleRowsChange={setVisibleRowsCount}
         >
           <Table hover size="sm" className="app-table" style={{ tableLayout: "fixed", marginBottom: 0 }}>
+            <PartnersTableHeader
+              filters={filters}
+              setFilters={setFilters}
+              sortConfig={sortConfig}
+              handleSort={handleSort}
+              selectedPartners={selectedPartners}
+              setSelectedPartners={setSelectedPartners}
+              partnersData={partnersData}
+            />
             <PartnersTableBody
               visibleRows={visibleRows}
               sortedPartners={sortedPartners}

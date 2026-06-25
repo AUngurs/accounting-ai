@@ -1,22 +1,63 @@
 import React from "react";
+import Select from "react-select";
 import AmountInput from "../../utils/AmountInput";
 
-// Komponente, kas renderē dokumentu tabulas galveni ar kārtošanu un filtriem
+const partnerSelectStyles = {
+  control: (base, state) => ({
+    ...base,
+    minHeight: "26px",
+    height: "26px",
+    fontSize: "0.78rem",
+    borderColor: state.isFocused ? "#4f46e5" : "#e2e8f0",
+    boxShadow: state.isFocused ? "0 0 0 0.15rem rgba(79,70,229,0.2)" : "none",
+    "&:hover": { borderColor: "#4f46e5" },
+    borderRadius: "4px",
+  }),
+  valueContainer: (base) => ({ ...base, padding: "0 4px", height: "26px", flexWrap: "nowrap" }),
+  singleValue: (base) => ({ ...base, fontSize: "0.78rem", fontFamily: "inherit" }),
+  input: (base) => ({ ...base, fontSize: "0.78rem", fontFamily: "inherit", margin: 0, padding: 0 }),
+  placeholder: (base) => ({ ...base, fontSize: "0.78rem", fontFamily: "inherit" }),
+  indicatorsContainer: (base) => ({ ...base, height: "26px" }),
+  indicatorSeparator: () => ({ display: "none" }),
+  dropdownIndicator: (base) => ({ ...base, padding: "0 4px" }),
+  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+  menu: (base) => ({ ...base, fontSize: "0.78rem", fontFamily: "inherit" }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isSelected ? "#4f46e5" : state.isFocused ? "#f1f5f9" : "white",
+    color: state.isSelected ? "white" : "#1e293b",
+    padding: "4px 8px",
+    fontSize: "0.78rem",
+  }),
+};
+
+// Padding overrides for compact filter rows
+const FTH = { padding: "3px 0.6rem", borderBottom: "none" };
+const FTH_LAST = { padding: "3px 0.6rem" };
+const LABEL_TH = {
+  padding: "3px 0.4rem",
+  borderBottom: "none",
+  fontSize: "0.72rem",
+  color: "var(--text-muted)",
+  fontWeight: 500,
+  textAlign: "right",
+  whiteSpace: "nowrap",
+};
+
 export default function FinancialDocsTableHeader({
-  filters, // Objekts ar filtriem (datums, summa, dok. nr., partneris utt.)
-  setFilters, // Funkcija filtru atjaunināšanai
-  sortConfig, // Objekts ar kārtošanas informāciju: { key, direction }
-  handleSort, // Funkcija, kas maina kārtošanas konfigurāciju
-  partnersData, // Masīvs ar partneru datiem
-  selectedDocs, // Set ar izvēlētajiem dokumentiem
-  setSelectedDocs, // Funkcija izvēlētu dokumentu atjaunināšanai
-  filteredDocs, // Masīvs ar filtrētiem dokumentiem (checkbox galvenē)
-  docTypeOptions, // Masīvs ar dokumenta tipu iespējām
-  docCurrencyOptions, // Masīvs ar valūtu iespējām
+  filters,
+  setFilters,
+  sortConfig,
+  handleSort,
+  partnersData,
+  selectedDocs,
+  setSelectedDocs,
+  filteredDocs,
+  docTypeOptions,
+  docCurrencyOptions,
 }) {
   return (
     <React.Fragment>
-      {/* Definē kolonnu platumus */}
       <colgroup>
         <col style={{ width: "3%" }} />
         <col style={{ width: "10%" }} />
@@ -29,10 +70,9 @@ export default function FinancialDocsTableHeader({
         <col style={{ width: "38px" }} />
       </colgroup>
 
-      <thead>
-        {/* Pirmā rinda: galvenes ar kārtošanas pogām */}
+      <thead style={{ position: "sticky", top: 0, zIndex: 2 }}>
+        {/* Row 1: sortable column headers */}
         <tr className="align-middle">
-          {/* Checkbox, kas izvēlas/atceļ visus filtrētos dokumentus */}
           <th style={{ textAlign: "center", borderBottom: "none" }}>
             <input
               type="checkbox"
@@ -41,8 +81,6 @@ export default function FinancialDocsTableHeader({
               onChange={(e) => setSelectedDocs(e.target.checked ? new Set(filteredDocs.map((d) => d.id)) : new Set())}
             />
           </th>
-
-          {/* Galvenes ar kārtošanu klikšķa funkcionalitāti */}
           <th style={{ cursor: "pointer", borderBottom: "none" }} onClick={() => handleSort("doc_date")}>
             Datums {sortConfig.key === "doc_date" ? (sortConfig.direction === "asc" ? "▲" : "▼") : ""}
           </th>
@@ -67,10 +105,10 @@ export default function FinancialDocsTableHeader({
           <th style={{ borderBottom: "none" }}></th>
         </tr>
 
-        {/* Otrā rinda: filtri (daži lauki) */}
+        {/* Row 2: "No" filters */}
         <tr>
-          <th style={{ borderBottom: "none" }}></th>
-          <th style={{ borderBottom: "none" }}>
+          <th style={LABEL_TH}>No</th>
+          <th style={FTH}>
             <input
               name="date-from"
               type="date"
@@ -79,11 +117,11 @@ export default function FinancialDocsTableHeader({
               onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
             />
           </th>
-          <th style={{ borderBottom: "none" }}></th>
-          <th style={{ borderBottom: "none" }}></th>
-          <th style={{ borderBottom: "none" }}></th>
-          <th style={{ borderBottom: "none" }}></th>
-          <th style={{ borderBottom: "none" }}>
+          <th style={FTH}></th>
+          <th style={FTH}></th>
+          <th style={FTH}></th>
+          <th style={FTH}></th>
+          <th style={FTH}>
             <AmountInput
               name="amount-from"
               size="sm"
@@ -92,14 +130,14 @@ export default function FinancialDocsTableHeader({
               onChange={(val) => setFilters({ ...filters, amountMin: val })}
             />
           </th>
-          <th style={{ borderBottom: "none" }}></th>
-          <th style={{ borderBottom: "none" }}></th>
+          <th style={FTH}></th>
+          <th style={FTH}></th>
         </tr>
 
-        {/* Trešā rinda: papildus filtri */}
+        {/* Row 3: "Līdz" filters + all other column filters */}
         <tr>
-          <th></th>
-          <th>
+          <th style={{ ...LABEL_TH, borderBottom: undefined }}>Līdz</th>
+          <th style={FTH_LAST}>
             <input
               name="date-to"
               type="date"
@@ -108,7 +146,7 @@ export default function FinancialDocsTableHeader({
               onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
             />
           </th>
-          <th>
+          <th style={FTH_LAST}>
             <input
               name="doc-id"
               type="text"
@@ -118,27 +156,30 @@ export default function FinancialDocsTableHeader({
               onChange={(e) => setFilters({ ...filters, docId: e.target.value })}
             />
           </th>
-          <th>
-            {/* Partnera filtrs ar sakārtotu select */}
-            <select
-              name="partner-id"
-              className="form-select form-select-sm"
-              value={filters.partnerId}
-              onChange={(e) => setFilters({ ...filters, partnerId: e.target.value })}
-            >
-              <option value="">Visi</option>
-              {partnersData
-                .slice()
-                .sort((a, b) => (a.formatted_name || "").localeCompare(b.formatted_name || "", "lv", { sensitivity: "base" }))
-                .map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.formatted_name}
-                  </option>
-                ))}
-            </select>
+          <th style={FTH_LAST}>
+            <Select
+              options={[
+                { value: "", label: "Visi" },
+                ...partnersData
+                  .slice()
+                  .sort((a, b) => (a.formatted_name || "").localeCompare(b.formatted_name || "", "lv", { sensitivity: "base" }))
+                  .map((p) => ({ value: String(p.id), label: p.formatted_name })),
+              ]}
+              value={
+                filters.partnerId
+                  ? { value: String(filters.partnerId), label: partnersData.find((p) => String(p.id) === String(filters.partnerId))?.formatted_name || "" }
+                  : { value: "", label: "Visi" }
+              }
+              onChange={(opt) => setFilters({ ...filters, partnerId: opt?.value || "" })}
+              styles={partnerSelectStyles}
+              placeholder="Visi"
+              noOptionsMessage={() => "Nav rezultātu"}
+              isClearable={false}
+              menuPortalTarget={document.body}
+              menuPosition="fixed"
+            />
           </th>
-          <th>
-            {/* Dokumenta tipa filtrs */}
+          <th style={FTH_LAST}>
             <select
               name="doc-type"
               className="form-select form-select-sm"
@@ -147,14 +188,11 @@ export default function FinancialDocsTableHeader({
             >
               <option value="">Visi</option>
               {docTypeOptions.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
+                <option key={o} value={o}>{o}</option>
               ))}
             </select>
           </th>
-          <th>
-            {/* Valūtas filtrs */}
+          <th style={FTH_LAST}>
             <select
               name="doc-currency"
               className="form-select form-select-sm"
@@ -163,14 +201,11 @@ export default function FinancialDocsTableHeader({
             >
               <option value="">Visi</option>
               {docCurrencyOptions.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
+                <option key={c} value={c}>{c}</option>
               ))}
             </select>
           </th>
-          <th>
-            {/* AmountInput filtrs "Līdz" */}
+          <th style={FTH_LAST}>
             <AmountInput
               name="amount-to"
               size="sm"
@@ -179,7 +214,7 @@ export default function FinancialDocsTableHeader({
               onChange={(val) => setFilters({ ...filters, amountMax: val })}
             />
           </th>
-          <th>
+          <th style={FTH_LAST}>
             <input
               name="doc-comments"
               type="text"
@@ -189,11 +224,10 @@ export default function FinancialDocsTableHeader({
               onChange={(e) => setFilters({ ...filters, comments: e.target.value })}
             />
           </th>
-          <th className="text-center align-middle p-0">
-            {/* Notīrīšanas poga visiem filtriem un izvēlētajiem dokumentiem */}
+          <th style={{ padding: 0, textAlign: "center", verticalAlign: "middle" }}>
             <button
               type="button"
-              className="btn btn-app-danger btn-sm"
+              className="btn-app-danger btn-app-sm"
               onClick={() => {
                 setFilters({
                   dateFrom: "",

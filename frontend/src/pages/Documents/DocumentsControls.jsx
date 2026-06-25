@@ -1,8 +1,7 @@
 import React, { useRef, useState } from "react";
-import { Button, Dropdown, InputGroup, Form } from "react-bootstrap";
+import { Dropdown, InputGroup, Form } from "react-bootstrap";
 import { FaPlus, FaUpload, FaDownload, FaTrash } from "react-icons/fa";
 
-// Komponente, kas nodrošina kontroles pogas dokumentu sarakstam: jauns, importēt, eksportēt, dzēst
 export default function DocumentsControls({
   handleCreateClick,
   handleXmlImport,
@@ -11,69 +10,53 @@ export default function DocumentsControls({
   handleDeleteSelected,
   selectedDocs,
 }) {
-  const fileInputRef = useRef(null); // Slēpta file input kontrole, ko izmanto importam
-  const [fileType, setFileType] = useState(null); // Izvēlētā faila tips (pdf/xml)
-  const [file, setFile] = useState(null); // Izvēlētais fails
+  const fileInputRef = useRef(null);
+  const [fileType, setFileType] = useState(null);
+  const [file, setFile] = useState(null);
 
-  // Apstrādā faila izvēli no file input
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (!selectedFile) return;
-    setFile(selectedFile); // Saglabā izvēlēto failu stāvoklī
+    setFile(selectedFile);
   };
 
-  // Apstrādā import pogas klikšķi
   const handleImportClick = async () => {
     if (!file) return;
-
-    // Atkarībā no izvēlētā tipa izsauc atbilstošo import funkciju
-    if (fileType === "xml") {
-      await handleXmlImport(file);
-    } else if (fileType === "pdf") {
-      await handlePdfImport(file);
-    }
-
-    // Atiestata faila stāvokli, lai sagatavotos nākamajam importam
+    if (fileType === "xml") await handleXmlImport(file);
+    else if (fileType === "pdf") await handlePdfImport(file);
     setFile(null);
     setFileType(null);
-    if (fileInputRef.current) fileInputRef.current.value = null; // Reset file input HTML elementu
+    if (fileInputRef.current) fileInputRef.current.value = null;
   };
 
-  // Apstrādā faila tipa izvēli no dropdown
   const handleTypeSelect = (type) => {
     setFileType(type);
     if (fileInputRef.current) {
-      // Maina pieņemto faila tipu, pirms atver faila izvēles dialogu
       fileInputRef.current.accept = type === "pdf" ? ".pdf" : ".xml";
-      fileInputRef.current.click(); // Automātiski atver faila izvēles logu
+      fileInputRef.current.click();
     }
   };
 
-  // Atcelt importu un atiestatīt visus stāvokļus
   const handleCancel = () => {
     setFile(null);
     setFileType(null);
-    if (fileInputRef.current) fileInputRef.current.value = null; // Reset HTML input
+    if (fileInputRef.current) fileInputRef.current.value = null;
   };
 
   return (
     <div className="mb-3 d-flex flex-wrap gap-2 align-items-center">
-      {/* Poga jauna dokumenta pievienošanai */}
-      <Button className="btn-app" onClick={handleCreateClick}>
+      <button type="button" className="btn-app" onClick={handleCreateClick}>
         <FaPlus className="me-1" /> Jauns
-      </Button>
+      </button>
 
-      {/* Slēpts file input, ko kontrolē ar ref */}
       <Form.Control type="file" ref={fileInputRef} style={{ display: "none" }} onChange={handleFileChange} />
 
       <InputGroup className="w-auto">
-        {/* Ja fails vēl nav izvēlēts, rāda dropdown importam */}
         {!file && (
           <Dropdown>
-            <Dropdown.Toggle className="btn-app">
+            <Dropdown.Toggle as="button" className="btn-app">
               <FaDownload className="me-1" /> Importēt
             </Dropdown.Toggle>
-
             <Dropdown.Menu>
               <Dropdown.Item onClick={() => handleTypeSelect("pdf")}>PDF</Dropdown.Item>
               <Dropdown.Item onClick={() => handleTypeSelect("xml")}>XML</Dropdown.Item>
@@ -81,29 +64,27 @@ export default function DocumentsControls({
           </Dropdown>
         )}
 
-        {/* Ja fails ir izvēlēts, rāda faila nosaukumu, Atcelt un Importēt pogas */}
         {file && (
           <React.Fragment>
-            <Button className="btn-app-danger" onClick={handleCancel}>
+            <button type="button" className="btn-app-danger" onClick={handleCancel}>
               Atcelt
-            </Button>
-            <Form.Control name="imported-file" value={file.name} readOnly className="bg-light" /> {/* Rāda izvēlēto failu */}
-            <Button className="btn-app" onClick={handleImportClick}>
+            </button>
+            <Form.Control name="imported-file" value={file.name} readOnly className="bg-light" />
+            <button type="button" className="btn-app" onClick={handleImportClick}>
               Importēt
-            </Button>
+            </button>
           </React.Fragment>
         )}
       </InputGroup>
 
-      {/* Ja ir izvēlēti dokumenti, rāda eksportēt un dzēst pogas */}
       {selectedDocs.size > 0 && (
         <div className="ms-auto">
-          <Button className="btn-app me-2" onClick={handleExport}>
+          <button type="button" className="btn-app me-2" onClick={handleExport}>
             <FaUpload className="me-1" /> Eksportēt
-          </Button>
-          <Button className="btn-app-danger" onClick={handleDeleteSelected}>
+          </button>
+          <button type="button" className="btn-app-danger" onClick={handleDeleteSelected}>
             <FaTrash className="me-1" /> Dzēst
-          </Button>
+          </button>
         </div>
       )}
     </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Modal, Button, Form } from "react-bootstrap";
+import { Modal, Form } from "react-bootstrap";
+import Select from "react-select";
 import { documentRules } from "../../utils/Validators";
 import AmountInput from "../../utils/AmountInput";
 import { Document, Page, pdfjs } from "react-pdf";
@@ -25,6 +26,32 @@ const docGroupOptions = [
 ];
 
 const docCurrencyOptions = ["EUR", "DKK", "GBP", "LVL", "NOK", "PLN", "RUB", "SEK", "USD"];
+
+// Shared react-select styles
+const makeSelectStyles = (isInvalid) => ({
+  control: (base, state) => ({
+    ...base,
+    minHeight: "31px",
+    fontSize: "0.875rem",
+    borderColor: isInvalid ? "#dc3545" : state.isFocused ? "#4f46e5" : "#e2e8f0",
+    boxShadow: state.isFocused ? "0 0 0 0.2rem rgba(79,70,229,0.2)" : "none",
+    "&:hover": { borderColor: "#4f46e5" },
+    borderRadius: "6px",
+  }),
+  valueContainer: (base) => ({ ...base, padding: "0 8px" }),
+  indicatorsContainer: (base) => ({ ...base, height: "31px" }),
+  indicatorSeparator: () => ({ display: "none" }),
+  dropdownIndicator: (base) => ({ ...base, padding: "0 6px" }),
+  // menuPortal must be used (not menu) when menuPortalTarget is set
+  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+  menu: (base) => ({ ...base, fontSize: "0.875rem" }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isSelected ? "#4f46e5" : state.isFocused ? "#f1f5f9" : "white",
+    color: state.isSelected ? "white" : "#1e293b",
+    padding: "6px 12px",
+  }),
+});
 
 export default function DocumentModal({
   show,
@@ -59,9 +86,11 @@ export default function DocumentModal({
   const [localPdfFile, setLocalPdfFile] = useState(null);
 
   const pdfRef = useRef(null);
+  const linesRef = useRef(null);
 
   const onDocumentLoadSuccess = ({ numPages }) => setNumPages(numPages);
 
+  // Initialize form when modal opens
   useEffect(() => {
     if (show) {
       const initialData = documentData
@@ -101,13 +130,18 @@ export default function DocumentModal({
     }
   }, [show, documentData, pdfFile]);
 
-  // ResizeObserver to dynamically adjust PDF page width
+  // Reset lines state when modal closes
+  useEffect(() => {
+    if (!show) {
+      linesRef.current?.reset();
+    }
+  }, [show]);
+
+  // ResizeObserver to track PDF container width
   useEffect(() => {
     if (!pdfRef.current) return;
     const observer = new ResizeObserver((entries) => {
-      for (let entry of entries) {
-        setContainerWidth(entry.contentRect.width);
-      }
+      for (let entry of entries) setContainerWidth(entry.contentRect.width);
     });
     observer.observe(pdfRef.current);
     return () => observer.disconnect();
@@ -119,7 +153,8 @@ export default function DocumentModal({
     setFormErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    // Validate document form
     const errors = documentRules(documents, {
       ...formData,
       id: documentData?.id || null,
@@ -132,7 +167,23 @@ export default function DocumentModal({
       setFormErrors(errors);
       return;
     }
-    onSave({ ...documentData, ...formData, file: localPdfFile });
+
+    // Validate lines before saving document (so we don't create a doc with broken lines)
+    if (linesRef.current) {
+      const linesValid = linesRef.current.validateLines();
+      if (!linesValid) return;
+    }
+
+    // Save document
+    const savedDoc = await onSave({ ...documentData, ...formData, file: localPdfFile });
+    if (!savedDoc?.id) return; // Save failed (error shown via notify)
+
+    // Save accounting lines
+    if (linesRef.current) {
+      const linesSaved = await linesRef.current.saveLinesForDoc(savedDoc.id);
+      if (!linesSaved) return; // Lines failed, keep modal open
+    }
+
     handleClose();
   };
 
@@ -142,24 +193,57 @@ export default function DocumentModal({
     handleClose();
   };
 
+  // Partner react-select options
+  const partnerOptions = [
+    { value: "", label: "—" },
+    ...(partners
+      ?.slice()
+      .sort((a, b) => (a.formatted_name || "").localeCompare(b.formatted_name || "", "lv", { sensitivity: "base" }))
+      .map((p) => ({
+        value: String(p.id),
+        label: `${p.formatted_name}${p.partner_reg_nr ? ` (${p.partner_reg_nr})` : ""}`,
+      })) ?? []),
+  ];
+  const selectedPartnerOption = partnerOptions.find((o) => o.value === String(formData.partner_id || "")) || partnerOptions[0];
+
   const hasPdf = !!localPdfFile;
-  const showLines = isEditMode && !!documentData?.id;
-
-  // Size: xl when PDF present (3 or 2 panels with PDF), lg when lines only, md for new doc without PDF
-  const modalSize = hasPdf ? "xl" : showLines ? "lg" : "md";
-
   const PANEL_MAX_HEIGHT = "calc(85vh - 140px)";
 
   return (
-    <Modal show={show} onHide={handleClose} size={modalSize}>
+    <Modal show={show} onHide={handleClose} size="xl" dialogClassName="modal-doc">
       <Modal.Header closeButton>
         <Modal.Title>{isEditMode ? "Rediģēt dokumentu" : "Pievienot jaunu dokumentu"}</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
         <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
+          {/* PDF viewer panel — LEFT */}
+          {hasPdf && (
+            <div
+              ref={pdfRef}
+              style={{
+                flex: "0 0 510px",
+                overflowY: "scroll",
+                overflowX: "hidden",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius-sm)",
+                padding: "0.5rem",
+                boxSizing: "border-box",
+                maxHeight: PANEL_MAX_HEIGHT,
+              }}
+            >
+              <Document file={localPdfFile} onLoadSuccess={onDocumentLoadSuccess}>
+                {Array.from(new Array(numPages), (el, index) => (
+                  <React.Fragment key={index}>
+                    <Page pageNumber={index + 1} width={containerWidth - 16} renderAnnotationLayer={false} renderTextLayer={false} />
+                    {index < numPages - 1 && <hr style={{ border: "2px dashed #000", margin: "1rem 0" }} />}
+                  </React.Fragment>
+                ))}
+              </Document>
+            </div>
+          )}
 
-          {/* Document form panel – fixed width */}
+          {/* Document form — CENTER */}
           <div style={{ flex: "0 0 270px", minWidth: 0 }}>
             <Form>
               <Form.Group className="mb-2">
@@ -203,7 +287,9 @@ export default function DocumentModal({
                   isInvalid={!!formErrors.doc_type_abbrev}
                 >
                   {docTypeOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
                   ))}
                 </Form.Select>
                 <Form.Control.Feedback type="invalid">{formErrors.doc_type_abbrev}</Form.Control.Feedback>
@@ -221,7 +307,9 @@ export default function DocumentModal({
                   isInvalid={!!formErrors.doc_group_abbrev}
                 >
                   {docGroupOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
                   ))}
                 </Form.Select>
                 <Form.Control.Feedback type="invalid">{formErrors.doc_group_abbrev}</Form.Control.Feedback>
@@ -239,7 +327,9 @@ export default function DocumentModal({
                   isInvalid={!!formErrors.doc_currency}
                 >
                   {docCurrencyOptions.map((opt) => (
-                    <option key={opt} value={opt}>{opt}</option>
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
                   ))}
                 </Form.Select>
                 <Form.Control.Feedback type="invalid">{formErrors.doc_currency}</Form.Control.Feedback>
@@ -261,25 +351,24 @@ export default function DocumentModal({
               </Form.Group>
 
               <Form.Group className="mb-2">
-                <Form.Label htmlFor="partner_id">Partneris</Form.Label>
-                <Form.Select
-                  name="partner_id"
-                  id="partner_id"
-                  value={formData.partner_id || ""}
-                  onChange={handleChange}
-                  isInvalid={!!formErrors.partner_id}
-                >
-                  <option value=""></option>
-                  {partners
-                    ?.slice()
-                    .sort((a, b) => (a.formatted_name || "").localeCompare(b.formatted_name || "", "lv", { sensitivity: "base" }))
-                    .map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {`${p.formatted_name}${p.partner_reg_nr ? ` (${p.partner_reg_nr})` : ""}`}
-                      </option>
-                    ))}
-                </Form.Select>
-                <Form.Control.Feedback type="invalid">{formErrors.partner_id}</Form.Control.Feedback>
+                <Form.Label>Partneris</Form.Label>
+                <Select
+                  options={partnerOptions}
+                  value={selectedPartnerOption}
+                  onChange={(opt) => {
+                    setFormData((prev) => ({ ...prev, partner_id: opt?.value || "" }));
+                    setFormErrors((prev) => ({ ...prev, partner_id: undefined }));
+                  }}
+                  styles={makeSelectStyles(!!formErrors.partner_id)}
+                  placeholder="Meklēt partneri..."
+                  noOptionsMessage={() => "Nav rezultātu"}
+                  isClearable={false}
+                  menuPortalTarget={document.body}
+                  menuPosition="fixed"
+                />
+                {formErrors.partner_id && (
+                  <div style={{ color: "#dc3545", fontSize: "0.875em", marginTop: "0.25rem" }}>{formErrors.partner_id}</div>
+                )}
               </Form.Group>
 
               <Form.Group className="mb-3">
@@ -299,58 +388,31 @@ export default function DocumentModal({
             </Form>
           </div>
 
-          {/* Accounting lines panel – only for existing documents */}
-          {showLines && (
-            <div style={{ flex: 1, minWidth: 0, overflowY: "auto", maxHeight: PANEL_MAX_HEIGHT }}>
-              <DocumentLines
-                companyId={companyId}
-                documentId={documentData.id}
-                onUpdateAccounted={onUpdateAccounted}
-                accounts={accounts}
-              />
-            </div>
-          )}
-
-          {/* PDF viewer panel */}
-          {hasPdf && (
-            <div
-              ref={pdfRef}
-              style={{
-                flex: 1,
-                minWidth: 0,
-                overflowY: "scroll",
-                overflowX: "hidden",
-                border: "1px solid var(--border)",
-                padding: "0.5rem",
-                boxSizing: "border-box",
-                maxHeight: PANEL_MAX_HEIGHT,
-              }}
-            >
-              <Document file={localPdfFile} onLoadSuccess={onDocumentLoadSuccess}>
-                {Array.from(new Array(numPages), (el, index) => (
-                  <React.Fragment key={index}>
-                    <Page pageNumber={index + 1} width={containerWidth} renderAnnotationLayer={false} renderTextLayer={false} />
-                    {index < numPages - 1 && <hr style={{ border: "2px dashed #000", margin: "1rem 0" }} />}
-                  </React.Fragment>
-                ))}
-              </Document>
-            </div>
-          )}
+          {/* Accounting lines panel — RIGHT */}
+          <div style={{ flex: 1, minWidth: 0, overflowY: "auto", maxHeight: PANEL_MAX_HEIGHT }}>
+            <DocumentLines
+              ref={linesRef}
+              companyId={companyId}
+              documentId={documentData?.id || null}
+              onUpdateAccounted={onUpdateAccounted}
+              accounts={accounts || []}
+            />
+          </div>
         </div>
       </Modal.Body>
 
       <Modal.Footer>
         {isEditMode && (
-          <Button className="btn-app-danger" onClick={handleDelete}>
+          <button type="button" className="btn-app-danger" onClick={handleDelete}>
             Dzēst
-          </Button>
+          </button>
         )}
-        <Button className="btn-app-outline" onClick={handleClose}>
+        <button type="button" className="btn-app-outline" onClick={handleClose}>
           Atcelt
-        </Button>
-        <Button className="btn-app" onClick={handleSubmit}>
+        </button>
+        <button type="button" className="btn-app" onClick={handleSubmit}>
           {isEditMode ? "Saglabāt" : "Pievienot"}
-        </Button>
+        </button>
       </Modal.Footer>
     </Modal>
   );

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Modal, Button, Form } from "react-bootstrap";
+import { Modal, Form } from "react-bootstrap";
 import { partnerRules } from "../../utils/Validators";
 
 export default function PartnerModal({ show, handleClose, partner, onSave, onDelete, partners }) {
@@ -296,16 +296,16 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
       {/* Modal pogas: dzēst, atcelt, saglabāt/pievienot */}
       <Modal.Footer>
         {isEditMode && (
-          <Button className="btn-app-danger" onClick={handleDelete}>
+          <button type="button" className="btn-app-danger" onClick={handleDelete}>
             Dzēst
-          </Button>
+          </button>
         )}
-        <Button className="btn-app-outline" onClick={handleClose}>
+        <button type="button" className="btn-app-outline" onClick={handleClose}>
           Atcelt
-        </Button>
-        <Button type="submit" className="btn-app" onClick={handleSubmit}>
+        </button>
+        <button type="button" className="btn-app" onClick={handleSubmit}>
           {isEditMode ? "Saglabāt" : "Pievienot"}
-        </Button>
+        </button>
       </Modal.Footer>
     </Modal>
   );

@@ -133,7 +133,7 @@ export const useDocuments = (companyId) => {
       const formData = new FormData();
       for (const key in newDoc) {
         if (key === "file") {
-          if (newDoc.file) formData.append("file", newDoc.file); // PDF fails, ja importēts
+          if (newDoc.file) formData.append("file", newDoc.file);
         } else {
           formData.append(key, newDoc[key]);
         }
@@ -141,11 +141,13 @@ export const useDocuments = (companyId) => {
       const res = await axiosInstance.post(`/companies/${companyId}/documents`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setDocsData((prev) => [...prev, res.data]); // Pievieno jauno dokumentu lokāli
+      setDocsData((prev) => [...prev, res.data]);
       notify.success("Finanšu dokuments veiksmīgi pievienots!");
+      return res.data;
     } catch (err) {
       console.error(err);
       notify.error("Neparedzēta servera kļūda");
+      return null;
     }
   };
 
@@ -153,11 +155,13 @@ export const useDocuments = (companyId) => {
   const handleSave = async (updatedDoc) => {
     try {
       const res = await axiosInstance.put(`/companies/${companyId}/documents/${updatedDoc.id}`, updatedDoc);
-      setDocsData((prev) => prev.map((d) => (d.id === updatedDoc.id ? res.data : d))); // Aizvieto veco dokumentu ar jauno
+      setDocsData((prev) => prev.map((d) => (d.id === updatedDoc.id ? res.data : d)));
       notify.success("Finanšu dokuments veiksmīgi rediģēts!");
+      return res.data;
     } catch (err) {
       console.error(err);
       notify.error("Neparedzēta servera kļūda");
+      return null;
     }
   };
 

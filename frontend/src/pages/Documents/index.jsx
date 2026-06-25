@@ -76,28 +76,25 @@ export default function Documents() {
       />
 
       <div className="table-card">
-        <Table hover size="sm" className="app-table" style={{ tableLayout: "fixed", marginBottom: 0 }}>
-          <DocumentsTableHeader
-            filters={filters}
-            setFilters={setFilters}
-            sortConfig={sortConfig}
-            handleSort={handleSort}
-            partnersData={partnersData}
-            selectedDocs={selectedDocs}
-            setSelectedDocs={setSelectedDocs}
-            filteredDocs={filteredDocs}
-            docTypeOptions={docTypeOptions}
-            docCurrencyOptions={docCurrencyOptions}
-          />
-        </Table>
-
         <VirtualizedTableContainer
           rowHeight={ROW_HEIGHT}
-          offsetPx={290}
+          offsetPx={175}
           onScrollChange={setScrollTop}
           onVisibleRowsChange={setVisibleRowsCount}
         >
           <Table hover size="sm" className="app-table" style={{ tableLayout: "fixed", marginBottom: 0 }}>
+            <DocumentsTableHeader
+              filters={filters}
+              setFilters={setFilters}
+              sortConfig={sortConfig}
+              handleSort={handleSort}
+              partnersData={partnersData}
+              selectedDocs={selectedDocs}
+              setSelectedDocs={setSelectedDocs}
+              filteredDocs={filteredDocs}
+              docTypeOptions={docTypeOptions}
+              docCurrencyOptions={docCurrencyOptions}
+            />
             <DocumentsTableBody
               partnerMap={partnerMap}
               selectedDocs={selectedDocs}

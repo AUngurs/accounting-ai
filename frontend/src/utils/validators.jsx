@@ -182,6 +182,7 @@ export const documentRules = (documents, doc) => {
   }
 
   const duplicate = documents.some((d) => {
+    if (d.id === doc.id) return false; // skip self when editing
     const checks = {
       doc_id: d.doc_id?.trim().toLowerCase() === doc.doc_id?.trim().toLowerCase(),
       doc_date: d.doc_date === doc.doc_date,

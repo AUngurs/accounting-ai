@@ -23,8 +23,8 @@ export default function FinancialDocsTableBody({
     const doc = sortedDocs[i];
 
     visibleRows.push(
-      <tr key={doc.id} className="align-middle">
-        <td style={{ textAlign: "center" }}>
+      <tr key={doc.id} className="align-middle" style={{ cursor: "pointer" }} onClick={() => handleEditClick(doc)}>
+        <td style={{ textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
           <input
             type="checkbox"
             className="form-check-input"
@@ -45,31 +45,13 @@ export default function FinancialDocsTableBody({
           {doc.doc_amount}
         </td>
         <td>{doc.doc_comments}</td>
-        <td>
-          <button
-            className="btn-app-outline btn-app-sm"
-            onClick={() => handleEditClick(doc)}
-          >
-            <i className="bi bi-pencil-square" />
-          </button>
-        </td>
+        <td></td>
       </tr>
     );
   }
 
   return (
     <React.Fragment>
-      <colgroup>
-        <col style={{ width: "3%" }} />
-        <col style={{ width: "10%" }} />
-        <col style={{ width: "10%" }} />
-        <col style={{ width: "21%" }} />
-        <col style={{ width: "7%" }} />
-        <col style={{ width: "5%" }} />
-        <col style={{ width: "8%" }} />
-        <col style={{ width: "36%" }} />
-        <col style={{ width: "38px" }} />
-      </colgroup>
       <tbody>
         <tr>
           <td colSpan={9} style={{ height: paddingTop, padding: 0, border: 0 }} />

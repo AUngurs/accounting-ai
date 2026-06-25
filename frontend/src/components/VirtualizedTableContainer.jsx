@@ -28,8 +28,8 @@ export default function VirtualizedTableContainer({ rowHeight, offsetPx, onScrol
       ref={containerRef}
       className={className}
       style={{
-        height: `calc(100vh - ${offsetPx}px)`, // Dinamiski iestata augstumu, ņemot vērā offset (piem., header augstumu)
-        overflowY: "auto", // Nodrošina vertikālo scroll
+        height: `calc(100vh - ${offsetPx}px)`,
+        overflowY: "scroll", // "scroll" (not "auto") reserves scrollbar width always, keeping header columns aligned
       }}
       onScroll={(e) => onScrollChange(e.target.scrollTop)} // Izsauc callback ar scrollTop pozīciju
     >

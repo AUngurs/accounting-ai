@@ -3,10 +3,9 @@ import axiosInstance from "../api/axiosInstance";
 import { useCompany } from "../components/CompanyContext";
 import AccountModal from "../components/AccountModal";
 import { notify } from "../utils/Notify";
-import { Form, InputGroup, Dropdown } from "react-bootstrap";
+import { Form, InputGroup, Dropdown, Table } from "react-bootstrap";
 import { FaDownload } from "react-icons/fa";
 import { GrPowerReset } from "react-icons/gr";
-import { BsPencilSquare } from "react-icons/bs";
 
 export default function ChartOfAccounts() {
   const [accounts, setAccounts] = useState([]);
@@ -114,14 +113,13 @@ export default function ChartOfAccounts() {
         </button>
       </div>
 
-      <div className="table-card">
-        <table className="app-table" style={{ tableLayout: "fixed" }}>
+      <div className="table-card" style={{ height: "calc(100vh - 175px)", overflowY: "auto" }}>
+        <Table hover size="sm" className="app-table" style={{ tableLayout: "fixed", marginBottom: 0 }}>
           <colgroup>
             <col style={{ width: "8%" }} />
             <col style={{ width: "52%" }} />
             <col style={{ width: "20%" }} />
-            <col style={{ width: "16%" }} />
-            <col style={{ width: "38px" }} />
+            <col style={{ width: "20%" }} />
           </colgroup>
           <thead>
             <tr>
@@ -129,28 +127,19 @@ export default function ChartOfAccounts() {
               <th>Nosaukums</th>
               <th>Analītiskais/Sintētiskais</th>
               <th>Aktīva/Pasīva/Operāciju</th>
-              <th></th>
             </tr>
           </thead>
           <tbody>
             {accounts.map((acc) => (
-              <tr key={acc.id}>
+              <tr key={acc.id} style={{ cursor: "pointer" }} onClick={() => handleEditClick(acc)}>
                 <td>{acc.code}</td>
                 <td>{acc.name}</td>
                 <td>{acc.type}</td>
                 <td>{acc.category}</td>
-                <td>
-                  <button
-                    className="btn-app-outline btn-app-sm"
-                    onClick={() => handleEditClick(acc)}
-                  >
-                    <BsPencilSquare />
-                  </button>
-                </td>
               </tr>
             ))}
           </tbody>
-        </table>
+        </Table>
       </div>
 
       <AccountModal
