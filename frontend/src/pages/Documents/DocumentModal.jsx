@@ -5,7 +5,7 @@ import AmountInput from "../../utils/AmountInput";
 import { Document, Page, pdfjs } from "react-pdf";
 
 // Iestata PDF.js worker, lai varētu renderēt PDF failus
-pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
 
 // Dokumenta tipu izvēles opcijas
 const docTypeOptions = [
