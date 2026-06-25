@@ -1,17 +1,17 @@
 import { useAuth } from "./AuthContext";
-import "../styles/Sidebar.css";
 
-// UserCard komponents attēlo pašreizējo lietotāju sidebarā vai companies skatā
 export default function UserCard() {
-  const { user } = useAuth(); // Iegūst lietotāja datus no AuthContext
+  const { user } = useAuth();
+  if (!user) return null;
+
+  const initials = (user.username || "U").slice(0, 2).toUpperCase();
 
   return (
-    <div className="user-card">
-      <div className="user-card-body">
-        {/* Attēlo lietotāja lietotājvārdu */}
-        <h6 className="user-card-title">{user.username}</h6>
-        {/* Attēlo lietotāja e-pastu */}
-        <p className="user-card-subtitle">{user.email}</p>
+    <div className="companies-user-info">
+      <div className="companies-avatar">{initials}</div>
+      <div>
+        <div className="companies-user-name">{user.username}</div>
+        <div className="companies-user-email">{user.email}</div>
       </div>
     </div>
   );

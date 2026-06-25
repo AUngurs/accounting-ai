@@ -59,7 +59,7 @@ export default function DocumentsControls({
   return (
     <div className="mb-3 d-flex flex-wrap gap-2 align-items-center">
       {/* Poga jauna dokumenta pievienošanai */}
-      <Button className="custom-dark-hover" onClick={handleCreateClick}>
+      <Button className="btn-app" onClick={handleCreateClick}>
         <FaPlus className="me-1" /> Jauns
       </Button>
 
@@ -70,7 +70,7 @@ export default function DocumentsControls({
         {/* Ja fails vēl nav izvēlēts, rāda dropdown importam */}
         {!file && (
           <Dropdown>
-            <Dropdown.Toggle className="custom-dark-hover">
+            <Dropdown.Toggle className="btn-app">
               <FaDownload className="me-1" /> Importēt
             </Dropdown.Toggle>
 
@@ -84,11 +84,11 @@ export default function DocumentsControls({
         {/* Ja fails ir izvēlēts, rāda faila nosaukumu, Atcelt un Importēt pogas */}
         {file && (
           <React.Fragment>
-            <Button className="custom-red-hover" onClick={handleCancel}>
+            <Button className="btn-app-danger" onClick={handleCancel}>
               Atcelt
             </Button>
             <Form.Control name="imported-file" value={file.name} readOnly className="bg-light" /> {/* Rāda izvēlēto failu */}
-            <Button className="custom-dark-hover" onClick={handleImportClick}>
+            <Button className="btn-app" onClick={handleImportClick}>
               Importēt
             </Button>
           </React.Fragment>
@@ -98,10 +98,10 @@ export default function DocumentsControls({
       {/* Ja ir izvēlēti dokumenti, rāda eksportēt un dzēst pogas */}
       {selectedDocs.size > 0 && (
         <div className="ms-auto">
-          <Button className="custom-dark-hover me-2" onClick={handleExport}>
+          <Button className="btn-app me-2" onClick={handleExport}>
             <FaUpload className="me-1" /> Eksportēt
           </Button>
-          <Button className="custom-red-hover" onClick={handleDeleteSelected}>
+          <Button className="btn-app-danger" onClick={handleDeleteSelected}>
             <FaTrash className="me-1" /> Dzēst
           </Button>
         </div>

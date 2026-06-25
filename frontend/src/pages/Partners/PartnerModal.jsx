@@ -296,14 +296,14 @@ export default function PartnerModal({ show, handleClose, partner, onSave, onDel
       {/* Modal pogas: dzēst, atcelt, saglabāt/pievienot */}
       <Modal.Footer>
         {isEditMode && (
-          <Button className="custom-red-hover" onClick={handleDelete}>
+          <Button className="btn-app-danger" onClick={handleDelete}>
             Dzēst
           </Button>
         )}
-        <Button className="custom-dark-hover" onClick={handleClose}>
+        <Button className="btn-app-outline" onClick={handleClose}>
           Atcelt
         </Button>
-        <Button type="submit" className="custom-dark-hover" onClick={handleSubmit}>
+        <Button type="submit" className="btn-app" onClick={handleSubmit}>
           {isEditMode ? "Saglabāt" : "Pievienot"}
         </Button>
       </Modal.Footer>

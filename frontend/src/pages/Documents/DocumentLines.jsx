@@ -148,7 +148,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                   {!isEditing ? (
                     <div className="d-flex justify-content-evenly">
                       <Button
-                        className="custom-light-hover edit-mode-button"
+                        className="btn-app-outline btn-app-sm"
                         style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
                         onClick={() => {
                           setIsEditing(true); // Aktivizē rediģēšanas režīmu
@@ -175,7 +175,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     <div className="d-flex justify-content-evenly">
                       {/* Poga saglabāšanai */}
                       <Button
-                        className="custom-light-hover edit-mode-button"
+                        className="btn-app-outline btn-app-sm"
                         style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
                         onClick={handleSave} // Saglabā izmaiņas
                       >
@@ -347,7 +347,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                   {/* Dzēšanas poga */}
                   <td>
                     {isEditing && (
-                      <Button size="sm" className="custom-red-hover" onClick={() => deleteLine(index)}>
+                      <Button size="sm" className="btn-app-danger" onClick={() => deleteLine(index)}>
                         <i className="bi bi-x-lg"></i>
                       </Button>
                     )}
@@ -443,7 +443,7 @@ export default function DocumentLines({ companyId, documentId, onUpdateAccounted
                     {/* Poga jaunas rindas pievienošanai */}
                     <Button
                       size="sm"
-                      className="custom-dark-hover"
+                      className="btn-app btn-app-sm"
                       onClick={() => {
                         setPlaceholderActive(true); // Aktivizē placeholder
                         setEditedLines((prev) => [...prev, { ...newLineDraft, id: `new-${Date.now()}` }]); // Pievieno jaunu rindu

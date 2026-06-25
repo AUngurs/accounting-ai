@@ -62,12 +62,7 @@ export default function FinancialDocsTableBody({
           <td>{doc.doc_type_abbrev}</td>
           <td>{doc.doc_currency}</td>
           {/* Summa ar fona krāsu atkarībā no is_accounted */}
-          <td
-            style={{
-              textAlign: "right",
-              backgroundColor: doc.is_accounted ? "#d4edda" : "#f8d7da",
-            }}
-          >
+          <td className={doc.is_accounted ? "amount-accounted" : "amount-unaccounted"}>
             {doc.doc_amount}
           </td>
           <td>{doc.doc_comments}</td>
@@ -75,7 +70,7 @@ export default function FinancialDocsTableBody({
             <div className="d-flex justify-content-evenly">
               {/* Rediģēšanas poga */}
               <button
-                className="btn btn-sm custom-dark-hover"
+                className="btn btn-sm btn-app-outline btn-app-sm"
                 style={{
                   padding: "0.15rem 0.25rem",
                   fontSize: "0.85rem",

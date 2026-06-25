@@ -2,7 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
-import { Button, Form } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import { useAuth } from "../components/AuthContext";
 import { userRules } from "../utils/Validators";
 import { notify } from "../utils/Notify";
@@ -10,66 +10,47 @@ import { notify } from "../utils/Notify";
 export default function User() {
   const navigate = useNavigate();
   const { user, setUser, logout } = useAuth();
-
-  const [formData, setFormData] = useState({
-    email: "",
-    username: "",
-    password: "",
-    repeatPassword: "",
-  });
+  const [formData, setFormData] = useState({ email: "", username: "", password: "", repeatPassword: "" });
   const [allowPasswordEdit, setAllowPasswordEdit] = useState(false);
   const [formErrors, setFormErrors] = useState({});
 
-  // Inicializē formu ar esošajiem lietotāja datiem
   useEffect(() => {
     if (user) {
-      setFormData((prev) => ({
-        ...prev,
-        email: user.email || "",
-        username: user.username || "",
-      }));
+      setFormData((prev) => ({ ...prev, email: user.email || "", username: user.username || "" }));
     }
   }, [user]);
 
-  // Atjauno formData, kad lietotājs maina ievadi
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setFormErrors((prev) => ({ ...prev, [name]: undefined })); // Noņem kļūdu konkrētajā laukā
+    setFormErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
-  // Iespējo vai atspējo paroles maiņu
   const togglePasswordEdit = (checked) => {
     setAllowPasswordEdit(checked);
-    if (!checked) {
-      setFormData((prev) => ({ ...prev, password: "", repeatPassword: "" })); // Notīra paroles laukus
-    }
+    if (!checked) setFormData((prev) => ({ ...prev, password: "", repeatPassword: "" }));
   };
 
-  // Saglabā lietotāja datus
   const handleSubmit = async () => {
-    const errors = userRules(formData, allowPasswordEdit); // Validē ievadītos datus
+    const errors = userRules(formData, allowPasswordEdit);
     setFormErrors(errors);
-    if (Object.keys(errors).length > 0) return; // Neiesniedz, ja ir kļūdas
-
-    const payload = { username: formData.username.trim() }; // Sagatavo payload
+    if (Object.keys(errors).length > 0) return;
+    const payload = { username: formData.username.trim() };
     if (allowPasswordEdit) {
       payload.password = formData.password;
       payload.repeatPassword = formData.repeatPassword;
     }
-
     try {
-      const res = await axiosInstance.put(`/user/${user.id}`, payload); // Sūta pieprasījumu serverim
-      setUser((prev) => ({ ...prev, username: res.data.username })); // Atjauno AuthContext ar jauno lietotājvārdu
+      const res = await axiosInstance.put(`/user/${user.id}`, payload);
+      setUser((prev) => ({ ...prev, username: res.data.username }));
       notify.success("Lietotāja dati veiksmīgi rediģēti!");
-      navigate("/companies"); // Atgriežas uz uzņēmumu sarakstu
+      navigate("/companies");
     } catch (err) {
       console.error(err);
       notify.error("Neparedzēta servera kļūda");
     }
   };
 
-  // Dzēš lietotāja kontu
   const handleDelete = async () => {
     if (!window.confirm("Vai tiešām vēlaties dzēst savu kontu?")) return;
     try {
@@ -84,89 +65,83 @@ export default function User() {
   };
 
   return (
-    <React.Fragment>
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh", backgroundColor: "#021526" }}>
-        <div
-          className="card p-4 shadow"
-          style={{
-            width: "100%",
-            maxWidth: "400px",
-            borderRadius: "10px",
-            maxHeight: "90vh",
-          }}
-        >
-          <Form noValidate>
-            {/* E-pasts nevar tikt mainīts */}
-            <Form.Group className="mb-2">
-              <Form.Label htmlFor="email">E-pasts</Form.Label>
-              <Form.Control name="email" id="email" value={formData.email} autoComplete="off" disabled></Form.Control>
-            </Form.Group>
+    <div className="user-profile-shell">
+      <div className="user-profile-panel">
+        <div className="user-profile-heading">Profila iestatījumi</div>
 
-            <Form.Group className="mb-2">
-              <Form.Label htmlFor="username">Lietotājvārds</Form.Label>
-              <Form.Control
-                type="text"
-                name="username"
-                id="username"
-                autoComplete="off"
-                value={formData.username}
-                onChange={handleChange}
-                isInvalid={!!formErrors.username} // Parāda kļūdu vizuāli
-              />
-              <Form.Control.Feedback type="invalid">{formErrors.username}</Form.Control.Feedback>
-            </Form.Group>
-
-            <Form.Check
-              type="checkbox"
-              id="enablePasswordEdit"
-              label="Mainīt paroli"
-              className="mt-5"
-              checked={allowPasswordEdit}
-              onChange={(e) => togglePasswordEdit(e.target.checked)}
+        <Form noValidate>
+          <Form.Group className="mb-3">
+            <Form.Label className="auth-form-label">E-pasts</Form.Label>
+            <Form.Control
+              className="auth-input"
+              name="email" id="email"
+              value={formData.email}
+              autoComplete="off"
+              disabled
             />
+          </Form.Group>
 
-            <Form.Group className="mb-2">
-              <Form.Label htmlFor="password">Jauna parole</Form.Label>
-              <Form.Control
-                type="password"
-                name="password"
-                id="password"
-                value={formData.password}
-                onChange={handleChange}
-                isInvalid={!!formErrors.password}
-                disabled={!allowPasswordEdit} // Atspējo, ja parole nav atļauta
-              />
-              <Form.Control.Feedback type="invalid">{formErrors.password}</Form.Control.Feedback>
-            </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label className="auth-form-label">Lietotājvārds</Form.Label>
+            <Form.Control
+              className="auth-input"
+              type="text" name="username" id="username"
+              autoComplete="off"
+              value={formData.username}
+              onChange={handleChange}
+              isInvalid={!!formErrors.username}
+            />
+            <Form.Control.Feedback type="invalid">{formErrors.username}</Form.Control.Feedback>
+          </Form.Group>
 
-            <Form.Group className="mb-2">
-              <Form.Label htmlFor="repeatPassword">Atkārtota jauna parole</Form.Label>
-              <Form.Control
-                type="password"
-                name="repeatPassword"
-                id="repeatPassword"
-                value={formData.repeatPassword}
-                onChange={handleChange}
-                isInvalid={!!formErrors.repeatPassword}
-                disabled={!allowPasswordEdit} // Atspējo, ja parole nav atļauta
-              />
-              <Form.Control.Feedback type="invalid">{formErrors.repeatPassword}</Form.Control.Feedback>
-            </Form.Group>
-          </Form>
+          <div style={{ borderTop: "1px solid var(--border)", margin: "1.25rem 0 1rem" }} />
 
-          <div className="d-flex justify-content-end gap-2 mt-3">
-            <Button className="custom-red-hover" onClick={handleDelete}>
-              Dzēst
-            </Button>
-            <Button className="custom-dark-hover" onClick={() => navigate("/companies")}>
-              Atcelt
-            </Button>
-            <Button className="custom-dark-hover" onClick={handleSubmit}>
-              Saglabāt
-            </Button>
+          <Form.Check
+            type="checkbox"
+            id="enablePasswordEdit"
+            label="Mainīt paroli"
+            className="mb-3"
+            checked={allowPasswordEdit}
+            onChange={(e) => togglePasswordEdit(e.target.checked)}
+          />
+
+          <Form.Group className="mb-3">
+            <Form.Label className="auth-form-label">Jauna parole</Form.Label>
+            <Form.Control
+              className="auth-input"
+              type="password" name="password" id="password"
+              value={formData.password}
+              onChange={handleChange}
+              isInvalid={!!formErrors.password}
+              disabled={!allowPasswordEdit}
+              placeholder="••••••••"
+            />
+            <Form.Control.Feedback type="invalid">{formErrors.password}</Form.Control.Feedback>
+          </Form.Group>
+
+          <Form.Group className="mb-4">
+            <Form.Label className="auth-form-label">Atkārtota jauna parole</Form.Label>
+            <Form.Control
+              className="auth-input"
+              type="password" name="repeatPassword" id="repeatPassword"
+              value={formData.repeatPassword}
+              onChange={handleChange}
+              isInvalid={!!formErrors.repeatPassword}
+              disabled={!allowPasswordEdit}
+              placeholder="••••••••"
+            />
+            <Form.Control.Feedback type="invalid">{formErrors.repeatPassword}</Form.Control.Feedback>
+          </Form.Group>
+        </Form>
+
+        <div style={{ display: "flex", gap: "0.5rem", justifyContent: "space-between" }}>
+          <button className="btn-app-danger" onClick={handleDelete}>Dzēst kontu</button>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <button className="btn-app-outline" onClick={() => navigate("/companies")}>Atcelt</button>
+            <button className="btn-app" onClick={handleSubmit}>Saglabāt</button>
           </div>
         </div>
       </div>
-    </React.Fragment>
+    </div>
   );
 }

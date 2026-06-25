@@ -55,7 +55,7 @@ export default function Partners() {
 
   return (
     <div>
-      <h2 className="mb-3">Partneri</h2>
+      <h1 className="page-title">Partneri</h1>
 
       {/* Kontroles: pievienošana, importēšana, eksports, dzēšana */}
       <PartnersControls
@@ -67,7 +67,7 @@ export default function Partners() {
       />
 
       {/* Tabulas galvene */}
-      <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed", marginBottom: 0 }}>
+      <Table hover size="sm" className="app-table" style={{ tableLayout: "fixed", marginBottom: 0 }}>
         <PartnersTableHeader
           filters={filters}
           setFilters={setFilters}
@@ -86,7 +86,7 @@ export default function Partners() {
         onScrollChange={setScrollTop}
         onVisibleRowsChange={setVisibleRowsCount}
       >
-        <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed", marginBottom: 0 }}>
+        <Table hover size="sm" className="app-table" style={{ tableLayout: "fixed", marginBottom: 0 }}>
           <PartnersTableBody
             visibleRows={visibleRows}
             sortedPartners={sortedPartners}
@@ -99,10 +99,10 @@ export default function Partners() {
         </Table>
       </VirtualizedTableContainer>
 
-      <div className="virtualized-table-divider" />
+      <div className="table-bottom-bar" />
 
       {/* Informācija par atlasīto partneru skaitu */}
-      <div className="mt-2 text-muted small">
+      <div className="selection-count">
         Atlasīti {selectedPartners.size} no {sortedPartners.length} partneriem
       </div>
 

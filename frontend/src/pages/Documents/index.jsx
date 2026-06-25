@@ -69,7 +69,7 @@ export default function Documents() {
 
   return (
     <div>
-      <h2 className="mb-3">Finanšu dokumenti</h2>
+      <h1 className="page-title">Finanšu dokumenti</h1>
 
       {/* Kontroles panelis: jauns, importēt, eksportēt, dzēst */}
       <DocumentsControls
@@ -82,7 +82,7 @@ export default function Documents() {
       />
 
       {/* Tabulas galvene ar kārtošanu un filtriem */}
-      <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed", marginBottom: 0 }}>
+      <Table hover size="sm" className="app-table" style={{ tableLayout: "fixed", marginBottom: 0 }}>
         <DocumentsTableHeader
           filters={filters}
           setFilters={setFilters}
@@ -104,7 +104,7 @@ export default function Documents() {
         onScrollChange={setScrollTop} // callback scroll pozīcijai
         onVisibleRowsChange={setVisibleRowsCount} // callback redzamo rindu skaitam
       >
-        <Table hover size="sm" className="table-dark-custom" style={{ tableLayout: "fixed", marginBottom: 0 }}>
+        <Table hover size="sm" className="app-table" style={{ tableLayout: "fixed", marginBottom: 0 }}>
           <DocumentsTableBody
             docsData={docsData}
             partnerMap={partnerMap}
@@ -123,10 +123,10 @@ export default function Documents() {
         </Table>
       </VirtualizedTableContainer>
 
-      <div className="virtualized-table-divider" />
+      <div className="table-bottom-bar" />
 
       {/* Informācija par atlasīto dokumentu skaitu */}
-      <div className="mt-2 text-muted small">
+      <div className="selection-count">
         Atlasīti {selectedDocs.size} no {sortedDocs.length} finanšu dokumentiem
       </div>
 

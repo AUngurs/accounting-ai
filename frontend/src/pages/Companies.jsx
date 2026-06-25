@@ -4,51 +4,39 @@ import axiosInstance from "../api/axiosInstance";
 import { useCompany } from "../components/CompanyContext";
 import { useAuth } from "../components/AuthContext";
 import CompanyModal from "../components/CompanyModal";
-import UserCard from "../components/UserCard";
 import { notify } from "../utils/Notify";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaBuilding } from "react-icons/fa";
 import { MdExitToApp } from "react-icons/md";
+import { BiUser } from "react-icons/bi";
+import { BsPencilSquare } from "react-icons/bs";
 
 export default function Companies() {
   const navigate = useNavigate();
-
-  const { companies, updateCompanies, selectCompany, clearAll: clearCompanies } = useCompany(); // Iegūst uzņēmumu sarakstu un metodes no CompanyContext
-
-  const { logout } = useAuth(); // Iegūst logout funkciju no AuthContext
-
+  const { companies, updateCompanies, selectCompany, clearAll: clearCompanies } = useCompany();
+  const { logout, user } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
 
-  // Saņem uzņēmumus no servera un atjauno CompanyContext
   useEffect(() => {
-    axiosInstance
-      .get("/companies")
+    axiosInstance.get("/companies")
       .then((res) => updateCompanies(res.data))
-      .catch((err) => {
-        console.error(err);
-        notify.error("Neparedzēta servera kļūda");
-      });
+      .catch((err) => { console.error(err); notify.error("Neparedzēta servera kļūda"); });
   }, [updateCompanies]);
 
-  // Izvēlas uzņēmumu un pāriet uz dokumentu lapu
   const handleSelectCompany = (company) => {
     selectCompany(company.id, company);
     navigate("/documents");
   };
 
-  // Aizver modal logu un notīra izvēlēto uzņēmumu
   const closeModal = () => {
     setSelectedCompany(null);
     setShowModal(false);
   };
 
-  // Pievieno jaunu uzņēmumu
   const handleAddCompany = async (data) => {
     try {
-      const res = await axiosInstance.post("/companies", {
-        name: data.name.trim(),
-      });
-      const updatedList = [...companies, res.data].sort((a, b) => a.name.localeCompare(b.name)); // Sakārto pēc nosaukuma
+      const res = await axiosInstance.post("/companies", { name: data.name.trim() });
+      const updatedList = [...companies, res.data].sort((a, b) => a.name.localeCompare(b.name));
       updateCompanies(updatedList);
       setShowModal(false);
       notify.success("Uzņēmums pievienots!");
@@ -58,12 +46,11 @@ export default function Companies() {
     }
   };
 
-  // Saglabā rediģēto uzņēmumu
   const handleSave = async (updatedCompany) => {
     try {
-      const updated = { ...updatedCompany, name: updatedCompany.name.trim() }; // Noņem liekās atstarpes nosaukumā
+      const updated = { ...updatedCompany, name: updatedCompany.name.trim() };
       const res = await axiosInstance.put(`/companies/${updated.id}`, updated);
-      const updatedList = companies.map((c) => (c.id === updated.id ? res.data : c)).sort((a, b) => a.name.localeCompare(b.name)); // Sakārto pēc nosaukuma
+      const updatedList = companies.map((c) => (c.id === updated.id ? res.data : c)).sort((a, b) => a.name.localeCompare(b.name));
       updateCompanies(updatedList);
       setShowModal(false);
       setSelectedCompany(null);
@@ -74,11 +61,10 @@ export default function Companies() {
     }
   };
 
-  // Dzēš uzņēmumu
   const handleDelete = async (companyId) => {
     try {
       await axiosInstance.delete(`companies/${companyId}`);
-      updateCompanies(companies.filter((company) => company.id !== companyId)); // Filtrē dzēsto uzņēmumu
+      updateCompanies(companies.filter((company) => company.id !== companyId));
       notify.success("Uzņēmums veiksmīgi dzēsts!");
     } catch (err) {
       console.error(err);
@@ -86,60 +72,90 @@ export default function Companies() {
     }
   };
 
-  // Iziet no sistēmas
   const handleLogout = () => {
     logout();
-    clearCompanies(); // Notīra uzņēmumu CompanyContext
+    clearCompanies();
     navigate("/login");
   };
 
+  const initials = user ? (user.username || "U").slice(0, 2).toUpperCase() : "U";
+
   return (
-    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh", backgroundColor: "#021526" }}>
-      <div
-        className="card p-4 shadow"
-        style={{
-          width: "100%",
-          maxWidth: "400px",
-          borderRadius: "10px",
-          maxHeight: "90vh",
-        }}
-      >
-        <UserCard></UserCard> {/* Rāda lietotāja informāciju */}
-        <button className="btn custom-dark-hover mb-4 w-100" onClick={() => navigate("/user")}>
-          <i className="bi bi-pencil-square me-2" />
-          Mainīt lietotāja datus
-        </button>
-        <h2>Izvēlieties uzņēmumu</h2>
-        <ul className="list-group mt-3">
-          {companies.map((company) => (
-            <li key={company.id} className="list-group-item d-flex justify-content-between align-items-center">
-              <span style={{ cursor: "pointer" }} onClick={() => handleSelectCompany(company)}>
-                {company.name}
-              </span>
+    <div className="companies-shell">
+      <div className="companies-panel">
+        {/* Header */}
+        <div className="companies-header">
+          <div className="companies-user-info">
+            <div className="companies-avatar">{initials}</div>
+            <div>
+              <div className="companies-user-name">{user?.username}</div>
+              <div className="companies-user-email">{user?.email}</div>
+            </div>
+            <div className="companies-user-actions">
               <button
-                className="btn btn-sm custom-light-hover"
-                onClick={() => {
+                className="btn-app-outline btn-app-sm"
+                onClick={() => navigate("/user")}
+                title="Rediģēt profilu"
+              >
+                <BiUser />
+              </button>
+              <button
+                className="btn-app-danger btn-app-sm"
+                onClick={handleLogout}
+                title="Iziet"
+              >
+                <MdExitToApp />
+              </button>
+            </div>
+          </div>
+          <div className="companies-title">Izvēlieties uzņēmumu</div>
+        </div>
+
+        {/* Company list */}
+        <div className="companies-list">
+          {companies.length === 0 && (
+            <div style={{ textAlign: "center", color: "var(--text-muted)", padding: "2rem 1rem", fontSize: "0.875rem" }}>
+              Nav neviena uzņēmuma. Pievienojiet pirmo!
+            </div>
+          )}
+          {companies.map((company) => (
+            <div
+              key={company.id}
+              className="company-item"
+              onClick={() => handleSelectCompany(company)}
+            >
+              <div className="company-item-icon">
+                <FaBuilding />
+              </div>
+              <span className="company-item-name">{company.name}</span>
+              <button
+                className="btn-app-outline btn-app-sm company-item-edit"
+                onClick={(e) => {
+                  e.stopPropagation();
                   setSelectedCompany(company);
                   setShowModal(true);
                 }}
+                title="Rediģēt"
               >
-                <i className="bi bi-pencil-square" />
+                <BsPencilSquare />
               </button>
-            </li>
+            </div>
           ))}
-        </ul>
-        <button className="btn custom-dark-hover mt-3 mb-1 w-100" onClick={() => setShowModal(true)}>
-          <FaPlus className="me-1" /> Pievienot uzņēmumu
-        </button>
-        <button className="btn custom-red-hover w-100 logout-button" onClick={handleLogout}>
-          <MdExitToApp className="me-1" /> Iziet
-        </button>
+        </div>
+
+        {/* Footer */}
+        <div className="companies-footer">
+          <button className="btn-app" style={{ flex: 1 }} onClick={() => setShowModal(true)}>
+            <FaPlus /> Pievienot uzņēmumu
+          </button>
+        </div>
       </div>
+
       <CompanyModal
         show={showModal}
         handleClose={closeModal}
         company={selectedCompany}
-        onSave={selectedCompany ? handleSave : handleAddCompany} // Ja izvēlēts uzņēmums, saglabā; ja nav, pievieno
+        onSave={selectedCompany ? handleSave : handleAddCompany}
         onDelete={handleDelete}
         companies={companies}
       />

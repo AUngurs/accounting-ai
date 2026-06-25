@@ -1,15 +1,16 @@
 .app-layout {
   display: flex;
   min-height: 100vh;
+  background: var(--bg);
 }
 
 .app-content {
   flex: 1;
-  padding: 16px;
-  background-color: #1e1f29;
-  color: #e0e0e0;
+  overflow-x: auto;
+  min-width: 0;
 }
 
-.content {
-  background-color: #efefef;
+.app-content-inner {
+  padding: 1.25rem 1.5rem;
+  min-height: 100%;
 }

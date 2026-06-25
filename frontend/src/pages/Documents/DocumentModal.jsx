@@ -354,7 +354,7 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
                 flex: 1,
                 overflowY: "scroll",
                 overflowX: "hidden",
-                border: "1px solid #ccc",
+                border: "1px solid var(--border)",
                 padding: "0.5rem",
                 boxSizing: "border-box",
               }}
@@ -376,14 +376,14 @@ export default function DocumentModal({ show, handleClose, documentData, pdfFile
       {/* Footer ar pogām */}
       <Modal.Footer>
         {isEditMode && (
-          <Button className="custom-red-hover" onClick={handleDelete}>
+          <Button className="btn-app-danger" onClick={handleDelete}>
             Dzēst
           </Button>
         )}
-        <Button className="custom-dark-hover" onClick={handleClose}>
+        <Button className="btn-app-outline" onClick={handleClose}>
           Atcelt
         </Button>
-        <Button className="custom-dark-hover" onClick={handleSubmit}>
+        <Button className="btn-app" onClick={handleSubmit}>
           {isEditMode ? "Saglabāt" : "Pievienot"}
         </Button>
       </Modal.Footer>

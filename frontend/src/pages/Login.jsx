@@ -4,37 +4,35 @@ import axiosInstance from "../api/axiosInstance";
 import { useAuth } from "../components/AuthContext";
 import { notify } from "../utils/Notify";
 import { loginRules } from "../utils/Validators";
-import { Button, Form } from "react-bootstrap";
+import { Form } from "react-bootstrap";
+import { IoDocumentText } from "react-icons/io5";
+import { MdBusinessCenter } from "react-icons/md";
+import { FaChartBar } from "react-icons/fa6";
 
 export default function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [formErrors, setFormErrors] = useState({});
-  const { login } = useAuth(); // Iegūst login funkciju no AuthContext
+  const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Atjauno formData, kad lietotājs maina ievadi
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Apstrādā pieslēgšanos
   const handleLogin = async (e) => {
-    e.preventDefault(); // Novērš formas noklusējuma sūtīšanu
-
-    const errors = loginRules(formData); // Validē formu pēc noteikumiem
+    e.preventDefault();
+    const errors = loginRules(formData);
     setFormErrors(errors);
-
-    if (Object.keys(errors).length > 0) return; // Ja ir kļūdas, neiesniedz
-
+    if (Object.keys(errors).length > 0) return;
     try {
-      const res = await axiosInstance.post("/auth/login", formData); // Sūta login pieprasījumu
+      const res = await axiosInstance.post("/auth/login", formData);
       const data = res.data;
-      login(data.token, data.user); // Saglabā tokenu un lietotāju AuthContext
+      login(data.token, data.user);
       notify.success("Pieslēgšanās veiksmīga!");
-      navigate("/companies"); // Pāriet uz uzņēmumu sarakstu
+      navigate("/companies");
     } catch (err) {
       console.error(err);
-      if (err.response && err.response.data && err.response.data.error) {
+      if (err.response?.data?.error) {
         notify.error(err.response.data.error);
       } else {
         notify.error("Neparedzēta servera kļūda");
@@ -43,44 +41,88 @@ export default function Login() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh", backgroundColor: "#021526" }}>
-      <div className="card p-4 shadow" style={{ width: "100%", maxWidth: "400px", borderRadius: "10px" }}>
-        <Form noValidate onSubmit={handleLogin}>
-          <Form.Group className="mb-3">
-            <Form.Label htmlFor="email">E-pasts</Form.Label>
-            <Form.Control
-              type="text"
-              name="email"
-              id="email"
-              autoComplete="off"
-              value={formData.email}
-              onChange={handleChange}
-              isInvalid={!!formErrors.email} // Parāda kļūdu vizuāli
-            />
-            <Form.Control.Feedback type="invalid">{formErrors.email}</Form.Control.Feedback>
-          </Form.Group>
+    <div className="auth-shell">
+      <div className="auth-brand">
+        <div>
+          <div className="auth-brand-logo">Accounting<span>AI</span></div>
+          <div className="auth-brand-tagline">
+            Moderna grāmatvedības platforma ar mākslīgā intelekta atbalstu
+          </div>
+        </div>
+        <div className="auth-brand-features">
+          <div className="auth-brand-feature">
+            <div className="auth-brand-feature-icon"><IoDocumentText /></div>
+            <div className="auth-brand-feature-text">
+              <strong>Dokumentu pārvaldība</strong>
+              Automātiska PDF apstrāde ar AI
+            </div>
+          </div>
+          <div className="auth-brand-feature">
+            <div className="auth-brand-feature-icon"><MdBusinessCenter /></div>
+            <div className="auth-brand-feature-text">
+              <strong>Partneru reģistrs</strong>
+              Pilnīgs kontaktpersonu saraksts
+            </div>
+          </div>
+          <div className="auth-brand-feature">
+            <div className="auth-brand-feature-icon"><FaChartBar /></div>
+            <div className="auth-brand-feature-text">
+              <strong>Kontu plāns</strong>
+              Strukturēta finanšu uzskaite
+            </div>
+          </div>
+        </div>
+      </div>
 
-          <Form.Group className="mb-3">
-            <Form.Label htmlFor="password">Parole</Form.Label>
-            <Form.Control
-              type="password"
-              name="password"
-              id="password"
-              value={formData.password}
-              onChange={handleChange}
-              isInvalid={!!formErrors.password} // Parāda kļūdu vizuāli
-            />
-            <Form.Control.Feedback type="invalid">{formErrors.password}</Form.Control.Feedback>
-          </Form.Group>
+      <div className="auth-form-panel">
+        <div className="auth-form-box">
+          <div className="auth-form-title">Laipni lūdzam</div>
+          <div className="auth-form-subtitle">Pieslēdzieties savam kontam</div>
 
-          <Button type="submit" className="btn custom-dark-hover w-100 mb-2">
-            Pieslēgties
-          </Button>
+          <Form noValidate onSubmit={handleLogin}>
+            <Form.Group className="mb-3">
+              <Form.Label className="auth-form-label">E-pasts</Form.Label>
+              <Form.Control
+                className="auth-input"
+                type="text"
+                name="email"
+                id="email"
+                autoComplete="off"
+                value={formData.email}
+                onChange={handleChange}
+                isInvalid={!!formErrors.email}
+                placeholder="jusu@epasts.lv"
+              />
+              <Form.Control.Feedback type="invalid">{formErrors.email}</Form.Control.Feedback>
+            </Form.Group>
 
-          <Button type="button" className="btn custom-dark-hover w-100" onClick={() => navigate("/register")}>
-            Reģistrēties
-          </Button>
-        </Form>
+            <Form.Group className="mb-4">
+              <Form.Label className="auth-form-label">Parole</Form.Label>
+              <Form.Control
+                className="auth-input"
+                type="password"
+                name="password"
+                id="password"
+                value={formData.password}
+                onChange={handleChange}
+                isInvalid={!!formErrors.password}
+                placeholder="••••••••"
+              />
+              <Form.Control.Feedback type="invalid">{formErrors.password}</Form.Control.Feedback>
+            </Form.Group>
+
+            <button type="submit" className="btn-app auth-submit-btn">
+              Pieslēgties
+            </button>
+          </Form>
+
+          <div className="auth-link-row">
+            Nav konta?{" "}
+            <button className="auth-link" onClick={() => navigate("/register")}>
+              Reģistrēties
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

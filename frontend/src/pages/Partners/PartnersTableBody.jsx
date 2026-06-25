@@ -52,8 +52,7 @@ export default function PartnersTableBody({
           <td>
             <div className="d-flex justify-content-evenly">
               <button
-                className="btn btn-sm custom-dark-hover"
-                style={{ padding: "0.15rem 0.25rem", fontSize: "0.85rem", lineHeight: 1 }}
+                className="btn-app-outline btn-app-sm"
                 onClick={(e) => {
                   e.stopPropagation(); // Neizsauc row click
                   handleEditClick(partner);

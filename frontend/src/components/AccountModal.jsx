@@ -140,13 +140,13 @@ export default function AccountModal({ show, handleClose, account, onSave, onDel
 
       {/* Modal kājenes pogas ar dzēšanas, atcelšanas un saglabāšanas funkcionalitāti */}
       <Modal.Footer>
-        <Button className="custom-red-hover" onClick={handleDelete}>
+        <Button className="btn-app-danger" onClick={handleDelete}>
           Dzēst
         </Button>
-        <Button className="custom-dark-hover" onClick={handleClose}>
+        <Button className="btn-app-outline" onClick={handleClose}>
           Atcelt
         </Button>
-        <Button type="submit" className="custom-dark-hover" onClick={handleSubmit}>
+        <Button type="submit" className="btn-app" onClick={handleSubmit}>
           Saglabāt
         </Button>
       </Modal.Footer>

@@ -193,7 +193,7 @@ export default function FinancialDocsTableHeader({
             {/* Notīrīšanas poga visiem filtriem un izvēlētajiem dokumentiem */}
             <button
               type="button"
-              className="btn custom-red-hover btn-sm"
+              className="btn btn-app-danger btn-sm"
               onClick={() => {
                 setFilters({
                   dateFrom: "",

@@ -100,7 +100,7 @@ export default function PartnersTableHeader({
             {/* Poga filtru atiestatīšanai un visu atlases notīrīšanai */}
             <button
               type="button"
-              className="btn btn-sm custom-red-hover"
+              className="btn btn-sm btn-app-danger"
               onClick={() => {
                 setFilters({ name: "", type: "", regNr: "", vat: "" });
                 setSelectedPartners(new Set());
