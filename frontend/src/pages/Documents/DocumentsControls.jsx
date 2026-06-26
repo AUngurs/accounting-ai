@@ -12,19 +12,19 @@ export default function DocumentsControls({
 }) {
   const fileInputRef = useRef(null);
   const [fileType, setFileType] = useState(null);
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
 
   const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (!selectedFile) return;
-    setFile(selectedFile);
+    const selected = Array.from(e.target.files);
+    if (selected.length === 0) return;
+    setFiles(selected);
   };
 
   const handleImportClick = async () => {
-    if (!file) return;
-    if (fileType === "xml") await handleXmlImport(file);
-    else if (fileType === "pdf") await handlePdfImport(file);
-    setFile(null);
+    if (files.length === 0) return;
+    if (fileType === "xml") await handleXmlImport(files[0]);
+    else if (fileType === "pdf") await handlePdfImport(files);
+    setFiles([]);
     setFileType(null);
     if (fileInputRef.current) fileInputRef.current.value = null;
   };
@@ -33,15 +33,18 @@ export default function DocumentsControls({
     setFileType(type);
     if (fileInputRef.current) {
       fileInputRef.current.accept = type === "pdf" ? ".pdf" : ".xml";
+      fileInputRef.current.multiple = type === "pdf";
       fileInputRef.current.click();
     }
   };
 
   const handleCancel = () => {
-    setFile(null);
+    setFiles([]);
     setFileType(null);
     if (fileInputRef.current) fileInputRef.current.value = null;
   };
+
+  const fileLabel = files.length > 1 ? `${files.length} PDF faili` : files[0]?.name || "";
 
   return (
     <div className="mb-3 d-flex flex-wrap gap-2 align-items-center">
@@ -52,7 +55,7 @@ export default function DocumentsControls({
       <Form.Control type="file" ref={fileInputRef} style={{ display: "none" }} onChange={handleFileChange} />
 
       <InputGroup className="w-auto">
-        {!file && (
+        {files.length === 0 && (
           <Dropdown>
             <Dropdown.Toggle as="button" className="btn-app">
               <FaDownload className="me-1" /> Importēt
@@ -64,12 +67,12 @@ export default function DocumentsControls({
           </Dropdown>
         )}
 
-        {file && (
+        {files.length > 0 && (
           <React.Fragment>
             <button type="button" className="btn-app-danger" onClick={handleCancel}>
               Atcelt
             </button>
-            <Form.Control name="imported-file" value={file.name} readOnly className="bg-light" />
+            <Form.Control name="imported-file" value={fileLabel} readOnly className="bg-light" />
             <button type="button" className="btn-app" onClick={handleImportClick}>
               Importēt
             </button>

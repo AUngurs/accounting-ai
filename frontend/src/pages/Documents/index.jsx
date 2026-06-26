@@ -24,6 +24,11 @@ export default function Documents() {
     showModal,
     setShowModal,
     handlePdfImport,
+    importQueue,
+    importIndex,
+    handleImportNav,
+    handleImportSaveAndAdvance,
+    resetImportQueue,
     docCurrencyOptions,
     docsData,
     docTypeOptions,
@@ -60,7 +65,10 @@ export default function Documents() {
     setSelectedDocument(null);
     setPdfFile(null);
     setShowModal(false);
+    resetImportQueue();
   };
+
+  const isImportMode = importQueue.length > 1;
 
   return (
     <div>
@@ -124,6 +132,10 @@ export default function Documents() {
         companyId={companyId}
         accounts={accounts}
         onUpdateAccounted={handleUpdateAccounted}
+        importTotal={isImportMode ? importQueue.length : 0}
+        importIndex={importIndex}
+        onImportNav={isImportMode ? handleImportNav : null}
+        onImportNext={isImportMode ? handleImportSaveAndAdvance : null}
       />
     </div>
   );

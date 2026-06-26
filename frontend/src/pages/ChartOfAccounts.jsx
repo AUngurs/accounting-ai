@@ -121,7 +121,7 @@ export default function ChartOfAccounts() {
             <col style={{ width: "20%" }} />
             <col style={{ width: "20%" }} />
           </colgroup>
-          <thead>
+          <thead style={{ position: "sticky", top: 0, zIndex: 2, background: "var(--surface)" }}>
             <tr>
               <th>Kods</th>
               <th>Nosaukums</th>

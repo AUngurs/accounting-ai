@@ -75,6 +75,8 @@ const formatAccountOption = (opt, { context }) =>
 const DocumentLines = forwardRef(function DocumentLines({ companyId, documentId, onUpdateAccounted, accounts }, ref) {
   const [lines, setLines] = useState([]);
   const [editedLines, setEditedLines] = useState([]);
+  const amountRefs = useRef({});
+  const justAddedIdRef = useRef(null);
   const [newLineDraft, setNewLineDraft] = useState({
     line_currency: "EUR",
     line_amount: "0.00",
@@ -104,6 +106,16 @@ const DocumentLines = forwardRef(function DocumentLines({ companyId, documentId,
         notify.error("Neparedzēta servera kļūda");
       });
   }, [companyId, documentId]);
+
+  // After each render, focus the amount input of a newly added row
+  useEffect(() => {
+    if (justAddedIdRef.current && amountRefs.current[justAddedIdRef.current]) {
+      const el = amountRefs.current[justAddedIdRef.current];
+      el.focus();
+      el.select();
+      justAddedIdRef.current = null;
+    }
+  });
 
   function updateLine(index, field, value) {
     setEditedLines((prev) => {
@@ -192,6 +204,21 @@ const DocumentLines = forwardRef(function DocumentLines({ companyId, documentId,
     .filter((l) => l.line_supplementary_notice === "1")
     .reduce((sum, l) => sum + Number(l.line_amount || 0), 0);
 
+  function handleAddLine() {
+    const newId = `new-${Date.now()}`;
+    justAddedIdRef.current = newId;
+    setEditedLines((prev) => [...prev, { ...newLineDraft, id: newId }]);
+    setNewLineDraft({
+      line_currency: "EUR",
+      line_amount: "0.00",
+      line_debet_account: "",
+      line_credit_account: "",
+      line_vat_rate: "",
+      line_comments: "",
+      line_supplementary_notice: "1",
+    });
+  }
+
   const accountOptions = accounts.map((acc) => ({
     value: acc.code.toString(),
     label: `${acc.code} - ${acc.name}`,
@@ -209,12 +236,12 @@ const DocumentLines = forwardRef(function DocumentLines({ companyId, documentId,
           <table className="app-table mb-0" style={{ minWidth: 640, tableLayout: "fixed" }}>
             <colgroup>
               <col style={{ width: "3%" }} />
-              <col style={{ width: "7%" }} />
+              <col style={{ width: "11%" }} />
               <col style={{ width: "10%" }} />
               <col style={{ width: "14%" }} />
               <col style={{ width: "14%" }} />
               <col style={{ width: "6%" }} />
-              <col style={{ width: "43%" }} />
+              <col style={{ width: "39%" }} />
               <col style={{ width: "42px" }} />
             </colgroup>
 
@@ -260,6 +287,7 @@ const DocumentLines = forwardRef(function DocumentLines({ companyId, documentId,
                   <td>
                     <React.Fragment>
                       <AmountInput
+                        ref={(el) => { amountRefs.current[line.id] = el; }}
                         size="sm"
                         value={line.line_amount}
                         onChange={(val) => updateLine(index, "line_amount", val)}
@@ -351,32 +379,6 @@ const DocumentLines = forwardRef(function DocumentLines({ companyId, documentId,
                 </tr>
               ))}
 
-              {/* Add new line row */}
-              <tr className="align-middle">
-                <td colSpan={8} style={{ padding: "0.15rem 0.4rem" }}>
-                  <button
-                    type="button"
-                    className="btn-app btn-app-sm"
-                    onClick={() => {
-                      setEditedLines((prev) => [
-                        ...prev,
-                        { ...newLineDraft, id: `new-${Date.now()}` },
-                      ]);
-                      setNewLineDraft({
-                        line_currency: "EUR",
-                        line_amount: "0.00",
-                        line_debet_account: "",
-                        line_credit_account: "",
-                        line_vat_rate: "",
-                        line_comments: "",
-                        line_supplementary_notice: "1",
-                      });
-                    }}
-                  >
-                    <i className="bi bi-plus-lg"></i> Pievienot rindu
-                  </button>
-                </td>
-              </tr>
             </tbody>
 
             <tfoot>
@@ -404,7 +406,12 @@ const DocumentLines = forwardRef(function DocumentLines({ companyId, documentId,
                 >
                   {totalSum.toFixed(2)}
                 </td>
-                <td colSpan={5} style={{ borderTop: "2px solid var(--border)" }} />
+                <td colSpan={3} style={{ borderTop: "2px solid var(--border)" }} />
+                <td colSpan={2} style={{ borderTop: "2px solid var(--border)", padding: "0.15rem 0.4rem", textAlign: "right" }}>
+                  <button type="button" className="btn-app btn-app-sm" onClick={handleAddLine}>
+                    <i className="bi bi-plus-lg"></i> Pievienot rindu
+                  </button>
+                </td>
               </tr>
             </tfoot>
           </table>

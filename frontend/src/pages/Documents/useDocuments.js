@@ -16,6 +16,8 @@ export const useDocuments = (companyId) => {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [pdfFile, setPdfFile] = useState(null);
+  const [importQueue, setImportQueue] = useState([]);
+  const [importIndex, setImportIndex] = useState(0);
   const { company } = useCompany();
   const { setLoading } = useLoading();
   const [filters, setFilters] = useState({
@@ -266,49 +268,111 @@ export const useDocuments = (companyId) => {
     }
   };
 
-  // Importē PDF failu un mēģina atpazīt dokumentu informāciju ar AI
-  const handlePdfImport = async (file) => {
-    setLoading(true);
+  const CURRENCY_SYMBOL_MAP = { "€": "EUR", "£": "GBP", "$": "USD", "¥": "JPY", "kr": "SEK", "zł": "PLN" };
+  const normalizeCurrency = (c) => CURRENCY_SYMBOL_MAP[c?.trim()] || c?.trim() || "";
 
+  // Apstrādā vienu PDF failu caur AI un atgriež kartētu dokumenta objektu
+  const processSinglePdf = async (file) => {
     const formData = new FormData();
     formData.append("pdf", file);
     formData.append("companyName", company.name);
 
-    try {
-      const res = await axiosInstance.post(`/companies/${companyId}/ai/import-pdf`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+    const res = await axiosInstance.post(`/companies/${companyId}/ai/import-pdf`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
 
-      if (res.data.documents?.length > 0) {
-        const aiDoc = res.data.documents[0];
+    if (!res.data.documents?.length) return null;
 
-        // Mēģina sasaistīt AI atpazīto partneri ar reālu partneru ID
-        const matchedPartnerId = mapPartnerName(aiDoc.partner, partnersData);
-
-        // Sagatavo lokālu dokumenta objektu priekš modal loga
-        const mappedDoc = {
-          doc_id: aiDoc.document_number,
-          doc_date: aiDoc.document_date,
-          doc_type_abbrev: aiDoc.document_type,
-          doc_group_abbrev: aiDoc.document_group,
-          doc_currency: aiDoc.currency,
-          doc_amount: aiDoc.amount,
-          doc_comments: aiDoc.notes,
-          partner_id: matchedPartnerId,
-          is_accounted: false,
-        };
-
-        setSelectedDocument({ ...mappedDoc, isNewImport: true }); // Atver modal logu ar jauno importu
-        setPdfFile(file);
-        setShowModal(true);
-      }
-    } catch (err) {
-      console.error(err);
-      notify.error("Neparedzēta servera kļūda");
-    } finally {
-      setTimeout(() => setLoading(false), 200);
-    }
+    const aiDoc = res.data.documents[0];
+    return {
+      doc_id: aiDoc.document_number,
+      doc_date: aiDoc.document_date,
+      doc_type_abbrev: aiDoc.document_type,
+      doc_group_abbrev: aiDoc.document_group,
+      doc_currency: normalizeCurrency(aiDoc.currency),
+      doc_amount: aiDoc.amount,
+      doc_comments: aiDoc.notes,
+      partner_id: mapPartnerName(aiDoc.partner, partnersData),
+      is_accounted: false,
+      isNewImport: true,
+    };
   };
+
+  // Importē vienu vai vairākus PDF failus un atver modal ar importēto rindu navigāciju
+  const handlePdfImport = async (files) => {
+    const fileArray = Array.isArray(files) ? files : [files];
+    if (fileArray.length > 50) {
+      notify.error("Maksimums 50 PDF faili vienlaicīgi.");
+      return;
+    }
+
+    setLoading(true);
+
+    const results = [];
+    let failedCount = 0;
+
+    for (const file of fileArray) {
+      try {
+        const mappedDoc = await processSinglePdf(file);
+        if (mappedDoc) {
+          results.push({ mappedDoc, pdfFile: file });
+        } else {
+          failedCount++;
+        }
+      } catch (err) {
+        console.error(`Neizdevās apstrādāt ${file.name}:`, err);
+        failedCount++;
+      }
+    }
+
+    if (results.length > 0) {
+      setImportQueue(results);
+      setImportIndex(0);
+      setSelectedDocument({ ...results[0].mappedDoc });
+      setPdfFile(results[0].pdfFile);
+      setShowModal(true);
+      if (failedCount > 0) {
+        notify.warning(`${failedCount} PDF netika apstrādāts.`);
+      }
+    } else {
+      notify.error("Neviens PDF netika apstrādāts.");
+    }
+
+    setTimeout(() => setLoading(false), 200);
+  };
+
+  // Navigē uz citu importēto dokumentu pēc indeksa
+  const handleImportNav = useCallback((index) => {
+    setImportIndex(index);
+    setSelectedDocument({ ...importQueue[index].mappedDoc });
+    setPdfFile(importQueue[index].pdfFile);
+  }, [importQueue]);
+
+  // Izdzēš saglabāto dokumentu no rindas un navigē uz nākamo (vai iepriekšējo, ja bija pēdējais)
+  const handleImportSaveAndAdvance = useCallback(() => {
+    const newQueue = importQueue.filter((_, i) => i !== importIndex);
+
+    if (newQueue.length === 0) {
+      setImportQueue([]);
+      setImportIndex(0);
+      setShowModal(false);
+      setSelectedDocument(null);
+      setPdfFile(null);
+      return;
+    }
+
+    const newIndex = Math.min(importIndex, newQueue.length - 1);
+    setImportQueue(newQueue);
+    setImportIndex(newIndex);
+    setSelectedDocument({ ...newQueue[newIndex].mappedDoc });
+    setPdfFile(newQueue[newIndex].pdfFile);
+  }, [importQueue, importIndex]);
+
+  // Notīra importa rindu pēc aizvēršanas
+  const resetImportQueue = useCallback(() => {
+    setImportQueue([]);
+    setImportIndex(0);
+  }, []);
 
   // Dzēš atlasītos dokumentus vienlaicīgi (bulk delete)
   const handleDeleteSelected = async () => {
@@ -354,6 +418,11 @@ export const useDocuments = (companyId) => {
     pdfFile,
     setPdfFile,
     handlePdfImport,
+    importQueue,
+    importIndex,
+    handleImportNav,
+    handleImportSaveAndAdvance,
+    resetImportQueue,
     handleUpdateAccounted,
   };
 };

@@ -1,35 +1,5 @@
 import React from "react";
-import Select from "react-select";
 import AmountInput from "../../utils/AmountInput";
-
-const partnerSelectStyles = {
-  control: (base, state) => ({
-    ...base,
-    minHeight: "26px",
-    height: "26px",
-    fontSize: "0.78rem",
-    borderColor: state.isFocused ? "#4f46e5" : "#e2e8f0",
-    boxShadow: state.isFocused ? "0 0 0 0.15rem rgba(79,70,229,0.2)" : "none",
-    "&:hover": { borderColor: "#4f46e5" },
-    borderRadius: "4px",
-  }),
-  valueContainer: (base) => ({ ...base, padding: "0 4px", height: "26px", flexWrap: "nowrap" }),
-  singleValue: (base) => ({ ...base, fontSize: "0.78rem", fontFamily: "inherit" }),
-  input: (base) => ({ ...base, fontSize: "0.78rem", fontFamily: "inherit", margin: 0, padding: 0 }),
-  placeholder: (base) => ({ ...base, fontSize: "0.78rem", fontFamily: "inherit" }),
-  indicatorsContainer: (base) => ({ ...base, height: "26px" }),
-  indicatorSeparator: () => ({ display: "none" }),
-  dropdownIndicator: (base) => ({ ...base, padding: "0 4px" }),
-  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-  menu: (base) => ({ ...base, fontSize: "0.78rem", fontFamily: "inherit" }),
-  option: (base, state) => ({
-    ...base,
-    backgroundColor: state.isSelected ? "#4f46e5" : state.isFocused ? "#f1f5f9" : "white",
-    color: state.isSelected ? "white" : "#1e293b",
-    padding: "4px 8px",
-    fontSize: "0.78rem",
-  }),
-};
 
 // Padding overrides for compact filter rows
 const FTH = { padding: "3px 0.6rem", borderBottom: "none" };
@@ -41,6 +11,7 @@ const LABEL_TH = {
   color: "var(--text-muted)",
   fontWeight: 500,
   textAlign: "right",
+  verticalAlign: "middle",
   whiteSpace: "nowrap",
 };
 
@@ -157,27 +128,19 @@ export default function FinancialDocsTableHeader({
             />
           </th>
           <th style={FTH_LAST}>
-            <Select
-              options={[
-                { value: "", label: "Visi" },
-                ...partnersData
-                  .slice()
-                  .sort((a, b) => (a.formatted_name || "").localeCompare(b.formatted_name || "", "lv", { sensitivity: "base" }))
-                  .map((p) => ({ value: String(p.id), label: p.formatted_name })),
-              ]}
-              value={
-                filters.partnerId
-                  ? { value: String(filters.partnerId), label: partnersData.find((p) => String(p.id) === String(filters.partnerId))?.formatted_name || "" }
-                  : { value: "", label: "Visi" }
-              }
-              onChange={(opt) => setFilters({ ...filters, partnerId: opt?.value || "" })}
-              styles={partnerSelectStyles}
-              placeholder="Visi"
-              noOptionsMessage={() => "Nav rezultātu"}
-              isClearable={false}
-              menuPortalTarget={document.body}
-              menuPosition="fixed"
-            />
+            <select
+              className="form-select form-select-sm"
+              value={filters.partnerId}
+              onChange={(e) => setFilters({ ...filters, partnerId: e.target.value })}
+            >
+              <option value="">Visi</option>
+              {partnersData
+                .slice()
+                .sort((a, b) => (a.formatted_name || "").localeCompare(b.formatted_name || "", "lv", { sensitivity: "base" }))
+                .map((p) => (
+                  <option key={p.id} value={String(p.id)}>{p.formatted_name}</option>
+                ))}
+            </select>
           </th>
           <th style={FTH_LAST}>
             <select
