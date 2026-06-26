@@ -583,7 +583,7 @@ html, body {
 
 /* Wide document modal — overrides Bootstrap's xl max-width */
 .modal-doc {
-  max-width: min(95vw, 1500px) !important;
+  max-width: min(98vw, 1900px) !important;
 }
 
 /* ── Virtualized table ──────────────────────── */

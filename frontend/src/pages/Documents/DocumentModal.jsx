@@ -222,7 +222,7 @@ export default function DocumentModal({
             <div
               ref={pdfRef}
               style={{
-                flex: "0 0 510px",
+                flex: "0 0 600px",
                 overflowY: "scroll",
                 overflowX: "hidden",
                 border: "1px solid var(--border)",
